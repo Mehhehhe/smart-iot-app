@@ -14,17 +14,17 @@ void main() async {
     await Firebase.initializeApp(
       name: 'Smart IOT',
       options: FirebaseOptions(
-          apiKey: "AIzaSyCB3LceCnDLpShGwKRSZ9NhW2Kg9txwv5U",
-          appId: "1:774636778498:android:cab8029c00fecc576f231b",
-          messagingSenderId: "774636778498",
-          projectId: "smartiotapp-8b124"
+          apiKey: "xxxx",
+          appId: "xxxx",
+          messagingSenderId: "xxxx",
+          projectId: "xxxx"
       ),
     );
   }
-  runApp(new smartIOTApp());
+  runApp(new SmartIOTApp());
 }
 
-class smartIOTApp extends StatelessWidget{
+class SmartIOTApp extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
