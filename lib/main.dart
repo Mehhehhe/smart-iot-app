@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:smart_iot_app/services/authentication.dart';
+import 'package:smart_iot_app/pages/root.dart';
 
 void main() async {
   // Check if app open properly
@@ -14,10 +16,10 @@ void main() async {
     await Firebase.initializeApp(
       name: 'Smart IOT',
       options: FirebaseOptions(
-          apiKey: "xxxx",
-          appId: "xxxx",
-          messagingSenderId: "xxxx",
-          projectId: "xxxx"
+          apiKey: "AIzaSyCB3LceCnDLpShGwKRSZ9NhW2Kg9txwv5U",
+          appId: "1:774636778498:android:cab8029c00fecc576f231b",
+          messagingSenderId: "774636778498",
+          projectId: "smartiotapp-8b124"
       ),
     );
   }
@@ -33,7 +35,7 @@ class SmartIOTApp extends StatelessWidget{
       theme: ThemeData(
         primarySwatch: Colors.brown,
       ),
-      home: ,
+      home: new RootPage(auth: new Auth()),
     );
   }
 }
