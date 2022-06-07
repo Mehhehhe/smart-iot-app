@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/Login.dart';
+import 'package:smart_iot_app/pages/MainPage.dart';
 
 enum AuthStatus{
   NOT_DETERMINED,
@@ -82,11 +83,11 @@ class _RootPageState extends State<RootPage>{
         break;
       case AuthStatus.LOGGED_IN:
         if(_userID.length > 0 && _userID != null){
-          //return MainPage(
-          //  userID: _userID,
-          //  auth: widget.auth,
-          //  logoutCallback: logoutCallback,
-          //);
+          return MainPage(
+            userId: _userID,
+            auth: widget.auth,
+            logoutCallback: logoutCallback,
+          );
           print("RETURN MAIN PAGE!");
           return buildingWaitingScreen();
         }else{

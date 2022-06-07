@@ -33,10 +33,13 @@ class Auth implements BaseAuth{
 
   @override
   Future<String?> register(String email, String password) async {
+    late UserCredential result;
     try{
-      UserCredential result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
     }on FirebaseAuthException catch(e){
       print(e);
     }
+    User? user = result.user;
+    return user?.uid;
   }
 }

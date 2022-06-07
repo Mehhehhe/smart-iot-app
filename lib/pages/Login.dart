@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
+import 'package:smart_iot_app/pages/RegisterPage.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({required this.auth, required this.loginCallback});
@@ -12,7 +13,6 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogIn extends State<LogIn> {
-  late TextEditingController _controller;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -276,7 +276,16 @@ class _LogIn extends State<LogIn> {
                 borderRadius: BorderRadius.circular(30.0)),
           ),
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Register(
+                auth: widget.auth,
+                loginCallback: widget.loginCallback,
+              )
+              ),
+          );
+        },
         child: Text(
           'Register',
           textAlign: TextAlign.left,
