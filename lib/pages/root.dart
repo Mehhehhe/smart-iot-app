@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
+import 'package:smart_iot_app/pages/Login.dart';
 
 enum AuthStatus{
   NOT_DETERMINED,
@@ -74,12 +75,10 @@ class _RootPageState extends State<RootPage>{
         return buildingWaitingScreen();
         break;
       case AuthStatus.NOT_LOGGED_IN:
-        //return LogInPage(
-        //  auth: widget.auth,
-        //  loginCallback: loginCallback,
-        //);
-        print("NOT LOGGED IN!");
-        return buildingWaitingScreen();
+        return LogIn(
+          auth: widget.auth,
+          loginCallback: loginCallback,
+        );
         break;
       case AuthStatus.LOGGED_IN:
         if(_userID.length > 0 && _userID != null){
