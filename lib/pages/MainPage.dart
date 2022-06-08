@@ -34,23 +34,48 @@ class _MainPageState extends State<MainPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffKey,
-      appBar: AppBar(
-        title: Text("Smart IOT Farm"),
-        actions: <Widget>[
-          TextButton(
-              onPressed: signOut,
-              child: Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.black
-                ),
+      backgroundColor: Color.fromRGBO(153, 252, 146, 1.0),
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.red,
               ),
-          )
+              child: Text('1111'),
+            ),
+            ListTile(
+              title: const Text('1'),
+              onTap: (){},
+            ),
+            ListTile(
+              title: const Text('Log out'),
+              onTap: signOut,
+            ),
+          ],
+        ),
+      ),
+      appBar: AppBar(
+        backgroundColor: Color.fromRGBO(150, 150, 150, 1.0),
+        leading: GestureDetector(
+          onTap: () {},
+          child: Icon(
+            Icons.account_circle,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: Icon(Icons.add),
+        onPressed: () {},
+      ),
+      body: Stack(
+        children: [
+          _showForm(),
         ],
       ),
-      body: mainBody(),
+
     );
   }
 
@@ -61,7 +86,7 @@ class _MainPageState extends State<MainPage>{
     return msg;
   }
 
-  Widget mainBody() {
+  /*Widget mainBody() {
     return FutureBuilder<String?>(
         future: getFutureData(),
         builder: (context, snapshot){
@@ -72,6 +97,93 @@ class _MainPageState extends State<MainPage>{
           }
           return CircularProgressIndicator();
         }
+
+    );
+
+  }*/
+
+
+  Widget _showForm() {
+    return Container(
+      //padding: EdgeInsets.all(25.0),
+      child: Form(
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              CardPreset(),
+              CardPreset(),
+              CardPreset(),
+            ],
+          ),
+        ),
+      ),
     );
   }
+
+  Widget CardPreset() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 30,vertical: 15),
+      shadowColor: Colors.black,
+      elevation: 15,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              Ink.image(
+                image: NetworkImage(
+                    'https://cdn-icons-png.flaticon.com/512/6080/6080697.png'),
+                child: InkWell(
+                  onTap: () {},
+                ),
+                height: 240,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0).copyWith(bottom: 0),
+            child: FutureBuilder<String?>(
+                future: getFutureData(),
+                builder: (context, snapshot){
+                  if(snapshot.hasData){
+                    return Container(
+                      child: Text('อุปกรณ์ที่ 1 : '+snapshot.data.toString()),
+                    );
+                  }
+                  return CircularProgressIndicator();
+                }
+            ),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.end,
+            children: [
+              FlatButton(
+                onPressed: () {},
+                child: Text('Manage'),
+              ),
+              FlatButton(
+                onPressed: () {},
+                child: Text('delete'),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
 }
