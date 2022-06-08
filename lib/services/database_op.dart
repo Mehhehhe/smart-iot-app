@@ -1,14 +1,15 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:convert';
 
 abstract class SmIOTDatabaseMethod{
   Future<void> addUser(String? userId);
-  Future<String?> getData(String? userId);
+  Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
 }
 
 class DataPayload {
-  late final String user;
-  late Map<String?, dynamic> sensorValMap = {};
+  String user;
+  Map<dynamic, dynamic>? sensorValMap;
 
   DataPayload({required this.user, required this.sensorValMap});
 
@@ -16,6 +17,11 @@ class DataPayload {
   factory DataPayload.fromJson(Map<String, dynamic> json) {
     return DataPayload(user: json['user'], sensorValMap: json['sensors']);
   }
+
+  Map<String, dynamic> toJson() => {
+    'user': user,
+    'sensors': sensorValMap
+  };
 }
 
 class SmIOTDatabase implements SmIOTDatabaseMethod {
@@ -30,14 +36,20 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   }
 
   @override
-  Future<String?> getData(String? userId) async {
+  Future<Map<String, dynamic>> getData(String userId) async {
     final snapshot = await ref.child('$userId').get();
+    final event = await ref.child('$userId').once(DatabaseEventType.value);
+
     if (snapshot.exists) {
-      print(snapshot.value);
-      return snapshot.value.toString();
+      final Map? sensorsVals = event.snapshot.value as Map?;
+      DataPayload data = DataPayload(user: userId, sensorValMap: sensorsVals);
+      final json = jsonEncode(data.toJson());
+      Map<String, dynamic> jsonDe = jsonDecode(json);
+      return jsonDe;
     } else {
       print("Data not exists");
     }
+    return {};
   }
 
   @override

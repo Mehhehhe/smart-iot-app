@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
 
@@ -16,6 +17,8 @@ class MainPage extends StatefulWidget{
 
 class _MainPageState extends State<MainPage>{
   final scaffKey = GlobalKey<ScaffoldState>();
+
+  late Map<String, dynamic> dataTemp;
 
   signOut() async {
     try{
@@ -79,10 +82,11 @@ class _MainPageState extends State<MainPage>{
     );
   }
 
-  Future<String?> getFutureData() async {
+  Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = new SmIOTDatabase();
-    Future<String?> dataFuture = db.getData("IoT_1");
-    String? msg = await dataFuture;
+    Future<Map<String, dynamic>> dataFuture = db.getData("IoT_1");
+    Map<String, dynamic> msg = await dataFuture;
+    dataTemp = msg;
     return msg;
   }
 
@@ -146,14 +150,28 @@ class _MainPageState extends State<MainPage>{
           ),
           Padding(
             padding: const EdgeInsets.all(10.0).copyWith(bottom: 0),
-            child: FutureBuilder<String?>(
+            child: FutureBuilder(
+
                 future: getFutureData(),
                 builder: (context, snapshot){
-                  if(snapshot.hasData){
-                    return Container(
-                      child: Text('อุปกรณ์ที่ 1 : '+snapshot.data.toString()),
-                    );
+
+                  if (snapshot.connectionState == ConnectionState.none && snapshot.hasData == null) {
+                    return Container();
                   }
+
+                  return ListView.builder(
+                     shrinkWrap: true,
+                      itemCount: dataTemp.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> sensorsVals = dataTemp["sensors"];
+                        return Column(
+                          children: <Widget>[
+                            Text(sensorsVals.keys.elementAt(index)+": "+sensorsVals.values.elementAt(index).toString()),
+                          ],
+                        );
+                      }
+                  );
+
                   return CircularProgressIndicator();
                 }
             ),
@@ -161,11 +179,11 @@ class _MainPageState extends State<MainPage>{
           ButtonBar(
             alignment: MainAxisAlignment.end,
             children: [
-              FlatButton(
+              TextButton(
                 onPressed: () {},
                 child: Text('Manage'),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {},
                 child: Text('delete'),
               ),
