@@ -20,7 +20,7 @@ class DataPayload {
 
 class SmIOTDatabase implements SmIOTDatabaseMethod {
   // Temporary reference link to database
-  final ref = FirebaseDatabase.instance.ref('https://smartiotapp-8b124-default-rtdb.asia-southeast1.firebasedatabase.app/');
+  final ref = FirebaseDatabase.instance.ref();
 
   @override
   Future<void> addUser(String? userId) async {
@@ -33,6 +33,7 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   Future<String?> getData(String? userId) async {
     final snapshot = await ref.child('$userId').get();
     if (snapshot.exists) {
+      print(snapshot.value);
       return snapshot.value.toString();
     } else {
       print("Data not exists");
