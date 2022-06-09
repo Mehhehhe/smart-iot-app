@@ -19,6 +19,7 @@ class _MainPageState extends State<MainPage>{
   final scaffKey = GlobalKey<ScaffoldState>();
 
   late Map<String, dynamic> dataTemp;
+  late Map<String, dynamic> sensorsVals;
 
   signOut() async {
     try{
@@ -32,6 +33,7 @@ class _MainPageState extends State<MainPage>{
   @override
   void initState(){
     super.initState();
+    print("User Id: "+widget.userId);
   }
 
   @override
@@ -84,9 +86,10 @@ class _MainPageState extends State<MainPage>{
 
   Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = new SmIOTDatabase();
-    Future<Map<String, dynamic>> dataFuture = db.getData("IoT_1");
+    Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataFuture;
     dataTemp = msg;
+    sensorsVals = dataTemp["sensors"];
     return msg;
   }
 
@@ -161,18 +164,15 @@ class _MainPageState extends State<MainPage>{
 
                   return ListView.builder(
                      shrinkWrap: true,
-                      itemCount: dataTemp.length,
+                      itemCount: sensorsVals.length,
                       itemBuilder: (context, index) {
-                        Map<String, dynamic> sensorsVals = dataTemp["sensors"];
                         return Column(
                           children: <Widget>[
-                            Text(sensorsVals.keys.elementAt(index)+": "+sensorsVals.values.elementAt(index).toString()),
+                            Text(sensorsVals.keys.elementAt(index)+": "+sensorsVals.values.elementAt(index).toString()??""),
                           ],
                         );
                       }
                   );
-
-                  return CircularProgressIndicator();
                 }
             ),
           ),
