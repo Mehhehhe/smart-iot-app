@@ -24,36 +24,36 @@ class _RegisterState extends State<Register> {
 
   bool ValidateAndSave() {
     final form = _formKey.currentState;
-    if(form!.validate()){
+    if (form!.validate()) {
       form.save();
       return true;
     }
     return false;
   }
 
-  Future<void> ValidateAndSubmit() async{
+  Future<void> ValidateAndSubmit() async {
     setState(() {
       _errMsg = "";
       _isLoading = true;
       _isRegisForm = true;
     });
 
-    if(ValidateAndSave()){
+    if (ValidateAndSave()) {
       String? userId = "";
-      try{
-        if(_isRegisForm){
+      try {
+        if (_isRegisForm) {
           userId = await widget.auth.register(_email, _password);
-        }else{
+        } else {
           print("Please register first");
         }
         setState(() {
           _isLoading = false;
         });
-        if(userId!.length > 0 && userId != null && _isRegisForm){
+        if (userId!.length > 0 && userId != null && _isRegisForm) {
           widget.loginCallback();
         }
         Navigator.pop(context);
-      }catch(e){
+      } catch (e) {
         setState(() {
           _isLoading = false;
           _errMsg = e.toString();
@@ -64,7 +64,7 @@ class _RegisterState extends State<Register> {
   }
 
   @override
-  void initState(){
+  void initState() {
     _errMsg = "";
     _isLoading = false;
     _isRegisForm = false;
@@ -77,190 +77,155 @@ class _RegisterState extends State<Register> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0.0,
-        title: Row(
-          children: [
-            TextButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              child: Text(
-                "Back",
-                style: TextStyle(
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.start,
-              )
-          )],
-        ),
-
       ),
-        backgroundColor: Color.fromRGBO(255, 203, 182, 1.0),
-        body: Stack(
-          children: [
-            _showForm(),
-            _showCircularProgress(),
-          ],
-        ),
-      extendBodyBehindAppBar: true,
-    );
-  }
-  Widget _showForm() {
-    return Container(
-      //padding: EdgeInsets.all(25.0),
-      //margin: EdgeInsets.symmetric(horizontal: 20),
-      child: Form(
-        key: _formKey,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
+      //backgroundColor: Color.fromRGBO(255, 203, 182, 1.0),
+      body: Stack(
+        children: [
+          //_showCircularProgress(),
 
-              _Text1(),
-              EmailRegister(),
-              PasswordRegister(),
-              RegisterButton(),
-
-            ],
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromRGBO(120, 220, 212, 1.0),
+                  Color.fromRGBO(4, 97, 114, 1.0),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
-        ),
+
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 150, vertical: 180),
+              child: Text(
+                'Sign up',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  color: Color.fromRGBO(0, 0, 0, 1.0),
+                  fontFamily: 'Roboto Slab',
+                  fontSize: 25,
+                  letterSpacing:
+                      0 /*percentages not used in flutter. defaulting to zero*/,
+                  fontWeight: FontWeight.bold,
+                  height: 1,
+                ),
+              )),
+
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 30, vertical: 250),
+            child: TextFormField(
+              obscureText: false,
+              maxLines: 1,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+                suffixIcon: Icon(Icons.account_circle),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                labelText: 'Username',
+              ),
+              validator: (value) =>
+                  value!.isEmpty ? 'Please enter your email' : null,
+              onSaved: (value) => _email = value!.trim(),
+            ),
+          ),
+
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 30, vertical: 320),
+            child: TextFormField(
+              obscureText: true,
+              maxLines: 1,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+                suffixIcon: Icon(Icons.remove_red_eye),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                labelText: 'Password',
+              ),
+              validator: (value) =>
+                  value!.isEmpty ? 'Please enter your password' : null,
+              onSaved: (value) => _password = value!.trim(),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(left: 160, top: 410),
+            width: 200,
+            height: 50,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(73, 187, 167, 1.0),
+                    Color.fromRGBO(142, 238, 109, 1.0),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(25.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.pink.withOpacity(0.2),
+                    spreadRadius: 4,
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
+                  )
+                ]),
+            child: OutlinedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                ),
+              ),
+              onPressed: ValidateAndSubmit,
+              child: Text(
+                'Register',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: "Roboto Slab",
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  letterSpacing: 0.0,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          _showCircularProgress()
+        ],
       ),
+
+      extendBodyBehindAppBar: true,
     );
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
   }
 
-  void resetForm(){
+  void resetForm() {
     _formKey.currentState?.reset();
     _errMsg = "";
   }
 
-  void toggleFormMode(){
+  void toggleFormMode() {
     resetForm();
     setState(() {
       _isRegisForm != _isRegisForm;
     });
   }
 
-  Widget _Text1(){
-    return Container(margin: EdgeInsets.symmetric(horizontal: 20,vertical: 30),
-
-        child: Text(
-          'Welcome to Smart IOT APP',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            color: Color.fromRGBO(0, 0, 0, 1.0),
-            fontFamily: 'Roboto Slab',
-            fontSize: 20,
-            letterSpacing:
-            0 /*percentages not used in flutter. defaulting to zero*/,
-            fontWeight: FontWeight.bold,
-            height: 1,
-
-          ),
-        ));
-  }
-
-  Widget EmailRegister(){
-    return Container(margin: EdgeInsets.symmetric(horizontal: 20),
-      width: 300,
-      height: 80,
-      child: TextFormField(
-        obscureText: false,
-        maxLines: 1,
-        keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor:
-          Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.account_circle),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30)),
-          labelText: 'Username',
-        ),
-        validator: (value) => value!.isEmpty ? 'Please enter your email':null,
-        onSaved: (value) => _email = value!.trim(),
-      ),
-    );
-  }
-
-  Widget PasswordRegister() {
-    return Container(margin: EdgeInsets.symmetric(horizontal: 20),
-      width: 300,
-      height: 100,
-      child: TextFormField(
-        obscureText: true,
-        maxLines: 1,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor:
-          Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.remove_red_eye),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          labelText: 'Password',
-        ),
-        validator: (value) => value!.isEmpty ? 'Please enter your password':null,
-        onSaved: (value) => _password = value!.trim(),
-      ),
-    );
-  }
-
-  Widget RegisterButton(){
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 70,horizontal: 20),
-
-      width: 200,
-      height: 50,
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color.fromRGBO(73, 187, 167, 1.0),
-              Color.fromRGBO(142, 238, 109, 1.0),
-            ],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25.0),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.pink.withOpacity(0.2),
-              spreadRadius: 4,
-              blurRadius: 10,
-              offset: Offset(0, 3),
-            )
-          ]),
-      child: OutlinedButton(
-        style: ButtonStyle(
-          shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)),
-          ),
-        ),
-        onPressed: ValidateAndSubmit,
-        child: Text(
-          'Register',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontFamily: "Roboto Slab",
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-            letterSpacing: 0.0,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _showCircularProgress() {
-    if(_isLoading){
-      return Center(child: CircularProgressIndicator(),);
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
     return Container(
       height: 0.0,
@@ -268,16 +233,5 @@ class _RegisterState extends State<Register> {
     );
   }
 }
-
-/*Widget _showCircularProgress() {
-  if(_isLoading){
-    return Center(child: CircularProgressIndicator(),);
-  }
-  return Container(
-    height: 0.0,
-    width: 0.0,
-  );
-}*/
-
 
 

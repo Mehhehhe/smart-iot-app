@@ -91,12 +91,24 @@ class _LogIn extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(146, 252, 232, 1.0),
-      body: Stack(
-        children: [
-          _showForm(),
-          _showCircularProgress(),
-        ],
+      //backgroundColor: Color.fromRGBO(146, 252, 232, 1.0),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(4, 97, 114, 1.0),
+              Color.fromRGBO(120, 220, 212, 1.0),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Stack(
+          children: [
+            _showForm(),
+            _showCircularProgress(),
+          ],
+        ),
       ),
     );
   }
@@ -120,7 +132,7 @@ class _LogIn extends State<LogIn> {
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-              showTitle(),
+              //showTitle(),
               showProfile(),
               showEmailInput(),
               showPasswordInput(),
@@ -154,7 +166,7 @@ class _LogIn extends State<LogIn> {
   Widget showEmailInput(){
     return Container(
       width: 300,
-      height: 80,
+      height: 70,
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
@@ -165,7 +177,9 @@ class _LogIn extends State<LogIn> {
           Color.fromRGBO(255, 255, 255, 0.6000000238418579),
           suffixIcon: Icon(Icons.account_circle),
           border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.transparent),
               borderRadius: BorderRadius.circular(30)),
+
           labelText: 'Username',
         ),
         validator: (value) => value!.isEmpty ? 'Please enter your email':null,
@@ -177,7 +191,7 @@ class _LogIn extends State<LogIn> {
   Widget showPasswordInput() {
     return Container(
       width: 300,
-      height: 60,
+      height: 80,
       child: TextFormField(
         obscureText: true,
         maxLines: 1,
@@ -328,9 +342,9 @@ class _LogIn extends State<LogIn> {
 
   Widget showProfile() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 50),
+      margin: EdgeInsets.symmetric(vertical: 26,horizontal: 40),
       width: 234,
-      height: 234,
+      height: 280,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(154.5),
