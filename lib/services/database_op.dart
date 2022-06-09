@@ -14,7 +14,7 @@ class DataPayload {
   DataPayload({required this.user, required this.sensorValMap});
 
   //Method to create data model from json
-  factory DataPayload.fromJson(Map<String, dynamic> json) {
+  factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
     return DataPayload(user: json['user'], sensorValMap: json['sensors']);
   }
 

@@ -22,8 +22,7 @@ class _MainPageState extends State<MainPage>{
 
   final scaffKey = GlobalKey<ScaffoldState>();
 
-  late Map<String, dynamic> dataTemp;
-  late Map<String, dynamic> sensorsVals;
+  //late Map<String, dynamic> dataTemp;
 
   signOut() async {
     try{
@@ -43,10 +42,9 @@ class _MainPageState extends State<MainPage>{
   }
   String login = '....';
   Future<void> showEmail() async{
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    User? user = firebaseAuth.currentUser;
+    String? email = await widget.auth.getUserEmail();
     setState(() {
-      login = user!.email!;
+      login = email!;
     });
   }
 
@@ -137,8 +135,6 @@ class _MainPageState extends State<MainPage>{
     SmIOTDatabase db = new SmIOTDatabase();
     Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataFuture;
-    dataTemp = msg;
-    sensorsVals = dataTemp["sensors"];
     return msg;
   }
 
@@ -210,14 +206,17 @@ class _MainPageState extends State<MainPage>{
                   if (snapshot.connectionState == ConnectionState.none && snapshot.hasData == null) {
                     return Container();
                   }
-
+                  print(snapshot.data);
+                  final Map? dataMap = snapshot.data as Map?;
+                  DataPayload dataModel =  DataPayload.fromJson(dataMap!);
+                  //Map<String, dynamic> sensorsVals = dataTemp['sensors'];
                   return ListView.builder(
                       shrinkWrap: true,
-                      itemCount: sensorsVals.length,
+                      itemCount: dataModel.sensorValMap?.length,
                       itemBuilder: (context, index) {
                         return Column(
                           children: <Widget>[
-                            Text(sensorsVals.keys.elementAt(index)+": "+sensorsVals.values.elementAt(index).toString()??""),
+                            Text(dataModel.sensorValMap?.keys.elementAt(index)+": "+dataModel.sensorValMap?.values.elementAt(index).toString()??""),
                           ],
                         );
                       }
