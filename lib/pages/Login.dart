@@ -13,7 +13,7 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogIn extends State<LogIn> {
-
+  bool _isObscure = true;
   final _formKey = GlobalKey<FormState>();
 
   late String _email;
@@ -188,18 +188,29 @@ class _LogIn extends State<LogIn> {
     );
   }
 
+
+
+
   Widget showPasswordInput() {
     return Container(
       width: 300,
       height: 80,
       child: TextFormField(
-        obscureText: true,
+        obscureText: _isObscure,
+        //obscureText: true,
         maxLines: 1,
         decoration: InputDecoration(
           filled: true,
           fillColor:
           Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.remove_red_eye),
+          suffixIcon: IconButton(
+              icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+            onPressed: (){
+                setState((){
+                  _isObscure = !_isObscure;
+                });
+            },
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -210,6 +221,8 @@ class _LogIn extends State<LogIn> {
       ),
     );
   }
+
+
 
   Widget showLoginButton(){
     return Container(

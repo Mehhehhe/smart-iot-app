@@ -14,6 +14,7 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
+  bool _isObscure = true;
 
   late String _email;
   late String _password;
@@ -96,107 +97,9 @@ class _RegisterState extends State<Register> {
             ),
           ),
 
-          Container(
-              margin: EdgeInsets.symmetric(horizontal: 150, vertical: 180),
-              child: Text(
-                'Sign up',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: Color.fromRGBO(0, 0, 0, 1.0),
-                  fontFamily: 'Roboto Slab',
-                  fontSize: 25,
-                  letterSpacing:
-                      0 /*percentages not used in flutter. defaulting to zero*/,
-                  fontWeight: FontWeight.bold,
-                  height: 1,
-                ),
-              )),
 
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 30, vertical: 250),
-            child: TextFormField(
-              obscureText: false,
-              maxLines: 1,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-                suffixIcon: Icon(Icons.account_circle),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-                labelText: 'Username',
-              ),
-              validator: (value) =>
-                  value!.isEmpty ? 'Please enter your email' : null,
-              onSaved: (value) => _email = value!.trim(),
-            ),
-          ),
-
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 30, vertical: 320),
-            child: TextFormField(
-              obscureText: true,
-              maxLines: 1,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-                suffixIcon: Icon(Icons.remove_red_eye),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                labelText: 'Password',
-              ),
-              validator: (value) =>
-                  value!.isEmpty ? 'Please enter your password' : null,
-              onSaved: (value) => _password = value!.trim(),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(left: 160, top: 410),
-            width: 200,
-            height: 50,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromRGBO(73, 187, 167, 1.0),
-                    Color.fromRGBO(142, 238, 109, 1.0),
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(25.0),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
-                    spreadRadius: 4,
-                    blurRadius: 10,
-                    offset: Offset(0, 3),
-                  )
-                ]),
-            child: OutlinedButton(
-              style: ButtonStyle(
-                shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0)),
-                ),
-              ),
-              onPressed: ValidateAndSubmit,
-              child: Text(
-                'Register',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontFamily: "Roboto Slab",
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                  letterSpacing: 0.0,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          _showCircularProgress()
+          _showCircularProgress(),
+          _showForm()
         ],
       ),
 
@@ -230,6 +133,153 @@ class _RegisterState extends State<Register> {
     return Container(
       height: 0.0,
       width: 0.0,
+    );
+  }
+
+  Widget _showForm() {
+    return Container(
+      //padding: EdgeInsets.all(15.0),
+      child: Form(
+        key: _formKey,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              //showTitle(),
+              Texttitle(),
+              EmailRegis(),
+              PasswordRegis(),
+              RegisButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+  Widget Texttitle(){
+    return Container(
+        margin: EdgeInsets.only(left: 30, right: 30 ,bottom: 10),
+        child: Text(
+          'Sign up',
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            color: Color.fromRGBO(0, 0, 0, 1.0),
+            fontFamily: 'Roboto Slab',
+            fontSize: 25,
+            letterSpacing:
+            0 /*percentages not used in flutter. defaulting to zero*/,
+            fontWeight: FontWeight.bold,
+            height: 1,
+          ),
+        ),
+    );
+  }
+
+
+  Widget EmailRegis(){
+    return Container(
+      margin: EdgeInsets.only(left: 30, top: 50, right: 30 ,bottom: 10),
+      child: TextFormField(
+        obscureText: false,
+        maxLines: 1,
+        keyboardType: TextInputType.emailAddress,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: Icon(Icons.account_circle),
+          border:
+          OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+          labelText: 'Username',
+        ),
+        validator: (value) =>
+        value!.isEmpty ? 'Please enter your email' : null,
+        onSaved: (value) => _email = value!.trim(),
+      ),
+    );
+  }
+
+
+  Widget PasswordRegis(){
+    return Container(
+      //margin: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
+        margin: EdgeInsets.only(left: 30, top: 10, right: 30 ,bottom: 10),
+      child: TextFormField(
+        obscureText: _isObscure,
+        //obscureText: true,
+        maxLines: 1,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor:
+          Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: IconButton(
+            icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+            onPressed: (){
+              setState((){
+                _isObscure = !_isObscure;
+              });
+            },
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          labelText: 'Password',
+        ),
+        validator: (value) =>
+        value!.isEmpty ? 'Please enter your password' : null,
+        onSaved: (value) => _password = value!.trim(),
+      ),
+    );
+  }
+
+
+  Widget RegisButton(){
+    return Container(
+      margin: EdgeInsets.only(left: 160, top: 50, right: 30),
+      width: 200,
+      height: 50,
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(73, 187, 167, 1.0),
+              Color.fromRGBO(142, 238, 109, 1.0),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(25.0),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pink.withOpacity(0.2),
+              spreadRadius: 4,
+              blurRadius: 10,
+              offset: Offset(0, 3),
+            )
+          ]),
+      child: OutlinedButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0)),
+          ),
+        ),
+        onPressed: ValidateAndSubmit,
+        child: Text(
+          'Register',
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            fontFamily: "Roboto Slab",
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            letterSpacing: 0.0,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }
