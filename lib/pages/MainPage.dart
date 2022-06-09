@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -16,6 +19,7 @@ class MainPage extends StatefulWidget{
 }
 
 class _MainPageState extends State<MainPage>{
+
   final scaffKey = GlobalKey<ScaffoldState>();
 
   late Map<String, dynamic> dataTemp;
@@ -30,57 +34,102 @@ class _MainPageState extends State<MainPage>{
     }
   }
 
+
   @override
   void initState(){
     super.initState();
     print("User Id: "+widget.userId);
+    showEmail();
   }
+  String login = '....';
+  Future<void> showEmail() async{
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    User? user = firebaseAuth.currentUser;
+    setState(() {
+      login = user!.email!;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(153, 252, 146, 1.0),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.red,
-              ),
-              child: Text('1111'),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        //backgroundColor: Color.fromRGBO(153, 252, 146, 1.0),
+        appBar: AppBar(
+          //backgroundColor: Color.fromRGBO(150, 150, 150, 1.0),
+          //backgroundColor: Colors.orange,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.pink],
+                    begin: Alignment.bottomRight,
+                    end: Alignment.topLeft
+                )
             ),
-            ListTile(
-              title: const Text('1'),
-              onTap: (){},
+          ),
+          elevation: 10,
+          title: Text("$login", style: TextStyle(
+            fontSize: 15,
+          ),),
+          titleSpacing: 0,
+          leading: GestureDetector(
+            onTap: () {},
+            child: Icon(
+              Icons.account_circle,
             ),
-            ListTile(
-              title: const Text('Log out'),
-              onTap: signOut,
+
+          ),
+          bottom: TabBar(
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(icon: Icon(Icons.home), text: 'Home',),
+              Tab(icon: Icon(Icons.phone_in_talk), text: 'Contact Admin',),
+            ],
+          ),
+
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout), // The "-" icon
+              onPressed: signOut, // The `_decrementCounter` function
             ),
           ],
         ),
-      ),
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(150, 150, 150, 1.0),
-        leading: GestureDetector(
-          onTap: () {},
-          child: Icon(
-            Icons.account_circle,
+
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(12, 210, 193, 1.0),
+                Color.fromRGBO(195, 255, 232, 1.0),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          child: TabBarView(
+            children: [
+              Center(
+                child: Stack(
+                  children: [
+                    _showForm()
+                  ],
+                ),
+              ),
+              Center(
+                child: Text(
+                    'ไว้ทีหลัง'
+                ),
+              ),
+
+            ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
-        onPressed: () {},
-      ),
-      body: Stack(
-        children: [
-          _showForm(),
-        ],
-      ),
 
+      ),
     );
   }
 
@@ -163,7 +212,7 @@ class _MainPageState extends State<MainPage>{
                   }
 
                   return ListView.builder(
-                     shrinkWrap: true,
+                      shrinkWrap: true,
                       itemCount: sensorsVals.length,
                       itemBuilder: (context, index) {
                         return Column(
@@ -197,11 +246,10 @@ class _MainPageState extends State<MainPage>{
 
 
 
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
