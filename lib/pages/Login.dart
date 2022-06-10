@@ -399,7 +399,12 @@ class _LogIn extends State<LogIn> {
 
             icon: Image.asset('assets/images/google_icon.png'),
             iconSize: 60,
-            onPressed: () {},
+            onPressed: () async {
+              String? userId = await widget.auth.signInWithGoogle();
+              if(userId!.length > 0 && userId != null){
+                widget.loginCallback();
+              }
+            },
           ),
 
         ),

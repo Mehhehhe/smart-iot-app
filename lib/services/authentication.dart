@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class BaseAuth {
   Future<String?> signIn(String email, String password);
@@ -7,10 +8,15 @@ abstract class BaseAuth {
   Future<User?> getCurrentUser();
   Future<String?> getUserEmail();
   Future<void> signOut();
+
+  // Google methods
+  Future<String?> signInWithGoogle();
+  Future<void> signOutFromGoogle();
 }
 
 class Auth implements BaseAuth{
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
   Future<User?> getCurrentUser() async {
@@ -48,5 +54,30 @@ class Auth implements BaseAuth{
   Future<String?> getUserEmail() async {
     User? user = _firebaseAuth.currentUser;
     return user?.email;
+  }
+
+  @override
+  Future<String?> signInWithGoogle() async {
+    try{
+      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+      );
+      await _firebaseAuth.signInWithCredential(credential);
+
+      User? user = await getCurrentUser();
+      return user?.uid;
+    } on FirebaseAuthException catch(e){
+      print(e);
+      throw e;
+    }
+  }
+
+  @override
+  Future<void> signOutFromGoogle() async {
+    await _googleSignIn.signOut();
+    await _firebaseAuth.signOut();
   }
 }
