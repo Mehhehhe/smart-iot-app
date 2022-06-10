@@ -205,22 +205,26 @@ class _MainPageState extends State<MainPage>{
 
                   if (snapshot.connectionState == ConnectionState.none && snapshot.hasData == null) {
                     return Container();
+                  } else if(snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == null) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData != null) {
+                    final Map? dataMap = snapshot.data as Map?;
+                    DataPayload dataModel =  DataPayload.fromJson(dataMap!);
+                    //Map<String, dynamic> sensorsVals = dataTemp['sensors'];
+                    return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: dataModel.sensorList?.length,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: <Widget>[
+                              Text(dataModel.sensorList![index]+": "+dataModel.sensorValues?.values.elementAt(index).toString()??""),
+                            ],
+                          );
+                        }
+                    );
+                  } else {
+                    return CircularProgressIndicator();
                   }
-                  print(snapshot.data);
-                  final Map? dataMap = snapshot.data as Map?;
-                  DataPayload dataModel =  DataPayload.fromJson(dataMap!);
-                  //Map<String, dynamic> sensorsVals = dataTemp['sensors'];
-                  return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: dataModel.sensorValMap?.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: <Widget>[
-                            Text(dataModel.sensorValMap?.keys.elementAt(index)+": "+dataModel.sensorValMap?.values.elementAt(index).toString()??""),
-                          ],
-                        );
-                      }
-                  );
                 }
             ),
           ),

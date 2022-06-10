@@ -9,18 +9,33 @@ abstract class SmIOTDatabaseMethod{
 
 class DataPayload {
   String user;
-  Map<dynamic, dynamic>? sensorValMap;
+  final sensorList;
+  Map<dynamic, dynamic>? sensorStatus;
+  Map<dynamic, dynamic>? sensorValues;
 
-  DataPayload({required this.user, required this.sensorValMap});
+
+  DataPayload({
+    required this.user,
+    required this.sensorList,
+    required this.sensorStatus,
+    required this.sensorValues,
+  });
 
   //Method to create data model from json
   factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
-    return DataPayload(user: json['user'], sensorValMap: json['sensors']);
+    return DataPayload(
+        user: json['user'],
+        sensorValues: json['sensor_values'],
+        sensorList: json['sensor_list'],
+        sensorStatus: json['sensor_state']
+    );
   }
 
   Map<String, dynamic> toJson() => {
     'user': user,
-    'sensors': sensorValMap
+    'sensor_list':sensorList,
+    'sensor_state':sensorStatus,
+    'sensor_values': sensorValues,
   };
 }
 
@@ -41,8 +56,13 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     final event = await ref.child('$userId').once(DatabaseEventType.value);
 
     if (snapshot.exists) {
-      final Map? sensorsVals = event.snapshot.value as Map?;
-      DataPayload data = DataPayload(user: userId, sensorValMap: sensorsVals);
+      final Map? userSensorInfo = event.snapshot.value as Map?;
+
+      final sensorList = userSensorInfo?.values.elementAt(1);
+      final sensorState = userSensorInfo?.values.elementAt(0);
+      final sensorValues = userSensorInfo?.values.elementAt(2);
+
+      DataPayload data = DataPayload(user: userId, sensorList: sensorList, sensorStatus: sensorState,sensorValues: sensorValues);
       final json = jsonEncode(data.toJson());
       Map<String, dynamic> jsonDe = jsonDecode(json);
       return jsonDe;
