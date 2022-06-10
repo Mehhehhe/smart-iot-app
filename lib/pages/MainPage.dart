@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/pages/MangePage.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
@@ -19,6 +21,8 @@ class MainPage extends StatefulWidget{
 }
 
 class _MainPageState extends State<MainPage>{
+
+  bool value = true;
 
   final scaffKey = GlobalKey<ScaffoldState>();
 
@@ -62,7 +66,10 @@ class _MainPageState extends State<MainPage>{
           flexibleSpace: Container(
             decoration: BoxDecoration(
                 gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.pink],
+                    colors: [
+                      Color.fromRGBO(146, 222, 84, 1.0),
+                      Color.fromRGBO(54, 174, 185, 1.0),
+                    ],
                     begin: Alignment.bottomRight,
                     end: Alignment.topLeft
                 )
@@ -231,14 +238,24 @@ class _MainPageState extends State<MainPage>{
           ButtonBar(
             alignment: MainAxisAlignment.end,
             children: [
-              TextButton(
-                onPressed: () {},
-                child: Text('Manage'),
+              Container( margin: EdgeInsets.only(right: 160),
+                child: CupertinoSwitch(
+                  activeColor: Colors.greenAccent,
+                  value: value,
+                  onChanged: (value) => setState(() => this.value = value),
+                ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: Text('delete'),
+              Container(margin: EdgeInsets.only(right: 10),
+                child: TextButton(
+                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const Manage_Page()));
+                  },
+                  child: Text('Manage'),
+                ),
               ),
+
+
+
+
             ],
           )
         ],
