@@ -30,6 +30,8 @@ class _MainPageState extends State<MainPage>{
   late DataPayload dataModel;
   var _addCard = 0;
 
+  late List<bool> switchToggles = <bool>[];
+
   signOut() async {
     try{
       await widget.auth.signOut();
@@ -63,6 +65,11 @@ class _MainPageState extends State<MainPage>{
   }
 
   void setCardCount(int num) => _addCard = num;
+  void setBoolSwitches(int num) {
+    if (switchToggles.isEmpty) {
+      switchToggles = List.filled(num, true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +173,7 @@ class _MainPageState extends State<MainPage>{
                 final Map? dataMap = snapshot.data as Map?;
                 dataModel =  DataPayload.fromJson(dataMap??{});
                 setCardCount(dataModel.sensorList?.length);
-                print("Current card number: ${_addCard}");
+                setBoolSwitches(dataModel.sensorList?.length);
                 return ListView.builder(
                   shrinkWrap: true,
                   itemCount: _addCard,
@@ -213,28 +220,56 @@ class _MainPageState extends State<MainPage>{
           ),
           ButtonBar(
             alignment: MainAxisAlignment.end,
-            children: [
-              Container( margin: EdgeInsets.only(right: 160),
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(right: 160),
                 child: CupertinoSwitch(
                   activeColor: Colors.greenAccent,
-                  value: value,
+                  value: switchToggles[ind],
                   onChanged: (val){
-
                     setState((){
-                      value = val;
+                      switchToggles[ind] = val;
+                      print("${ind},${switchToggles[ind]}");
+
+                      if(switchToggles[ind]){
+                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "on";
+                      } else {
+                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "off";
+                      }
+                      SmIOTDatabase db = new SmIOTDatabase();
+                      db.sendData(widget.userId, dataModel.sensorStatus);
+                      print("Sent data!");
+                      print("${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
+
                     });
-                    if(value == true){
-                      dataModel.sensorStatus![dataModel.sensorList[ind]]= "on";
-                    } else {
-                      dataModel.sensorStatus![dataModel.sensorList[ind]]= "off";
-                    }
-                    SmIOTDatabase db = new SmIOTDatabase();
-                    db.sendData(widget.userId, dataModel.sensorStatus);
-                    print("Sent data!");
-                    value != value;
+
                   },
                 ),
               ),
+
+              /*
+              Container( margin: EdgeInsets.only(right: 160),
+                child: CupertinoSwitch(
+                  activeColor: Colors.greenAccent,
+                  value: switchToggles[ind],
+                  onChanged: (val){
+                    setState((){
+                      switchToggles[ind] = val;
+                      if(switchToggles[ind] == true){
+                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "on";
+                      } else {
+                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "off";
+                      }
+                      SmIOTDatabase db = new SmIOTDatabase();
+                      db.sendData(widget.userId, dataModel.sensorStatus);
+                      print("Sent data!");
+                      print("${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
+                    });
+
+                  },
+                ),
+
+              ),*/
               Container(margin: EdgeInsets.only(right: 10),
                 child: TextButton(
                   onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const Manage_Page()));
