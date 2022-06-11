@@ -73,9 +73,9 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   }
 
   @override
-  Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus) async {
+  Future<void> sendData(String? userId, Map<dynamic, dynamic>? sensorStatus) async {
     await ref.child('$userId').update({
-      "Sensor Status": sensorStatus
+      "sensorStatus": sensorStatus
     });
   }
 

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'dart:async';
@@ -26,7 +27,8 @@ class _MainPageState extends State<MainPage>{
 
   final scaffKey = GlobalKey<ScaffoldState>();
 
-  //late Map<String, dynamic> dataTemp;
+  late DataPayload dataModel;
+  var _addCard = 0;
 
   signOut() async {
     try{
@@ -44,6 +46,7 @@ class _MainPageState extends State<MainPage>{
     print("User Id: "+widget.userId);
     showEmail();
   }
+
   String login = '....';
   Future<void> showEmail() async{
     String? email = await widget.auth.getUserEmail();
@@ -52,7 +55,14 @@ class _MainPageState extends State<MainPage>{
     });
   }
 
+  Future<Map<String, dynamic>> getFutureData() async {
+    SmIOTDatabase db = new SmIOTDatabase();
+    Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
+    Map<String, dynamic> msg = await dataFuture;
+    return msg;
+  }
 
+  void setCardCount(int num) => _addCard = num;
 
   @override
   Widget build(BuildContext context) {
@@ -138,28 +148,6 @@ class _MainPageState extends State<MainPage>{
     );
   }
 
-  Future<Map<String, dynamic>> getFutureData() async {
-    SmIOTDatabase db = new SmIOTDatabase();
-    Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
-    Map<String, dynamic> msg = await dataFuture;
-    return msg;
-  }
-
-  /*Widget mainBody() {
-    return FutureBuilder<String?>(
-        future: getFutureData(),
-        builder: (context, snapshot){
-          if(snapshot.hasData){
-            return Container(
-              child: Text(snapshot.data.toString()),
-            );
-          }
-          return CircularProgressIndicator();
-        }
-
-    );
-
-  }*/
 
 
   Widget _showForm() {
@@ -167,20 +155,36 @@ class _MainPageState extends State<MainPage>{
       //padding: EdgeInsets.all(25.0),
       child: Form(
         child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              CardPreset(),
-              CardPreset(),
-              CardPreset(),
-            ],
+          child: FutureBuilder(
+            future: getFutureData(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.none && snapshot.hasData == null) {
+                return Container();
+              } else if(snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == null) {
+                return CircularProgressIndicator();
+              } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData != null) {
+                final Map? dataMap = snapshot.data as Map?;
+                dataModel =  DataPayload.fromJson(dataMap??{});
+                setCardCount(dataModel.sensorList?.length);
+                print("Current card number: ${_addCard}");
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _addCard,
+                  itemBuilder: (context, index) {
+                    return CardPreset(index);
+                  },
+                );
+              } else {
+                return CircularProgressIndicator();
+              }
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget CardPreset() {
+  Widget CardPreset(int ind) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 30,vertical: 15),
       shadowColor: Colors.black,
@@ -205,35 +209,7 @@ class _MainPageState extends State<MainPage>{
           ),
           Padding(
             padding: const EdgeInsets.all(10.0).copyWith(bottom: 0),
-            child: FutureBuilder(
-
-                future: getFutureData(),
-                builder: (context, snapshot){
-
-                  if (snapshot.connectionState == ConnectionState.none && snapshot.hasData == null) {
-                    return Container();
-                  } else if(snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == null) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData != null) {
-                    final Map? dataMap = snapshot.data as Map?;
-                    DataPayload dataModel =  DataPayload.fromJson(dataMap!);
-                    //Map<String, dynamic> sensorsVals = dataTemp['sensors'];
-                    return ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: dataModel.sensorList?.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: <Widget>[
-                              Text(dataModel.sensorList![index]+": "+dataModel.sensorValues?.values.elementAt(index).toString()??""),
-                            ],
-                          );
-                        }
-                    );
-                  } else {
-                    return CircularProgressIndicator();
-                  }
-                }
-            ),
+            child: Text("${dataModel.sensorList![ind]} : ${dataModel.sensorValues![dataModel.sensorList[ind]].toString()}"),
           ),
           ButtonBar(
             alignment: MainAxisAlignment.end,
@@ -242,7 +218,21 @@ class _MainPageState extends State<MainPage>{
                 child: CupertinoSwitch(
                   activeColor: Colors.greenAccent,
                   value: value,
-                  onChanged: (value) => setState(() => this.value = value),
+                  onChanged: (val){
+
+                    setState((){
+                      value = val;
+                    });
+                    if(value == true){
+                      dataModel.sensorStatus![dataModel.sensorList[ind]]= "on";
+                    } else {
+                      dataModel.sensorStatus![dataModel.sensorList[ind]]= "off";
+                    }
+                    SmIOTDatabase db = new SmIOTDatabase();
+                    db.sendData(widget.userId, dataModel.sensorStatus);
+                    print("Sent data!");
+                    value != value;
+                  },
                 ),
               ),
               Container(margin: EdgeInsets.only(right: 10),
@@ -252,24 +242,10 @@ class _MainPageState extends State<MainPage>{
                   child: Text('Manage'),
                 ),
               ),
-
-
-
-
             ],
           )
         ],
       ),
     );
   }
-
-
-
-
 }
-
-
-
-
-
-
