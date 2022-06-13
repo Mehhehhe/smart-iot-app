@@ -5,10 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
+import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class MainPage extends StatefulWidget{
   MainPage({Key? key, required this.auth, required this.logoutCallback, required this.userId}): super(key: key);
@@ -47,6 +49,7 @@ class _MainPageState extends State<MainPage>{
     super.initState();
     print("User Id: "+widget.userId);
     showEmail();
+    findDisplayName();
   }
 
   String login = '....';
@@ -54,6 +57,16 @@ class _MainPageState extends State<MainPage>{
     String? email = await widget.auth.getUserEmail();
     setState(() {
       login = email!;
+    });
+  }
+
+  String displayName ='...';
+
+  Future<void> findDisplayName() async{
+    await widget.auth.getCurrentUser().then((value) {
+      setState((){
+        displayName = value!.displayName!;
+      });
     });
   }
 
@@ -88,10 +101,7 @@ class _MainPageState extends State<MainPage>{
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        //backgroundColor: Color.fromRGBO(153, 252, 146, 1.0),
         appBar: AppBar(
-          //backgroundColor: Color.fromRGBO(150, 150, 150, 1.0),
-          //backgroundColor: Colors.orange,
           flexibleSpace: Container(
             decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -105,14 +115,15 @@ class _MainPageState extends State<MainPage>{
             ),
           ),
           elevation: 10,
-          title: Text("$login", style: TextStyle(
+          title: Text("$displayName", style: TextStyle(
             fontSize: 15,
           ),),
           titleSpacing: 0,
           leading: GestureDetector(
-            onTap: () {},
-            child: Icon(
-              Icons.account_circle,
+
+            child: IconButton(
+              icon: Icon(Icons.account_circle), // The "-" icon
+              onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Page(auth: widget.auth,)));},
             ),
 
           ),
@@ -149,13 +160,15 @@ class _MainPageState extends State<MainPage>{
               Center(
                 child: Stack(
                   children: [
-                    _showForm()
+                    _showForm(),
                   ],
                 ),
               ),
               Center(
-                child: Text(
-                    'ไว้ทีหลัง'
+                child: Stack(
+                  children: [
+                    ContactAdmin(),
+                  ],
                 ),
               ),
 
@@ -268,8 +281,7 @@ class _MainPageState extends State<MainPage>{
               ),
               Container(margin: EdgeInsets.only(right: 10),
                 child: TextButton(
-                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const Manage_Page()));
-                  },
+                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const Manage_Page()));},
                   child: Text('Manage'),
                 ),
               ),
@@ -279,4 +291,28 @@ class _MainPageState extends State<MainPage>{
       ),
     );
   }
+
+  Widget ContactAdmin(){
+      return Container(
+        padding: EdgeInsets.only(top: 10),
+        width: 300,
+        height: 200,
+        child: TextFormField(
+          obscureText: false,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor:
+            Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+            border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.transparent),
+                borderRadius: BorderRadius.circular(30)),
+
+            labelText: 'Details',
+          ),
+        ),
+      );
+  }
+
 }
