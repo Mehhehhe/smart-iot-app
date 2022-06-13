@@ -9,8 +9,9 @@ abstract class BaseAuth {
   Future<User?> getCurrentUser();
   Future<String?> getUserEmail();
   Future<void> signOut();
-  Future<void> EditDisplayName(Future<void> funtion, BuildContext context, String displayName);
-
+  Future<void> editDisplayName(String displayName);
+  FirebaseAuth returnInstance();
+  Future<String?> getDisplayName();
   // Google methods
   Future<String?> signInWithGoogle();
   Future<void> signOutFromGoogle();
@@ -84,14 +85,20 @@ class Auth implements BaseAuth{
   }
 
   @override
-  Future<void> EditDisplayName(Future<void> funtion, BuildContext context, String displayName) async{
-    _firebaseAuth.authStateChanges().listen((event) {
-      event?.updateDisplayName(displayName).then((value) {
-        funtion;
-        Navigator.pop(context);
-      });
-    });
+  Future<void> editDisplayName(String displayName) async{
+    User? user = _firebaseAuth.currentUser;
+    user?.updateDisplayName(displayName);
+    await user?.reload();
   }
 
+  @override
+  FirebaseAuth returnInstance() {
+    return _firebaseAuth;
+  }
 
+  @override
+  Future<String?> getDisplayName() async {
+    User? user = _firebaseAuth.currentUser;
+    return user?.displayName;
+  }
 }

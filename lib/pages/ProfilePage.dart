@@ -50,8 +50,6 @@ class _Profile_PageState extends State<Profile_Page> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -139,7 +137,7 @@ class _Profile_PageState extends State<Profile_Page> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20,horizontal: 70),
       child: ListTile(
-        title: Text('$displayName'),
+        title: Text(displayName),
         trailing: IconButton(
           icon: Icon(Icons.edit_outlined),
           onPressed: (){
@@ -166,11 +164,7 @@ class _Profile_PageState extends State<Profile_Page> {
       ),
       child: Container(
         padding: EdgeInsets.only(top: 21,left: 15),
-        child: Text(
-            '$login',
-
-
-        ),
+        child: Text(login),
       ),
     );
   }
@@ -258,8 +252,9 @@ class _Profile_PageState extends State<Profile_Page> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              TextButton(onPressed: () async {
-                widget.auth.EditDisplayName(findDisplayName(), context, displayName);
+              TextButton(onPressed: () {
+                widget.auth.editDisplayName(displayName);
+                Navigator.pop(context);
               }, child: Text('Edit')),
               TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel')),
             ],

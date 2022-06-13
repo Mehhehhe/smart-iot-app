@@ -115,7 +115,7 @@ class _MainPageState extends State<MainPage>{
             ),
           ),
           elevation: 10,
-          title: Text("$displayName", style: TextStyle(
+          title: Text(displayName, style: TextStyle(
             fontSize: 15,
           ),),
           titleSpacing: 0,
@@ -123,7 +123,17 @@ class _MainPageState extends State<MainPage>{
 
             child: IconButton(
               icon: Icon(Icons.account_circle), // The "-" icon
-              onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Page(auth: widget.auth,)));},
+              onPressed: () async {
+                final value = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Profile_Page(
+                          auth: widget.auth,
+                        )
+                    )
+                );
+                findDisplayName();
+                },
             ),
 
           ),
