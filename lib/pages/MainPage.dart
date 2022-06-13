@@ -71,6 +71,18 @@ class _MainPageState extends State<MainPage>{
     }
   }
 
+  void showTextDialog(String textToShow) {
+    showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(textToShow),
+          );
+        },
+      barrierDismissible: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -240,36 +252,13 @@ class _MainPageState extends State<MainPage>{
                       db.sendData(widget.userId, dataModel.sensorStatus);
                       print("Sent data!");
                       print("${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
+                      showTextDialog("Set ${dataModel.sensorList[ind]} to ${dataModel.sensorStatus![dataModel.sensorList[ind]]}");
 
                     });
 
                   },
                 ),
               ),
-
-              /*
-              Container( margin: EdgeInsets.only(right: 160),
-                child: CupertinoSwitch(
-                  activeColor: Colors.greenAccent,
-                  value: switchToggles[ind],
-                  onChanged: (val){
-                    setState((){
-                      switchToggles[ind] = val;
-                      if(switchToggles[ind] == true){
-                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "on";
-                      } else {
-                        dataModel.sensorStatus![dataModel.sensorList[ind]]= "off";
-                      }
-                      SmIOTDatabase db = new SmIOTDatabase();
-                      db.sendData(widget.userId, dataModel.sensorStatus);
-                      print("Sent data!");
-                      print("${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
-                    });
-
-                  },
-                ),
-
-              ),*/
               Container(margin: EdgeInsets.only(right: 10),
                 child: TextButton(
                   onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const Manage_Page()));
