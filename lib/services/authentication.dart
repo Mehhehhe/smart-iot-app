@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class BaseAuth {
@@ -8,6 +9,7 @@ abstract class BaseAuth {
   Future<User?> getCurrentUser();
   Future<String?> getUserEmail();
   Future<void> signOut();
+  Future<void> EditDisplayName(Future<void> funtion, BuildContext context, String displayName);
 
   // Google methods
   Future<String?> signInWithGoogle();
@@ -80,4 +82,16 @@ class Auth implements BaseAuth{
     await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
+
+  @override
+  Future<void> EditDisplayName(Future<void> funtion, BuildContext context, String displayName) async{
+    _firebaseAuth.authStateChanges().listen((event) {
+      event?.updateDisplayName(displayName).then((value) {
+        funtion;
+        Navigator.pop(context);
+      });
+    });
+  }
+
+
 }
