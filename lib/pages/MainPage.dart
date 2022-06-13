@@ -204,6 +204,13 @@ class _MainPageState extends State<MainPage>{
   }
 
   Widget CardPreset(int ind) {
+
+    if (dataModel.sensorStatus![dataModel.sensorList[ind]] == "on") {
+      switchToggles[ind] = true;
+    } else {
+      switchToggles[ind] = false;
+    }
+
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 30,vertical: 15),
       shadowColor: Colors.black,
