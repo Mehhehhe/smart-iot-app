@@ -16,6 +16,7 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
   bool _isObscure = true;
 
+  late String _username;
   late String _email;
   late String _password;
   late String _errMsg;
@@ -43,7 +44,7 @@ class _RegisterState extends State<Register> {
       String? userId = "";
       try {
         if (_isRegisForm) {
-          userId = await widget.auth.register(_email, _password);
+          userId = await widget.auth.register(_username, _email, _password);
         } else {
           print("Please register first");
         }
@@ -147,6 +148,7 @@ class _RegisterState extends State<Register> {
             children: <Widget>[
               //showTitle(),
               Texttitle(),
+              userNameBox(),
               EmailRegis(),
               PasswordRegis(),
               RegisButton(),
@@ -178,10 +180,31 @@ class _RegisterState extends State<Register> {
     );
   }
 
+  Widget userNameBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 30, right: 30, bottom: 10,top: 30),
+      child: TextFormField(
+        obscureText: false,
+        maxLines: 1,
+        keyboardType: TextInputType.name,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: Icon(Icons.account_circle),
+          border:
+          OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+          labelText: 'Username',
+        ),
+        validator: (value) =>
+        value!.isEmpty ? 'Please enter your username' : null,
+        onSaved: (value) => _username = value!.trim(),
+      ),
+    );
+  }
 
   Widget EmailRegis(){
     return Container(
-      margin: EdgeInsets.only(left: 30, top: 50, right: 30 ,bottom: 10),
+      margin: EdgeInsets.only(left: 30, right: 30 ,bottom: 10, top: 10),
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
@@ -192,7 +215,7 @@ class _RegisterState extends State<Register> {
           suffixIcon: Icon(Icons.account_circle),
           border:
           OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-          labelText: 'Username',
+          labelText: 'Email',
         ),
         validator: (value) =>
         value!.isEmpty ? 'Please enter your email' : null,

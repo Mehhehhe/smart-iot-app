@@ -52,6 +52,7 @@ class Auth implements BaseAuth{
     try{
       result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
       result.user?.updateDisplayName(username);
+      await result.user?.reload();
     }on FirebaseAuthException catch(e){
       _status = AuthExceptionHandler.handleAuthException(e);
       return _status;
