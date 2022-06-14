@@ -98,7 +98,9 @@ class _Profile_PageState extends State<Profile_Page> {
               showProfile(),
               TextUser(),
               Email(),
-              SignoutButton()
+              Forgotpassword(),
+              SignoutButton(),
+
             ],
           ),
         ),
@@ -174,7 +176,7 @@ class _Profile_PageState extends State<Profile_Page> {
 
   Widget SignoutButton(){
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 150),
+      padding: EdgeInsets.symmetric(vertical: 20),
       child: Container(
         width: 200,
         height: 50,
@@ -263,5 +265,104 @@ class _Profile_PageState extends State<Profile_Page> {
         )
       );
   }
+
+  Widget Forgotpassword() {
+    return Padding(
+      padding: EdgeInsets.only(top: 70),
+      child: Container(
+        width: 200,
+        height: 50,
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(220, 41, 104, 1.0),
+                Color.fromRGBO(255, 118, 196, 1.0),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(25.0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.pink.withOpacity(0.2),
+                spreadRadius: 4,
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              )
+            ]),
+        child: OutlinedButton(
+          style: ButtonStyle(
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0)),
+            ),
+          ),
+          onPressed: () {ForgotDialog();},
+          child: Text(
+            'Reset Password',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontFamily: "Roboto Slab",
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              letterSpacing: 0.0,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<Null> ForgotDialog() async {
+    showDialog(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: ListTile(
+            //leading:  Icon(Icons.account_box_outlined),
+            title: Text('Enter Email'),
+            subtitle: Text('Please enter your email to reset password'),
+          ),
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 280,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.account_circle),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                    ),
+                    //validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
+                    //onSaved: (value) => _email = value!.trim(),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 16,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      widget.auth.resetPassword(email: login);
+                      Navigator.pop(context);
+                    },
+                    child: Text('Submit')),
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel')),
+              ],
+            )
+          ],
+        ));
+  }
+
 }
 
