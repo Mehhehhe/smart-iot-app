@@ -2,7 +2,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
 abstract class SmIOTDatabaseMethod{
-  Future<void> addUser(String? userId);
   Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
 }
@@ -44,13 +43,6 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   final ref = FirebaseDatabase.instance.ref();
 
   @override
-  Future<void> addUser(String? userId) async {
-    await ref.child('$userId').set({
-      "userId": userId
-    });
-  }
-
-  @override
   Future<Map<String, dynamic>> getData(String userId) async {
     final snapshot = await ref.child('$userId').get();
     final event = await ref.child('$userId').once(DatabaseEventType.value);
@@ -68,6 +60,12 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       return jsonDe;
     } else {
       print("Data not exists");
+      return {
+        'user':userId,
+        'sensor_list':{0:""},
+        'sensor_state': {"":""},
+        'sensor_values': {"":""},
+      };
     }
     return {};
   }

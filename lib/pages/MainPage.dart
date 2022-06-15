@@ -206,6 +206,7 @@ class _MainPageState extends State<MainPage>{
                 return CircularProgressIndicator();
               } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData != null) {
                 final Map? dataMap = snapshot.data as Map?;
+                print(dataMap.toString());
                 dataModel =  DataPayload.fromJson(dataMap??{});
                 setCardCount(dataModel.sensorList?.length);
                 setBoolSwitches(dataModel.sensorList?.length);

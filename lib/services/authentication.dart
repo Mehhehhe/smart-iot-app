@@ -113,9 +113,12 @@ class Auth implements BaseAuth{
   @override
   Future<AuthStatus> resetPassword({required String email}) async {
     late var _status;
+
     await _firebaseAuth.sendPasswordResetEmail(email: email).then(
         (value) => _status = AuthStatus.successful).catchError(
             (e) => _status = AuthExceptionHandler.handleAuthException(e));
     return _status;
   }
+
+
 }

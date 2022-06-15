@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_iot_app/pages/MainPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 
 class Register extends StatefulWidget {
