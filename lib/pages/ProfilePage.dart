@@ -16,7 +16,7 @@ import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
 import 'package:firebase_core/firebase_core.dart';
-//import 'package:path/path.dart';
+import 'package:path/path.dart';
 
 class Profile_Page extends StatefulWidget {
   const Profile_Page({Key? key, required this.auth}) : super(key: key);
@@ -241,7 +241,7 @@ class _Profile_PageState extends State<Profile_Page> {
             ),
           ),
           onPressed: () {
-            uploadPic;
+            //uploadPic(this.context);
           },
           child: Text(
             'Submit',
@@ -310,7 +310,7 @@ class _Profile_PageState extends State<Profile_Page> {
   }
 
   Future<Null> editThread()async{
-      showDialog(context: , builder: (context) => SimpleDialog(
+      showDialog(context: this.context, builder: (context) => SimpleDialog(
           title: ListTile(
             leading:  Icon(Icons.account_box_outlined),
             title: Text('Edit Username'),
@@ -402,7 +402,7 @@ class _Profile_PageState extends State<Profile_Page> {
 
   Future<Null> ForgotDialog() async {
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) => SimpleDialog(
           title: ListTile(
             //leading:  Icon(Icons.account_box_outlined),
