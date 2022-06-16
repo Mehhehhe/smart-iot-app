@@ -115,7 +115,7 @@ class _Profile_PageState extends State<Profile_Page> {
               Email(),
               SubmitButton(),
               Forgotpassword(),
-              SignoutButton(),
+              //SignoutButton(),
 
             ],
           ),
@@ -241,7 +241,7 @@ class _Profile_PageState extends State<Profile_Page> {
             ),
           ),
           onPressed: () {
-            //uploadPic(this.context);
+            uploadPic(this.context);
           },
           child: Text(
             'Submit',
@@ -463,12 +463,15 @@ class _Profile_PageState extends State<Profile_Page> {
 
   Future uploadPic(BuildContext context )async{
 
+    Random random =Random();
+    int i = random.nextInt(1000000);
+
     if (image == null) return;
     final fileName = basename(image!.path);
-    final destination = 'files/$fileName';
+    final destination = 'Profile/$fileName';
 
     try {
-      final ref = FirebaseStorage.instance.ref(destination).child('Profile/UserProfilePicture');//.putFile(file).onComplete;
+      final ref = FirebaseStorage.instance.ref(destination).child('UserProfile$i');//.putFile(file).onComplete;
       await ref.putFile(image!);
     } catch (e) {
       print('error occured');
