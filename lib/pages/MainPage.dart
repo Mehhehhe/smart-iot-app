@@ -323,7 +323,7 @@ class _MainPageState extends State<MainPage> {
   Widget ContactAdmin() {
     return Container(
       padding: EdgeInsets.only(top: 10),
-      width: 350,
+      width: 349,
       height: 600,
       child: ListView(
         children: [
