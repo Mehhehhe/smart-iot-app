@@ -38,9 +38,14 @@ class _MainPageState extends State<MainPage> {
 
   bool value = true;
 
+  late bool _isLoading;
+  bool _isFeedbackForm = true;
+
   final scaffKey = GlobalKey<ScaffoldState>();
+  final _formkey = GlobalKey<FormState>();
 
   late DataPayload dataModel;
+  late String description;
   var _addCard = 0;
 
   late List<bool> switchToggles = <bool>[];
@@ -106,6 +111,38 @@ class _MainPageState extends State<MainPage> {
       },
       barrierDismissible: true,
     );
+  }
+
+  bool ValidateAndSave() {
+    final form = _formkey.currentState;
+    if (form!.validate()){
+      form.save();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> ValidateAndSubmit() async {
+    setState(() {
+      _isLoading = true;
+      _isFeedbackForm = true;
+    });
+
+    if (ValidateAndSave()){
+      SmIOTDatabase db = new SmIOTDatabase();
+      String category = "";
+      if (_hasBeenPressed1) category = "Bug";
+      if (_hasBeenPressed2) category = "Request";
+      if (_hasBeenPressed3) category = "Suggestion";
+      if (_hasBeenPressed4) category = "Others";
+
+      final reportMsg = {
+        "category":category,
+        "description":description,
+      };
+      String? response = await db.sendReport(widget.userId, reportMsg);
+      print(response);
+    }
   }
 
   @override
@@ -185,10 +222,9 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Center(
-                child: Stack(
-                  children: [
-                    ContactAdmin(),
-                  ],
+                child: Form(
+                  key: _formkey,
+                  child: ContactAdmin(),
                 ),
               ),
             ],
@@ -573,6 +609,8 @@ class _MainPageState extends State<MainPage> {
                   borderRadius: BorderRadius.circular(30)),
               labelText: 'Details',
             ),
+            validator: (value) => value!.isEmpty ? 'Please give us your feedback' : null,
+            onSaved: (value) => description = value!.trim(),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -621,6 +659,8 @@ class _MainPageState extends State<MainPage> {
                         _hasBeenPressed2 = true;
                         _hasBeenPressed3 = true;
                         _hasBeenPressed4 = true;
+
+
                       });
                     },
                     child: Text(
@@ -656,7 +696,10 @@ class _MainPageState extends State<MainPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: (){
+                      ValidateAndSubmit();
+                      Navigator.pop(context);
+                      },
                     child: Text('Close')),
               ],
             )
