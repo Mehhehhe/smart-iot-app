@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 
 abstract class ImageGetter {
-  Future<void> getImageFromStorage(String userID, String referPath);
+  Future<String> getImageFromStorage(String userID);
   Future<void> uploadPic(BuildContext context,File? image,String username);
 }
 
@@ -15,8 +15,22 @@ class ImageStorageManager implements ImageGetter {
   late var destinationOfProfileImage = 'Profile/';
 
   @override
-  Future<void> getImageFromStorage(String userID, String referPath) async {
-    throw Exception();
+  Future<String> getImageFromStorage(String userID) async {
+    print("Username : $userID");
+    var bytes = utf8.encode(userID);
+    var digest = sha256.convert(bytes);
+
+    destinationOfProfileImage += digest.toString();
+    print(destinationOfProfileImage);
+    try{
+      final ref = _firebaseStorage.ref(destinationOfProfileImage).child("UserProfile$digest");
+      var url = await ref.getDownloadURL();
+      print(url);
+      return url;
+    } catch (e) {
+      throw "Image not found!";
+    }
+
   }
 
   @override

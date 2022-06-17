@@ -22,8 +22,9 @@ class Profile_Page extends StatefulWidget {
 }
 
 class _Profile_PageState extends State<Profile_Page> {
+   Image? imageNet;
    File? image;
-
+   bool finishSetState = false;
 
   @override
   void initState(){
@@ -46,17 +47,20 @@ class _Profile_PageState extends State<Profile_Page> {
     await widget.auth.getCurrentUser().then((value) {
       setState((){
         displayName = value!.displayName!;
+        finishSetState = true;
+        setProfileFromFireStorage();
       });
     });
   }
 
+  Future<void> setProfileFromFireStorage() async {
+    ImageStorageManager img = ImageStorageManager();
+    String url = await img.getImageFromStorage(displayName);
 
-
-
-
-
-
-
+    setState(() {
+      imageNet = Image.network(url);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +141,7 @@ class _Profile_PageState extends State<Profile_Page> {
                       child: SizedBox(
                         width: 240,
                         height: 240,
-                        child: image != null ? Image.file(image!,fit: BoxFit.fill,) : Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
+                        child: imageNet != null ? imageNet : Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
                       ),
                     ),
                   ),
