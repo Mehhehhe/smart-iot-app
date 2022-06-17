@@ -1,22 +1,16 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smart_iot_app/pages/MangePage.dart';
-import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
-import 'package:smart_iot_app/services/database_op.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:path/path.dart';
+import 'package:smart_iot_app/services/image_op.dart';
 
 class Profile_Page extends StatefulWidget {
   const Profile_Page({Key? key, required this.auth}) : super(key: key);
@@ -241,7 +235,9 @@ class _Profile_PageState extends State<Profile_Page> {
             ),
           ),
           onPressed: () {
-            uploadPic(this.context);
+            //uploadPic(this.context);
+            ImageStorageManager img = new ImageStorageManager();
+            img.uploadPic(this.context, image, displayName);
           },
           child: Text(
             'Submit',
@@ -449,7 +445,6 @@ class _Profile_PageState extends State<Profile_Page> {
   }
 
   Future getImage () async{
-
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if(image == null) return;
@@ -458,24 +453,5 @@ class _Profile_PageState extends State<Profile_Page> {
     } on PlatformException catch(e) {
       print('Failed to pick image: $e');
     }
-  }
-
-
-  Future uploadPic(BuildContext context )async{
-
-    Random random =Random();
-    int i = random.nextInt(1000000);
-
-    if (image == null) return;
-    final fileName = basename(image!.path);
-    final destination = 'Profile/$fileName';
-
-    try {
-      final ref = FirebaseStorage.instance.ref(destination).child('UserProfile$i');//.putFile(file).onComplete;
-      await ref.putFile(image!);
-    } catch (e) {
-      print('error occured');
-    }
-
   }
 }
