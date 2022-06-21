@@ -1,9 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_iot_app/pages/ResetPassWordPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
-import 'package:smart_iot_app/pages/RegisterPage.dart';
 
 class ResetPassWord_Page extends StatefulWidget {
   const ResetPassWord_Page({Key? key, required this.auth}) : super(key: key);
@@ -19,9 +15,9 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
   final _formKey = GlobalKey<FormState>();
 
   Future<void> showEmail() async{
-    String? email = await widget.auth.getUserEmail();
+    String email = await widget.auth.getUserEmail()??"";
     setState(() {
-      login = email!;
+      login = email;
     });
   }
 
@@ -30,7 +26,7 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
   bool _isLoginForm = true;
   late bool _isLoading;
 
-  bool ValidateAndSave() {
+  bool validateAndSave() {
     final form = _formKey.currentState;
     if (form!.validate()) {
       form.save();
@@ -39,14 +35,13 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
     return false;
   }
 
-  Future<void> ValidateAndSubmit() async {
+  Future<void> validateAndSubmit() async {
     setState(() {
       _errorMsg = "";
       _isLoading = true;
       _isLoginForm = true;
     });
-    if (ValidateAndSave()) {
-      String? userId = "";
+    if (validateAndSave()) {
       try {
         setState(() {
           login = _email;
@@ -101,7 +96,7 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
     return Scaffold(
       //backgroundColor: Color.fromRGBO(146, 252, 232, 1.0),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               Color.fromRGBO(4, 97, 114, 1.0),
@@ -123,7 +118,7 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
 
   Widget _showForm() {
     return Container(
-      padding: EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(15.0),
       child: Form(
         key: _formKey,
         child: Center(
@@ -143,7 +138,7 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
 
 
   Widget showEmailInput() {
-    return Container(
+    return SizedBox(
       width: 300,
       height: 70,
       child: TextFormField(
@@ -152,10 +147,10 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.account_circle),
+          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: const Icon(Icons.account_circle),
           border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.transparent),
+              borderSide: const BorderSide(color: Colors.transparent),
               borderRadius: BorderRadius.circular(30)),
           labelText: 'Username',
         ),
@@ -168,11 +163,11 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
 
   Widget showLoginButton() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color.fromRGBO(73, 187, 167, 1.0),
               Color.fromRGBO(142, 238, 109, 1.0),
@@ -188,7 +183,7 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
               color: Colors.pink.withOpacity(0.2),
               spreadRadius: 4,
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             )
           ]),
       child: OutlinedButton(
@@ -198,11 +193,11 @@ class _ResetPassWord_PageState extends State<ResetPassWord_Page> {
           ),
         ),
         onPressed: (){
-          ValidateAndSubmit();
+          validateAndSubmit();
           widget.auth.resetPassword(email: _email);
           Navigator.pop(context);
         },
-        child: Text(
+        child: const Text(
           'Login',
           textAlign: TextAlign.left,
           style: TextStyle(
