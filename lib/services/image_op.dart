@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
@@ -16,16 +17,22 @@ class ImageStorageManager implements ImageGetter {
 
   @override
   Future<String> getImageFromStorage(String userID) async {
-    print("Username : $userID");
+    if (kDebugMode) {
+      print("Username : $userID");
+    }
     var bytes = utf8.encode(userID);
     var digest = sha256.convert(bytes);
 
     destinationOfProfileImage += digest.toString();
-    print(destinationOfProfileImage);
+    if (kDebugMode) {
+      print(destinationOfProfileImage);
+    }
     try{
       final ref = _firebaseStorage.ref(destinationOfProfileImage).child("UserProfile$digest");
       var url = await ref.getDownloadURL();
-      print(url);
+      if (kDebugMode) {
+        print(url);
+      }
       return url;
     } catch (e) {
       throw "Image not found!";
@@ -37,7 +44,9 @@ class ImageStorageManager implements ImageGetter {
   Future<void> uploadPic(BuildContext context,File? image ,String username) async {
     var bytes = utf8.encode(username);
     var digest = sha256.convert(bytes);
-    print(digest);
+    if (kDebugMode) {
+      print(digest);
+    }
 
     if (image == null) throw Exception("Image not found.");
     destinationOfProfileImage += digest.toString();

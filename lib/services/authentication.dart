@@ -11,9 +11,7 @@ abstract class BaseAuth {
   Future<void> signOut();
   Future<AuthStatus> resetPassword({required String email});
 
-
   Future<void> editDisplayName(String displayName);
-  FirebaseAuth returnInstance();
   Future<String?> getDisplayName();
 
   // Google methods
@@ -97,11 +95,6 @@ class Auth implements BaseAuth{
     User? user = _firebaseAuth.currentUser;
     user?.updateDisplayName(displayName);
     await user?.reload();
-  }
-
-  @override
-  FirebaseAuth returnInstance() {
-    return _firebaseAuth;
   }
 
   @override
