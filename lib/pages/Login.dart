@@ -1,12 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/ResetPassWordPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/RegisterPage.dart';
 
 class LogIn extends StatefulWidget {
-  const LogIn({required this.auth, required this.loginCallback});
+  const LogIn({Key? key, required this.auth, required this.loginCallback}) : super(key: key);
 
   final BaseAuth auth;
   final VoidCallback loginCallback;
@@ -26,7 +25,7 @@ class _LogIn extends State<LogIn> {
   bool _isLoginForm = true;
   late bool _isLoading;
 
-  bool ValidateAndSave() {
+  bool validateAndSave() {
     final form = _formKey.currentState;
     if (form!.validate()) {
       form.save();
@@ -35,24 +34,26 @@ class _LogIn extends State<LogIn> {
     return false;
   }
 
-  Future<void> ValidateAndSubmit() async {
+  Future<void> validateAndSubmit() async {
     setState(() {
       _errorMsg = "";
       _isLoading = true;
       _isLoginForm = true;
     });
-    if (ValidateAndSave()) {
+    if (validateAndSave()) {
       String? userId = "";
       try {
         if (_isLoginForm) {
           userId = await widget.auth.signIn(_email, _password);
         } else {
-          print("Please signing in");
+          if (kDebugMode) {
+            print("Please signing in");
+          }
         }
         setState(() {
           _isLoading = false;
         });
-        if (userId!.length > 0 && userId != null && _isLoginForm) {
+        if (userId!.isNotEmpty && _isLoginForm) {
           widget.loginCallback();
         }
       } catch (e) {
@@ -96,7 +97,7 @@ class _LogIn extends State<LogIn> {
     return Scaffold(
       //backgroundColor: Color.fromRGBO(146, 252, 232, 1.0),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               Color.fromRGBO(4, 97, 114, 1.0),
@@ -118,11 +119,11 @@ class _LogIn extends State<LogIn> {
 
   Widget _showCircularProgress() {
     if (_isLoading) {
-      return Center(
+      return const Center(
         child: CircularProgressIndicator(),
       );
     }
-    return Container(
+    return const SizedBox(
       height: 0.0,
       width: 0.0,
     );
@@ -130,7 +131,7 @@ class _LogIn extends State<LogIn> {
 
   Widget _showForm() {
     return Container(
-      padding: EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(15.0),
       child: Form(
         key: _formKey,
         child: Center(
@@ -143,7 +144,7 @@ class _LogIn extends State<LogIn> {
               showPasswordInput(),
               showLoginButton(),
               showRegisterButton(),
-              Forgotpassword(),
+              forgotPassword(),
               showOtherLogInOption(),
               showErrorMsg(),
             ],
@@ -157,7 +158,7 @@ class _LogIn extends State<LogIn> {
     if (_errorMsg.isNotEmpty) {
       return Text(
         _errorMsg,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18.0,
           color: Colors.red,
           height: 1.0,
@@ -172,7 +173,7 @@ class _LogIn extends State<LogIn> {
   }
 
   Widget showEmailInput() {
-    return Container(
+    return SizedBox(
       width: 300,
       height: 70,
       child: TextFormField(
@@ -181,10 +182,10 @@ class _LogIn extends State<LogIn> {
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.account_circle),
+          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: const Icon(Icons.account_circle),
           border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.transparent),
+              borderSide: const BorderSide(color: Colors.transparent),
               borderRadius: BorderRadius.circular(30)),
           labelText: 'Username',
         ),
@@ -195,7 +196,7 @@ class _LogIn extends State<LogIn> {
   }
 
   Widget showPasswordInput() {
-    return Container(
+    return SizedBox(
       width: 300,
       height: 80,
       child: TextFormField(
@@ -204,7 +205,7 @@ class _LogIn extends State<LogIn> {
         maxLines: 1,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
           suffixIcon: IconButton(
             icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
             onPressed: () {
@@ -226,11 +227,11 @@ class _LogIn extends State<LogIn> {
 
   Widget showLoginButton() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color.fromRGBO(73, 187, 167, 1.0),
               Color.fromRGBO(142, 238, 109, 1.0),
@@ -246,7 +247,7 @@ class _LogIn extends State<LogIn> {
               color: Colors.pink.withOpacity(0.2),
               spreadRadius: 4,
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             )
           ]),
       child: OutlinedButton(
@@ -255,8 +256,8 @@ class _LogIn extends State<LogIn> {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
           ),
         ),
-        onPressed: ValidateAndSubmit,
-        child: Text(
+        onPressed: validateAndSubmit,
+        child: const Text(
           'Login',
           textAlign: TextAlign.left,
           style: TextStyle(
@@ -276,7 +277,7 @@ class _LogIn extends State<LogIn> {
       width: 200,
       height: 50,
       decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color.fromRGBO(220, 157, 41, 1.0),
               Color.fromRGBO(255, 187, 118, 1.0),
@@ -292,7 +293,7 @@ class _LogIn extends State<LogIn> {
               color: Colors.pink.withOpacity(0.2),
               spreadRadius: 4,
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             )
           ]),
       child: OutlinedButton(
@@ -311,7 +312,7 @@ class _LogIn extends State<LogIn> {
                     )),
           );
         },
-        child: Text(
+        child: const Text(
           'Register',
           textAlign: TextAlign.left,
           style: TextStyle(
@@ -329,7 +330,7 @@ class _LogIn extends State<LogIn> {
   Widget showTitle() {
     return Container(
         padding: const EdgeInsets.all(20.0),
-        child: Text(
+        child: const Text(
           'SMART IOT APP',
           textAlign: TextAlign.left,
           style: TextStyle(
@@ -352,11 +353,11 @@ class _LogIn extends State<LogIn> {
 
   Widget showProfile() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 26, horizontal: 40),
+      margin: const EdgeInsets.symmetric(vertical: 26, horizontal: 40),
       width: 234,
       height: 280,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(154.5),
           topRight: Radius.circular(154.5),
           bottomLeft: Radius.circular(154.5),
@@ -367,10 +368,10 @@ class _LogIn extends State<LogIn> {
             color: Colors.pink.withOpacity(0.2),
             spreadRadius: 4,
             blurRadius: 10,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           )
         ],
-        image: DecorationImage(
+        image: const DecorationImage(
             image: AssetImage('assets/images/profile.png'),
             fit: BoxFit.fitWidth),
       ),
@@ -396,7 +397,7 @@ class _LogIn extends State<LogIn> {
             iconSize: 60,
             onPressed: () async {
               String? userId = await widget.auth.signInWithGoogle();
-              if (userId!.length > 0 && userId != null) {
+              if (userId!.isNotEmpty) {
                 widget.loginCallback();
               }
             },
@@ -406,7 +407,7 @@ class _LogIn extends State<LogIn> {
     );
   }
 
-  Widget Forgotpassword() {
+  Widget forgotPassword() {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 40,
@@ -417,7 +418,6 @@ class _LogIn extends State<LogIn> {
           textAlign: TextAlign.right,
         ),
         onPressed: () async{
-          //ForgotDialog();
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) =>  ResetPassWord_Page(auth: widget.auth)),
@@ -425,57 +425,5 @@ class _LogIn extends State<LogIn> {
         },
       ),
     );
-  }
-
-  Future<Null> ForgotDialog() async {
-    showDialog(
-        context: context,
-        builder: (context) => SimpleDialog(
-              title: ListTile(
-                //leading:  Icon(Icons.account_box_outlined),
-                title: Text('Enter Email'),
-                subtitle: Text('Please enter your email to reset password'),
-              ),
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 280,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          suffixIcon: Icon(Icons.account_circle),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                        ),
-                        validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
-                        onSaved: (value) => _email = value!.trim(),
-
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    TextButton(
-                        onPressed: () {
-
-
-
-                          widget.auth.resetPassword(email: _email);
-                          Navigator.pop(context);
-                        },
-                        child: Text('Submit')),
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text('Cancel')),
-                  ],
-                )
-              ],
-            ));
   }
 }
