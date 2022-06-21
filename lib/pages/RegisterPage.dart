@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 
@@ -23,7 +24,7 @@ class _RegisterState extends State<Register> {
   bool _isRegisForm = true;
   late bool _isLoading;
 
-  bool ValidateAndSave() {
+  bool validateAndSave() {
     final form = _formKey.currentState;
     if (form!.validate()) {
       form.save();
@@ -32,25 +33,27 @@ class _RegisterState extends State<Register> {
     return false;
   }
 
-  Future<void> ValidateAndSubmit() async {
+  Future<void> validateAndSubmit() async {
     setState(() {
       _errMsg = "";
       _isLoading = true;
       _isRegisForm = true;
     });
 
-    if (ValidateAndSave()) {
+    if (validateAndSave()) {
       String? userId = "";
       try {
         if (_isRegisForm) {
           userId = await widget.auth.register(_username, _email, _password);
         } else {
-          print("Please register first");
+          if (kDebugMode) {
+            print("Please register first");
+          }
         }
         setState(() {
           _isLoading = false;
         });
-        if (userId!.length > 0 && userId != null && _isRegisForm) {
+        if (userId!.isNotEmpty && _isRegisForm) {
           widget.loginCallback();
         }
         Navigator.pop(context);
@@ -85,7 +88,7 @@ class _RegisterState extends State<Register> {
           //_showCircularProgress(),
 
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color.fromRGBO(120, 220, 212, 1.0),
@@ -126,33 +129,30 @@ class _RegisterState extends State<Register> {
 
   Widget _showCircularProgress() {
     if (_isLoading) {
-      return Center(
+      return const Center(
         child: CircularProgressIndicator(),
       );
     }
-    return Container(
+    return const SizedBox(
       height: 0.0,
       width: 0.0,
     );
   }
 
   Widget _showForm() {
-    return Container(
-      //padding: EdgeInsets.all(15.0),
-      child: Form(
-        key: _formKey,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              //showTitle(),
-              Texttitle(),
-              userNameBox(),
-              EmailRegis(),
-              PasswordRegis(),
-              RegisButton(),
-            ],
-          ),
+    return Form(
+      key: _formKey,
+      child: Center(
+        child: ListView(
+          shrinkWrap: true,
+          children: <Widget>[
+            //showTitle(),
+            textTitle(),
+            userNameBox(),
+            emailRegis(),
+            passwordRegis(),
+            regisButton(),
+          ],
         ),
       ),
     );
@@ -160,10 +160,10 @@ class _RegisterState extends State<Register> {
 
 
 
-  Widget Texttitle(){
+  Widget textTitle(){
     return Container(
-        margin: EdgeInsets.only(left: 30, right: 30 ,bottom: 10),
-        child: Text(
+        margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 10),
+        child: const Text(
           'Sign up',
           textAlign: TextAlign.left,
           style: TextStyle(
@@ -181,15 +181,15 @@ class _RegisterState extends State<Register> {
 
   Widget userNameBox() {
     return Container(
-      margin: EdgeInsets.only(left: 30, right: 30, bottom: 10,top: 30),
+      margin: const EdgeInsets.only(left: 30, right: 30, bottom: 10,top: 30),
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
         keyboardType: TextInputType.name,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.account_circle),
+          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: const Icon(Icons.account_circle),
           border:
           OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
           labelText: 'Username',
@@ -201,17 +201,17 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  Widget EmailRegis(){
+  Widget emailRegis(){
     return Container(
-      margin: EdgeInsets.only(left: 30, right: 30 ,bottom: 10, top: 10),
+      margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 10, top: 10),
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: Icon(Icons.account_circle),
+          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          suffixIcon: const Icon(Icons.account_circle),
           border:
           OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
           labelText: 'Email',
@@ -224,10 +224,10 @@ class _RegisterState extends State<Register> {
   }
 
 
-  Widget PasswordRegis(){
+  Widget passwordRegis(){
     return Container(
       //margin: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
-        margin: EdgeInsets.only(left: 30, top: 10, right: 30 ,bottom: 10),
+        margin: const EdgeInsets.only(left: 30, top: 10, right: 30 ,bottom: 10),
       child: TextFormField(
         obscureText: _isObscure,
         //obscureText: true,
@@ -235,7 +235,7 @@ class _RegisterState extends State<Register> {
         decoration: InputDecoration(
           filled: true,
           fillColor:
-          Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+          const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
           suffixIcon: IconButton(
             icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
             onPressed: (){
@@ -257,13 +257,13 @@ class _RegisterState extends State<Register> {
   }
 
 
-  Widget RegisButton(){
+  Widget regisButton(){
     return Container(
-      margin: EdgeInsets.only(left: 160, top: 50, right: 30),
+      margin: const EdgeInsets.only(left: 160, top: 50, right: 30),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color.fromRGBO(73, 187, 167, 1.0),
               Color.fromRGBO(142, 238, 109, 1.0),
@@ -279,7 +279,7 @@ class _RegisterState extends State<Register> {
               color: Colors.pink.withOpacity(0.2),
               spreadRadius: 4,
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             )
           ]),
       child: OutlinedButton(
@@ -289,8 +289,8 @@ class _RegisterState extends State<Register> {
                 borderRadius: BorderRadius.circular(30.0)),
           ),
         ),
-        onPressed: ValidateAndSubmit,
-        child: Text(
+        onPressed: validateAndSubmit,
+        child: const Text(
           'Register',
           textAlign: TextAlign.left,
           style: TextStyle(
