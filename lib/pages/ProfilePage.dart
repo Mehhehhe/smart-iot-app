@@ -1,15 +1,12 @@
 import 'dart:io';
-import 'dart:math';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'package:smart_iot_app/services/authentication.dart';
-import 'package:path/path.dart';
 import 'package:smart_iot_app/services/image_op.dart';
 
 class Profile_Page extends StatefulWidget {
@@ -74,7 +71,7 @@ class _Profile_PageState extends State<Profile_Page> {
         ),
         body: Container(
 
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color.fromRGBO(12, 210, 193, 1.0),
@@ -99,7 +96,7 @@ class _Profile_PageState extends State<Profile_Page> {
 
   Widget _showForm() {
     return Container(
-      padding: EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(15.0),
       child: Form(
         //key: _formKey,
         child: Center(
@@ -108,13 +105,11 @@ class _Profile_PageState extends State<Profile_Page> {
             children: <Widget>[
 
               showProfile(),
-              AddPhoto(),
-              TextUser(),
-              Email(),
-              SubmitButton(),
-              Forgotpassword(),
-              //SignoutButton(),
-
+              addPhoto(),
+              textUser(),
+              email(),
+              submitButton(),
+              forgotPassword(),
             ],
           ),
         ),
@@ -124,58 +119,56 @@ class _Profile_PageState extends State<Profile_Page> {
 
   Widget showProfile() {
     return Builder(
-      builder: (context)=>Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(height: 20,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child:  CircleAvatar(
-                    radius: 130,
-                    backgroundColor: Colors.grey,
-                    child: ClipOval(
-                      child: SizedBox(
-                        width: 240,
-                        height: 240,
-                        child: imageNet != null ? imageNet : Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
-                      ),
+      builder: (context)=>Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child:  CircleAvatar(
+                  radius: 130,
+                  backgroundColor: Colors.grey,
+                  child: ClipOval(
+                    child: SizedBox(
+                      width: 240,
+                      height: 240,
+                      child: imageNet ?? Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
 
     );
   }
 
-  Widget AddPhoto(){
+  Widget addPhoto(){
     return Padding(
-  padding:EdgeInsets.only(left: 200),
+  padding:const EdgeInsets.only(left: 200),
   child: IconButton(
   onPressed: (){
     getImage();
     //widget.auth.getProfile();
   },
-  icon: Icon(Icons.add_a_photo,size: 30,),
+  icon: const Icon(Icons.add_a_photo,size: 30,),
   ),
   );
 }
 //icon: Image.asset('assets/images/profile.png'),
 
-  Widget TextUser(){
+  Widget textUser(){
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 20,horizontal: 70),
+      padding: const EdgeInsets.symmetric(vertical: 20,horizontal: 70),
       child: ListTile(
         title: Text(displayName),
         trailing: IconButton(
-          icon: Icon(Icons.edit_outlined),
+          icon: const Icon(Icons.edit_outlined),
           onPressed: (){
             editThread();
           },
@@ -184,35 +177,32 @@ class _Profile_PageState extends State<Profile_Page> {
     );
   }
 
-  Widget Email(){
+  Widget email(){
     return Container(
       width: 300,
       height: 60,
       decoration: BoxDecoration(
-        //filled: true,
-        //fillColor:
-        color: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-        //suffixIcon: Icon(Icons.account_circle),
+        color: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
           border: Border.all(
-            color: Color.fromRGBO(66, 66, 66, 0.6),
+            color: const Color.fromRGBO(66, 66, 66, 0.6),
           ),
           borderRadius: BorderRadius.circular(40)
       ),
       child: Container(
-        padding: EdgeInsets.only(top: 21,left: 15),
+        padding: const EdgeInsets.only(top: 21,left: 15),
         child: Text(login),
       ),
     );
   }
 
-  Widget SubmitButton(){
+  Widget submitButton(){
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 0),
+      padding: const EdgeInsets.symmetric(vertical: 0),
       child: Container(
         width: 200,
         height: 50,
         decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
                 Color.fromRGBO(220, 41, 104, 1.0),
                 Color.fromRGBO(255, 118, 196, 1.0),
@@ -228,7 +218,7 @@ class _Profile_PageState extends State<Profile_Page> {
                 color: Colors.pink.withOpacity(0.2),
                 spreadRadius: 4,
                 blurRadius: 10,
-                offset: Offset(0, 3),
+                offset: const Offset(0, 3),
               )
             ]),
         child: OutlinedButton(
@@ -240,10 +230,10 @@ class _Profile_PageState extends State<Profile_Page> {
           ),
           onPressed: () {
             //uploadPic(this.context);
-            ImageStorageManager img = new ImageStorageManager();
-            img.uploadPic(this.context, image, displayName);
+            ImageStorageManager img = ImageStorageManager();
+            img.uploadPic(context, image, displayName);
           },
-          child: Text(
+          child: const Text(
             'Submit',
             textAlign: TextAlign.left,
             style: TextStyle(
@@ -259,14 +249,14 @@ class _Profile_PageState extends State<Profile_Page> {
     );
   }
 
-  Widget SignoutButton(){
+  Widget signOutButton(){
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 0),
+      padding: const EdgeInsets.symmetric(vertical: 0),
       child: Container(
         width: 200,
         height: 50,
         decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
                 Color.fromRGBO(220, 41, 104, 1.0),
                 Color.fromRGBO(255, 118, 196, 1.0),
@@ -282,7 +272,7 @@ class _Profile_PageState extends State<Profile_Page> {
                 color: Colors.pink.withOpacity(0.2),
                 spreadRadius: 4,
                 blurRadius: 10,
-                offset: Offset(0, 3),
+                offset: const Offset(0, 3),
               )
             ]),
         child: OutlinedButton(
@@ -293,7 +283,7 @@ class _Profile_PageState extends State<Profile_Page> {
             ),
           ),
           onPressed: () {},
-          child: Text(
+          child: const Text(
             'Signout',
             textAlign: TextAlign.left,
             style: TextStyle(
@@ -310,8 +300,8 @@ class _Profile_PageState extends State<Profile_Page> {
   }
 
   Future<Null> editThread()async{
-      showDialog(context: this.context, builder: (context) => SimpleDialog(
-          title: ListTile(
+      showDialog(context: context, builder: (context) => SimpleDialog(
+          title: const ListTile(
             leading:  Icon(Icons.account_box_outlined),
             title: Text('Edit Username'),
             subtitle: Text('Please enter new Username'),
@@ -320,7 +310,7 @@ class _Profile_PageState extends State<Profile_Page> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 width: 200,
                 child: TextFormField(
                   onChanged: (value) => displayName = value.trim(),
@@ -334,15 +324,15 @@ class _Profile_PageState extends State<Profile_Page> {
               ),
             ],
           ),
-          SizedBox(height: 16,),
+          const SizedBox(height: 16,),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               TextButton(onPressed: () {
                 widget.auth.editDisplayName(displayName);
                 Navigator.pop(context);
-              }, child: Text('Edit')),
-              TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel')),
+              }, child: const Text('Edit')),
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             ],
           )
         ],
@@ -350,14 +340,14 @@ class _Profile_PageState extends State<Profile_Page> {
       );
   }
 
-  Widget Forgotpassword() {
+  Widget forgotPassword() {
     return Padding(
-      padding: EdgeInsets.only(top: 0),
+      padding: const EdgeInsets.only(top: 0),
       child: Container(
         width: 200,
         height: 50,
         decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
                 Color.fromRGBO(220, 41, 104, 1.0),
                 Color.fromRGBO(255, 118, 196, 1.0),
@@ -373,7 +363,7 @@ class _Profile_PageState extends State<Profile_Page> {
                 color: Colors.pink.withOpacity(0.2),
                 spreadRadius: 4,
                 blurRadius: 10,
-                offset: Offset(0, 3),
+                offset: const Offset(0, 3),
               )
             ]),
         child: OutlinedButton(
@@ -383,8 +373,8 @@ class _Profile_PageState extends State<Profile_Page> {
                   borderRadius: BorderRadius.circular(30.0)),
             ),
           ),
-          onPressed: () {ForgotDialog();},
-          child: Text(
+          onPressed: () {forgotDialog();},
+          child: const Text(
             'Reset Password',
             textAlign: TextAlign.left,
             style: TextStyle(
@@ -400,12 +390,11 @@ class _Profile_PageState extends State<Profile_Page> {
     );
   }
 
-  Future<Null> ForgotDialog() async {
+  Future<void> forgotDialog() async {
     showDialog(
-        context: this.context,
+        context: context,
         builder: (context) => SimpleDialog(
-          title: ListTile(
-            //leading:  Icon(Icons.account_box_outlined),
+          title: const ListTile(
             title: Text('Enter Email'),
             subtitle: Text('Please enter your email to reset password'),
           ),
@@ -413,11 +402,11 @@ class _Profile_PageState extends State<Profile_Page> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: 280,
                   child: TextFormField(
                     decoration: InputDecoration(
-                      suffixIcon: Icon(Icons.account_circle),
+                      suffixIcon: const Icon(Icons.account_circle),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20)),
                     ),
@@ -427,7 +416,7 @@ class _Profile_PageState extends State<Profile_Page> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
             Row(
@@ -438,10 +427,10 @@ class _Profile_PageState extends State<Profile_Page> {
                       widget.auth.resetPassword(email: login);
                       Navigator.pop(context);
                     },
-                    child: Text('Submit')),
+                    child: const Text('Submit')),
                 TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel')),
+                    child: const Text('Cancel')),
               ],
             )
           ],
@@ -455,7 +444,9 @@ class _Profile_PageState extends State<Profile_Page> {
       final imageTemp = File(image.path);
       setState(() => this.image = imageTemp);
     } on PlatformException catch(e) {
-      print('Failed to pick image: $e');
+      if (kDebugMode) {
+        print('Failed to pick image: $e');
+      }
     }
   }
 }
