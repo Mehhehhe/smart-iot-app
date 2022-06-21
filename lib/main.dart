@@ -15,7 +15,7 @@ void main() async {
     // If app just started...
     await Firebase.initializeApp(
       name: 'Smart IOT',
-      options: FirebaseOptions(
+      options: const FirebaseOptions(
           apiKey: "AIzaSyCB3LceCnDLpShGwKRSZ9NhW2Kg9txwv5U",
           appId: "1:774636778498:android:cab8029c00fecc576f231b",
           messagingSenderId: "774636778498",
@@ -23,10 +23,12 @@ void main() async {
       ),
     );
   }
-  runApp(new SmartIOTApp());
+  runApp(const SmartIOTApp());
 }
 
 class SmartIOTApp extends StatelessWidget{
+  const SmartIOTApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,7 +37,7 @@ class SmartIOTApp extends StatelessWidget{
       theme: ThemeData(
         primarySwatch: Colors.brown,
       ),
-      home: new RootPage(auth: new Auth()),
+      home: RootPage(auth: Auth()),
     );
   }
 }
