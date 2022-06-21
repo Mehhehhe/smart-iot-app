@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/Login.dart';
@@ -15,7 +14,7 @@ class RootPage extends StatefulWidget{
   RootPage({required this.auth});
   final BaseAuth auth;
   @override
-  State<StatefulWidget> createState() => new _RootPageState();
+  State<StatefulWidget> createState() => _RootPageState();
 }
 
 class _RootPageState extends State<RootPage>{
@@ -31,7 +30,9 @@ class _RootPageState extends State<RootPage>{
                 // Check if current user exists
                 if(user != null){
                   _userID = user.uid;
-                  print(_userID);
+                  if (kDebugMode) {
+                    print(_userID);
+                  }
                 }
                 // If current user.uid is null then status is not logged in
                 // Otherwise, status is logged in
@@ -64,7 +65,7 @@ class _RootPageState extends State<RootPage>{
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
-        child: CircularProgressIndicator(),
+        child: const CircularProgressIndicator(),
       ),
     );
   }
@@ -82,18 +83,15 @@ class _RootPageState extends State<RootPage>{
         );
         break;
       case AuthStatus.LOGGED_IN:
-        if(_userID.length > 0 && _userID != null){
+        if(_userID.isNotEmpty){
           return MainPage(
             userId: _userID,
             auth: widget.auth,
             logoutCallback: logoutCallback,
           );
-          print("RETURN MAIN PAGE!");
-          return buildingWaitingScreen();
         }else{
           return buildingWaitingScreen();
         }
-        break;
       default:
         return buildingWaitingScreen();
     }

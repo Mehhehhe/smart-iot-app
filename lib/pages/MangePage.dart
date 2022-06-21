@@ -10,7 +10,7 @@ class Manage_Page extends StatefulWidget {
 
 class _Manage_PageState extends State<Manage_Page> {
 
-  bool sensorvalue = true;
+  bool sensorValue = true;
 
   final scaffKey = GlobalKey<ScaffoldState>();
 
@@ -23,7 +23,7 @@ class _Manage_PageState extends State<Manage_Page> {
         elevation: 0.0,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               Color.fromRGBO(195, 255, 232, 1.0),
@@ -47,29 +47,26 @@ class _Manage_PageState extends State<Manage_Page> {
   }
 
   Widget _showForm() {
-    return Container(
-      //padding: EdgeInsets.all(15.0),
-      child: Form(
-        //key: _formKey,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
+    return Form(
+      //key: _formKey,
+      child: Center(
+        child: ListView(
+          shrinkWrap: true,
+          children: <Widget>[
 
-              DeviceName(),
-              DeviceImage(),
-              MangeSensor()
-            ],
-          ),
+            deviceName(),
+            deviceImage(),
+            mangeSensor()
+          ],
         ),
       ),
     );
   }
 
-  Widget DeviceName(){
+  Widget deviceName(){
     return Container(
-      margin: EdgeInsets.only(left: 30, right: 30 ,bottom: 10),
-      child: Text(
+      margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 10),
+      child: const Text(
         'Device 1 : เครื่องผลิตอัลปาก้า',
         textAlign: TextAlign.left,
         style: TextStyle(
@@ -85,9 +82,9 @@ class _Manage_PageState extends State<Manage_Page> {
     );
   }
 
-  Widget DeviceImage() {
+  Widget deviceImage() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 30,vertical: 15),
+      margin: const EdgeInsets.symmetric(horizontal: 30,vertical: 15),
       shadowColor: Colors.black,
       elevation: 15,
       shape: RoundedRectangleBorder(
@@ -98,13 +95,13 @@ class _Manage_PageState extends State<Manage_Page> {
           Stack(
             children: [
               Ink.image(
-                image: NetworkImage(
+                image: const NetworkImage(
                     'https://cdn-icons-png.flaticon.com/512/6080/6080697.png'),
+                height: 240,
+                fit: BoxFit.contain,
                 child: InkWell(
                   onTap: () {},
                 ),
-                height: 240,
-                fit: BoxFit.contain,
               ),
             ],
           ),
@@ -113,12 +110,12 @@ class _Manage_PageState extends State<Manage_Page> {
     );
   }
 
-  Widget MangeSensor() {
+  Widget mangeSensor() {
     return Stack(
       children: [
         Container(
-          margin: EdgeInsets.only(left: 40,top: 10,bottom: 15),
-            child: Text('Sensor ตรวจจับที่ 1',
+          margin: const EdgeInsets.only(left: 40,top: 10,bottom: 15),
+            child: const Text('Sensor ตรวจจับที่ 1',
               style: TextStyle(
               color: Color.fromRGBO(0, 0, 0, 1.0),
               fontFamily: 'Roboto Slab',
@@ -129,9 +126,9 @@ class _Manage_PageState extends State<Manage_Page> {
               height: 1,
             ),)),
         Container(
-          margin: EdgeInsets.only(top: 20,),
+          margin: const EdgeInsets.only(top: 20,),
           child: Card(
-          margin: EdgeInsets.only(left: 30,right: 150 ,top: 10),
+          margin: const EdgeInsets.only(left: 30,right: 150 ,top: 10),
           shadowColor: Colors.black,
           elevation: 15,
           shape: RoundedRectangleBorder(
@@ -142,14 +139,14 @@ class _Manage_PageState extends State<Manage_Page> {
               Stack(
                 children: [
                   Ink.image(
-                    image: NetworkImage(
+                    image: const NetworkImage(
                         'https://th.mouser.com/images/marketingid/2012/img/103485542_Omron_D6T-Series-MEMS-Thermal-Sensors.png?v=031122.0515'),
-                    child: InkWell(
-                      onTap: () {},
-                    ),
                     height: 100,
                     width: 120,
                     fit: BoxFit.contain,
+                    child: InkWell(
+                      onTap: () {},
+                    ),
                   ),
                 ],
               ),
@@ -158,15 +155,15 @@ class _Manage_PageState extends State<Manage_Page> {
       ),
         ),
         Container(
-          margin: EdgeInsets.only(left: 170,top: 30),
+          margin: const EdgeInsets.only(left: 170,top: 30),
           child: CupertinoSwitch(
             activeColor: Colors.blue,
-            value: sensorvalue,
-            onChanged: (value) => setState(() => this.sensorvalue = value),
+            value: sensorValue,
+            onChanged: (value) => setState(() => sensorValue = value),
           ),
         ),
         Container(
-          margin: EdgeInsets.only(left: 175,top: 80),
+          margin: const EdgeInsets.only(left: 175,top: 80),
           width: 80,
           height: 50,
           child: TextFormField(
@@ -174,7 +171,7 @@ class _Manage_PageState extends State<Manage_Page> {
             decoration: InputDecoration(
               filled: true,
               fillColor:
-              Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+              const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -183,7 +180,7 @@ class _Manage_PageState extends State<Manage_Page> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(left: 265,top: 80),
+          margin: const EdgeInsets.only(left: 265,top: 80),
           width: 80,
           height: 50,
           child: TextFormField(
@@ -191,7 +188,7 @@ class _Manage_PageState extends State<Manage_Page> {
             decoration: InputDecoration(
               filled: true,
               fillColor:
-              Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+              const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

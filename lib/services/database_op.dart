@@ -1,6 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 abstract class SmIOTDatabaseMethod{
   Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
@@ -64,8 +66,8 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
 
   @override
   Future<Map<String, dynamic>> getData(String userId) async {
-    final snapshot = await ref.child('$userId').get();
-    final event = await ref.child('$userId').once(DatabaseEventType.value);
+    final snapshot = await ref.child(userId).get();
+    final event = await ref.child(userId).once(DatabaseEventType.value);
     DataPayload data;
 
     if (snapshot.exists) {
@@ -97,7 +99,9 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       Map<String, dynamic> jsonDe = jsonDecode(json);
       return jsonDe;
     } else {
-      print("Data not exists");
+      if (kDebugMode) {
+        print("Data not exists");
+      }
       return {
         'user':userId,
         'sensor_list':{0:"Sensor not found"},
