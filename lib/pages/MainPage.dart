@@ -1,19 +1,15 @@
-import 'dart:math';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class MainPage extends StatefulWidget {
-  MainPage(
+  const MainPage(
       {Key? key,
       required this.auth,
       required this.logoutCallback,
@@ -25,29 +21,30 @@ class MainPage extends StatefulWidget {
   final String userId;
 
   @override
-  State<StatefulWidget> createState() => new _MainPageState();
+  State<StatefulWidget> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+  // boolean for checking button in contact page
   bool _hasBeenPressed1 = true;
   bool _hasBeenPressed2 = true;
   bool _hasBeenPressed3 = true;
   bool _hasBeenPressed4 = true;
-
   int check = 0;
 
-  bool value = true;
-
+  // using for checking state when press submit
   late bool _isLoading;
   bool _isFeedbackForm = true;
 
-  final scaffKey = GlobalKey<ScaffoldState>();
-  final _formkey = GlobalKey<FormState>();
+  // using to check state and save value
+  final _formKey = GlobalKey<FormState>();
 
+  // data model for reporting
   late DataPayload dataModel;
   late String description;
+  // number to generate a card for each user's sensor
   var _addCard = 0;
-
+  // Store boolean of sensor status state ("on"=true, "off"=false)
   late List<bool> switchToggles = <bool>[];
 
   signOut() async {
@@ -55,14 +52,18 @@ class _MainPageState extends State<MainPage> {
       await widget.auth.signOut();
       widget.logoutCallback();
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    print("User Id: " + widget.userId);
+    if (kDebugMode) {
+      print("User Id: ${widget.userId}");
+    }
     showEmail();
     findDisplayName();
   }
@@ -87,7 +88,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<Map<String, dynamic>> getFutureData() async {
-    SmIOTDatabase db = new SmIOTDatabase();
+    SmIOTDatabase db = SmIOTDatabase();
     Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataFuture;
     return msg;
@@ -113,8 +114,8 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  bool ValidateAndSave() {
-    final form = _formkey.currentState;
+  bool validateAndSave() {
+    final form = _formKey.currentState;
     if (form!.validate()){
       form.save();
       return true;
@@ -122,14 +123,14 @@ class _MainPageState extends State<MainPage> {
     return false;
   }
 
-  Future<void> ValidateAndSubmit() async {
+  Future<void> validateAndSubmit() async {
     setState(() {
       _isLoading = true;
       _isFeedbackForm = true;
     });
 
-    if (ValidateAndSave()){
-      SmIOTDatabase db = new SmIOTDatabase();
+    if (validateAndSave()){
+      SmIOTDatabase db = SmIOTDatabase();
       String category = "";
       if (_hasBeenPressed1) category = "Bug";
       if (_hasBeenPressed2) category = "Request";
@@ -152,7 +153,7 @@ class _MainPageState extends State<MainPage> {
       child: Scaffold(
         appBar: AppBar(
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
                 gradient: LinearGradient(colors: [
               Color.fromRGBO(146, 222, 84, 1.0),
               Color.fromRGBO(54, 174, 185, 1.0),
@@ -161,14 +162,14 @@ class _MainPageState extends State<MainPage> {
           elevation: 10,
           title: Text(
             displayName,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 15,
             ),
           ),
           titleSpacing: 0,
           leading: GestureDetector(
             child: IconButton(
-              icon: Icon(Icons.account_circle), // The "-" icon
+              icon: const Icon(Icons.account_circle), // The "-" icon
               onPressed: () async {
                 final value = await Navigator.push(
                     context,
@@ -180,7 +181,7 @@ class _MainPageState extends State<MainPage> {
               },
             ),
           ),
-          bottom: TabBar(
+          bottom: const TabBar(
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             tabs: [
@@ -196,13 +197,13 @@ class _MainPageState extends State<MainPage> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.logout), // The "-" icon
+              icon: const Icon(Icons.logout), // The "-" icon
               onPressed: signOut, // The `_decrementCounter` function
             ),
           ],
         ),
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color.fromRGBO(12, 210, 193, 1.0),
@@ -223,8 +224,8 @@ class _MainPageState extends State<MainPage> {
               ),
               Center(
                 child: Form(
-                  key: _formkey,
-                  child: ContactAdmin(),
+                  key: _formKey,
+                  child: contactAdmin(),
                 ),
               ),
             ],
@@ -235,44 +236,42 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _showForm() {
-    return Container(
-      //padding: EdgeInsets.all(25.0),
-      child: Form(
-        child: Center(
-          child: FutureBuilder(
-            future: getFutureData(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.none &&
-                  snapshot.hasData == null) {
-                return Container();
-              } else if (snapshot.connectionState == ConnectionState.waiting &&
-                  snapshot.hasData == null) {
-                return CircularProgressIndicator();
-              } else if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.hasData != null) {
-                final Map? dataMap = snapshot.data as Map?;
+    return Form(
+      child: Center(
+        child: FutureBuilder(
+          future: getFutureData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.none &&
+                snapshot.hasData == null) {
+              return Container();
+            } else if (snapshot.connectionState == ConnectionState.waiting &&
+                snapshot.hasData == null) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.connectionState == ConnectionState.done) {
+              final Map? dataMap = snapshot.data as Map?;
+              if (kDebugMode) {
                 print(dataMap.toString());
-                dataModel = DataPayload.fromJson(dataMap ?? {});
-                setCardCount(dataModel.sensorList?.length);
-                setBoolSwitches(dataModel.sensorList?.length);
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _addCard,
-                  itemBuilder: (context, index) {
-                    return CardPreset(index);
-                  },
-                );
-              } else {
-                return CircularProgressIndicator();
               }
-            },
-          ),
+              dataModel = DataPayload.fromJson(dataMap ?? {});
+              setCardCount(dataModel.sensorList?.length);
+              setBoolSwitches(dataModel.sensorList?.length);
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: _addCard,
+                itemBuilder: (context, index) {
+                  return cardPreset(index);
+                },
+              );
+            } else {
+              return const CircularProgressIndicator();
+            }
+          },
         ),
       ),
     );
   }
 
-  Widget CardPreset(int ind) {
+  Widget cardPreset(int ind) {
     if (dataModel.sensorStatus![dataModel.sensorList[ind]] == "on") {
       switchToggles[ind] = true;
     } else {
@@ -280,7 +279,7 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       shadowColor: Colors.black,
       elevation: 15,
       shape: RoundedRectangleBorder(
@@ -291,13 +290,13 @@ class _MainPageState extends State<MainPage> {
           Stack(
             children: [
               Ink.image(
-                image: NetworkImage(
+                image: const NetworkImage(
                     'https://cdn-icons-png.flaticon.com/512/6080/6080697.png'),
+                height: 240,
+                fit: BoxFit.contain,
                 child: InkWell(
                   onTap: () {},
                 ),
-                height: 240,
-                fit: BoxFit.contain,
               ),
             ],
           ),
@@ -310,14 +309,16 @@ class _MainPageState extends State<MainPage> {
             alignment: MainAxisAlignment.end,
             children: <Widget>[
               Container(
-                margin: EdgeInsets.only(right: 160),
+                margin: const EdgeInsets.only(right: 160),
                 child: CupertinoSwitch(
                   activeColor: Colors.greenAccent,
                   value: switchToggles[ind],
                   onChanged: (val) {
                     setState(() {
                       switchToggles[ind] = val;
-                      print("${ind},${switchToggles[ind]}");
+                      if (kDebugMode) {
+                        print("$ind,${switchToggles[ind]}");
+                      }
 
                       if (switchToggles[ind]) {
                         dataModel.sensorStatus![dataModel.sensorList[ind]] =
@@ -326,11 +327,13 @@ class _MainPageState extends State<MainPage> {
                         dataModel.sensorStatus![dataModel.sensorList[ind]] =
                             "off";
                       }
-                      SmIOTDatabase db = new SmIOTDatabase();
+                      SmIOTDatabase db = SmIOTDatabase();
                       db.sendData(widget.userId, dataModel.sensorStatus);
-                      print("Sent data!");
-                      print(
-                          "${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
+                      if (kDebugMode) {
+                        print("Sent data!");
+                        print(
+                            "${dataModel.sensorStatus} , ${dataModel.sensorList[ind]}");
+                      }
                       showTextDialog(
                           "Set ${dataModel.sensorList[ind]} to ${dataModel.sensorStatus![dataModel.sensorList[ind]]}");
                     });
@@ -338,7 +341,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(right: 10),
+                margin: const EdgeInsets.only(right: 10),
                 child: TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -346,7 +349,7 @@ class _MainPageState extends State<MainPage> {
                         MaterialPageRoute(
                             builder: (context) => const Manage_Page()));
                   },
-                  child: Text('Manage'),
+                  child: const Text('Manage'),
                 ),
               ),
             ],
@@ -356,9 +359,9 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget ContactAdmin() {
+  Widget contactAdmin() {
     return Container(
-      padding: EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 10),
       width: 349,
       height: 600,
       child: ListView(
@@ -367,7 +370,7 @@ class _MainPageState extends State<MainPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 30),
+                padding: const EdgeInsets.only(top: 30),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -375,12 +378,12 @@ class _MainPageState extends State<MainPage> {
                       gradient: LinearGradient(
                         colors: _hasBeenPressed1
                             ? [
-                                Color.fromRGBO(197, 132, 78, 1.0),
-                                Color.fromRGBO(225, 217, 57, 1.0),
+                                const Color.fromRGBO(197, 132, 78, 1.0),
+                                const Color.fromRGBO(225, 217, 57, 1.0),
                               ]
                             : [
-                                Color.fromRGBO(246, 138, 208, 1.0),
-                                Color.fromRGBO(189, 98, 199, 1.0),
+                                const Color.fromRGBO(246, 138, 208, 1.0),
+                                const Color.fromRGBO(189, 98, 199, 1.0),
                               ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
@@ -393,7 +396,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -408,7 +411,7 @@ class _MainPageState extends State<MainPage> {
                         _hasBeenPressed1 = !_hasBeenPressed1;
                       });
                     },
-                    child: Text(
+                    child: const Text(
                       'Bug',
                       textAlign: TextAlign.left,
                       style: TextStyle(
@@ -423,7 +426,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 20,top: 30),
+                padding: const EdgeInsets.only(left: 20,top: 30),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -431,12 +434,12 @@ class _MainPageState extends State<MainPage> {
                       gradient: LinearGradient(
                         colors: _hasBeenPressed2
                             ? [
-                                Color.fromRGBO(197, 132, 78, 1.0),
-                                Color.fromRGBO(225, 217, 57, 1.0),
+                                const Color.fromRGBO(197, 132, 78, 1.0),
+                                const Color.fromRGBO(225, 217, 57, 1.0),
                               ]
                             : [
-                                Color.fromRGBO(246, 138, 208, 1.0),
-                                Color.fromRGBO(189, 98, 199, 1.0),
+                                const Color.fromRGBO(246, 138, 208, 1.0),
+                                const Color.fromRGBO(189, 98, 199, 1.0),
                               ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
@@ -449,7 +452,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -464,7 +467,7 @@ class _MainPageState extends State<MainPage> {
                         _hasBeenPressed2 = !_hasBeenPressed2;
                       });
                     },
-                    child: Text(
+                    child: const Text(
                       'Request',
                       textAlign: TextAlign.left,
                       style: TextStyle(
@@ -484,7 +487,7 @@ class _MainPageState extends State<MainPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 30,bottom: 70),
+                padding: const EdgeInsets.only(top: 30,bottom: 70),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -492,12 +495,12 @@ class _MainPageState extends State<MainPage> {
                       gradient: LinearGradient(
                         colors: _hasBeenPressed3
                             ? [
-                                Color.fromRGBO(197, 132, 78, 1.0),
-                                Color.fromRGBO(225, 217, 57, 1.0),
+                                const Color.fromRGBO(197, 132, 78, 1.0),
+                                const Color.fromRGBO(225, 217, 57, 1.0),
                               ]
                             : [
-                                Color.fromRGBO(246, 138, 208, 1.0),
-                                Color.fromRGBO(189, 98, 199, 1.0),
+                                const Color.fromRGBO(246, 138, 208, 1.0),
+                                const Color.fromRGBO(189, 98, 199, 1.0),
                               ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
@@ -510,7 +513,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -525,7 +528,7 @@ class _MainPageState extends State<MainPage> {
                         _hasBeenPressed3 = !_hasBeenPressed3;
                       });
                     },
-                    child: Text(
+                    child: const Text(
                       'Suggestion',
                       textAlign: TextAlign.left,
                       style: TextStyle(
@@ -540,7 +543,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 20,top: 30,bottom: 70),
+                padding: const EdgeInsets.only(left: 20,top: 30,bottom: 70),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -548,12 +551,12 @@ class _MainPageState extends State<MainPage> {
                       gradient: LinearGradient(
                         colors: _hasBeenPressed4
                             ? [
-                                Color.fromRGBO(197, 132, 78, 1.0),
-                                Color.fromRGBO(225, 217, 57, 1.0),
+                                const Color.fromRGBO(197, 132, 78, 1.0),
+                                const Color.fromRGBO(225, 217, 57, 1.0),
                               ]
                             : [
-                                Color.fromRGBO(246, 138, 208, 1.0),
-                                Color.fromRGBO(189, 98, 199, 1.0),
+                                const Color.fromRGBO(246, 138, 208, 1.0),
+                                const Color.fromRGBO(189, 98, 199, 1.0),
                               ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
@@ -566,7 +569,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0,3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -581,7 +584,7 @@ class _MainPageState extends State<MainPage> {
                         _hasBeenPressed4 = !_hasBeenPressed4;
                       });
                     },
-                    child: Text(
+                    child: const Text(
                       'Others',
                       textAlign: TextAlign.left,
                       style: TextStyle(
@@ -603,9 +606,9 @@ class _MainPageState extends State<MainPage> {
             keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+              fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
               border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
+                  borderSide: const BorderSide(color: Colors.transparent),
                   borderRadius: BorderRadius.circular(30)),
               labelText: 'Details',
             ),
@@ -616,12 +619,12 @@ class _MainPageState extends State<MainPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 100),
+                padding: const EdgeInsets.symmetric(vertical: 100),
                 child: Container(
                   width: 200,
                   height: 50,
                   decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
                           Color.fromRGBO(220, 41, 104, 1.0),
                           Color.fromRGBO(255, 118, 196, 1.0),
@@ -637,7 +640,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -653,7 +656,7 @@ class _MainPageState extends State<MainPage> {
                         check = _hasBeenPressed2 == false ? check+1 : check+0;
                         check = _hasBeenPressed3 == false ? check+1 : check+0;
                         check = _hasBeenPressed4 == false ? check+1 : check+0;
-                        check == 1 ? ContactMessage() : ContactMessageError();
+                        check == 1 ? contactMessage() : contactMessageError();
                         check=0;
                         _hasBeenPressed1 = true;
                         _hasBeenPressed2 = true;
@@ -663,7 +666,7 @@ class _MainPageState extends State<MainPage> {
 
                       });
                     },
-                    child: Text(
+                    child: const Text(
                       'Submit',
                       textAlign: TextAlign.left,
                       style: TextStyle(
@@ -684,11 +687,11 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Future<Null> ContactMessage() async {
+  Future<void> contactMessage() async {
     showDialog(
-        context: this.context,
+        context: context,
         builder: (context) => SimpleDialog(
-        title: ListTile(
+        title: const ListTile(
             title: Center(child: Text('Rquest Sent')),
           ),
           children: [
@@ -697,20 +700,20 @@ class _MainPageState extends State<MainPage> {
               children: [
                 TextButton(
                     onPressed: (){
-                      ValidateAndSubmit();
+                      validateAndSubmit();
                       Navigator.pop(context);
                       },
-                    child: Text('Close')),
+                    child: const Text('Close')),
               ],
             )
           ],
         ));
   }
-  Future<Null> ContactMessageError() async {
+  Future<void> contactMessageError() async {
     showDialog(
-        context: this.context,
+        context: context,
         builder: (context) => SimpleDialog(
-          title: ListTile(
+          title: const ListTile(
             title: Center(child: Text('Prees select Only one per Submit')),
           ),
           children: [
@@ -719,7 +722,7 @@ class _MainPageState extends State<MainPage> {
               children: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Close')),
+                    child: const Text('Close')),
               ],
             )
           ],
