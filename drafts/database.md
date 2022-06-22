@@ -1,4 +1,4 @@
-## Draft 2
+## Draft 2 Fixed
 
 This is the second draft of data in both sending and storing.
 
@@ -11,8 +11,8 @@ This is the second draft of data in both sending and storing.
     "approved" : "",
     "userDevice" : {
         "device1" : {
-            "userSensor":"sensor data block"[description](#structure-of-sensor-data-block),
-            "actuator" : "actuator data block"[description](#actuator-data-block),
+            "userSensor":"sensor data block",
+            "actuator" : "actuator data block",
         },
         "device2" : {
             ...
@@ -25,35 +25,42 @@ This is the second draft of data in both sending and storing.
 }
 ```
 
+- userSensor [description](#structure-of-sensor-data-block)
+- actuator [description](#actuator-data-block)
+
 ### Data Description
 
-**userId** : type String, contains user ID
+**userId** : _type String_, contains user ID
 
-**role** : type String, contains user's role (impact with permission)
+**role** : _type String_, contains user's role (impact with permission)
 
-**approved** : type bool, contains true or false. This determines if created user is approved by admin or not.
+**approved** : _type bool_, contains true or false. This determines if created user is approved by admin or not.
 
-**userDevice** : type Map, contains device's name as key and its sensor data block as value. This can be a list if user had more than 1 device.
+**userDevice** : _type Map_, contains device's name as key and its sensor data block as value. This can be a list if user had more than 1 device.
 
-**userSensor** : type Map, contains user's sensor data block. This can be a list if user had more than 1 sensor in this device.
+**userSensor** : _type Map_, contains user's sensor data block. This can be a list if user had more than 1 sensor in this device.
 
-**actuator** : type Map, containes user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
+**actuator** : _type Map_, containes user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
 
-**encryption** : type String, contains type of encryption which used for encrypt sensitive data.
+**encryption** : _type String_, contains type of encryption which used for encrypt sensitive data.
 
 ### Structure of sensor data block
 
-**sensorName** : type String, contains the name of the sensor.
+**sensorName** : _type String_, contains the name of the sensor.
 
-**sensorType** : type String, contains the type of the sensor.
+**sensorType** : _type String_, contains the type of the sensor.
 
-**sensorStatus** : type bool, contains the status "on" or "off" of this sensor. This value is change by actuator.
+**sensorStatus** : _type bool_, contains the status "on" or "off" of this sensor. This value is change by actuator.
 
-**sensorValue** : type Map, contains map of timestamp as a key and (flag, message, value) as a value
+**sensorValue** : _type Map_, contains map of timestamp as a key and (flag, message, value) as a value
 
-**sensorThresh** : type String, contains dynamic value such as int, float or others. This is a ceil that if the value reach, it will warn to do something.
+- _flag_, type String, contains values error, warning or just value
+- _message_, type String, contains message from server. May be status, error, warning or others
+- _value_, type dynamic, contains value of sensor. It can be int, float, or others. This is nullable if errors are found.
 
-**sensorTiming** : type String, contains value for set timing of sensor (Manual, auto or custom time)
+**sensorThresh** : _type String_, contains dynamic value such as int, float or others. This is a ceil that if the value reach, it will warn to do something.
+
+**sensorTiming** : _type String_, contains value for set timing of sensor (Manual, auto or custom time)
 
 ```json
 {
@@ -79,13 +86,13 @@ Flag tells the user if sensor is working fine or something is wrong.
 
 ### Actuator data block
 
-**actuatorID** : type Map<int, String>. Array of actuator ID.
+**actuatorID** : _type Map<int, String>_. Array of actuator ID.
 
-**type** : type Map<String, String>, contains actuator ID as key and its type as value.
+**type** : _type Map<String, String>_, contains actuator ID as key and its type as value.
 
-**state** : type Map<String, dynamic>, contains actuator ID as key and its current state as value. Tells user if actuator is working fine or not.
+**state** : _type Map<String, dynamic>_, contains actuator ID as key and its current state as value. Tells user if actuator is working fine or not.
 
-**value** : type Map<String, dynamic>, contains actuator ID as key and its actuator value as value. Tells user the current value of actuator. User can change this value to set the sensor.
+**value** : _type Map<String, dynamic>_, contains actuator ID as key and its actuator value as value. Tells user the current value of actuator. User can change this value to set the sensor.
 
 ```json
 {
