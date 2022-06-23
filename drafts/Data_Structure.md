@@ -1,6 +1,7 @@
-## Draft 2 Fixed
+## Draft 3
 
-This is the second draft of data in both sending and storing.
+This is the third draft of data in both sending and storing.
+This draft is already tested.
 
 ### Data Payload
 
@@ -36,11 +37,11 @@ This is the second draft of data in both sending and storing.
 
 **approved** : _type bool_, contains true or false. This determines if created user is approved by admin or not.
 
-**userDevice** : _type Map_, contains device's name as key and its sensor data block as value. This can be a list if user had more than 1 device.
+**userDevice** : _type Map<String, dynamic>_, contains device's name as key and its sensor data block as value. This can be a list if user had more than 1 device.
 
-**userSensor** : _type Map_, contains user's sensor data block. This can be a list if user had more than 1 sensor in this device.
+**userSensor** : _type Map<dynamic, dynamic>_, contains user's sensor data block. This can be a list if user had more than 1 sensor in this device.
 
-**actuator** : _type Map_, containes user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
+**actuator** : _type Map<dynamic, dynamic>_, containes user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
 
 **encryption** : _type String_, contains type of encryption which used for encrypt sensitive data.
 
@@ -52,7 +53,7 @@ This is the second draft of data in both sending and storing.
 
 **sensorStatus** : _type bool_, contains the status "on" or "off" of this sensor. This value is change by actuator.
 
-**sensorValue** : _type Map_, contains map of timestamp as a key and (flag, message, value) as a value
+**sensorValue** : _type Map<dynamic, dynamic>_, contains map of timestamp as a key and (flag, message, value) as a value
 
 - _flag_, type String, contains values error, warning or just value
 - _message_, type String, contains message from server. May be status, error, warning or others
@@ -86,7 +87,7 @@ Flag tells the user if sensor is working fine or something is wrong.
 
 ### Actuator data block
 
-**actuatorID** : _type Map<int, String>_. Array of actuator ID.
+**actuatorID** : _type Map<String, String>_. Array of actuator ID.
 
 **type** : _type Map<String, String>_, contains actuator ID as key and its type as value.
 
@@ -110,6 +111,18 @@ Flag tells the user if sensor is working fine or something is wrong.
     }
 }
 ```
+
+### Function
+
+In every class object, this method is implemented.
+
+```
+Map<String, dynamic> toJson() => {'key':value};
+```
+
+Usage: for converting into Map then encode into Json
+
+In the future implementation, we will encode json object with base64 or others.
 
 ### Additional Function
 
