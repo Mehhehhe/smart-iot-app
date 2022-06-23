@@ -73,9 +73,14 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     if (snapshot.exists) {
       final Map? userSensorInfo = event.snapshot.value as Map?;
 
-      final sensorList = userSensorInfo?.values.elementAt(1);
-      final sensorState = userSensorInfo?.values.elementAt(0);
-      final sensorValues = userSensorInfo?.values.elementAt(2);
+      final sensorList = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorList").value;
+      final sensorState = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorStatus").value;
+      final sensorValues = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorVals").value;
+      
+      if (kDebugMode) {
+        print(userSensorInfo?.entries.firstWhere((element) => element.key == "sensorStatus").value);
+        print(userSensorInfo?.values.elementAt(0));
+      }
       
       if (userSensorInfo!.containsKey("reportMsg")) {
         final reportMsg = userSensorInfo.values.elementAt(3);
