@@ -77,13 +77,8 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       final sensorState = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorStatus").value;
       final sensorValues = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorVals").value;
       
-      if (kDebugMode) {
-        print(userSensorInfo?.entries.firstWhere((element) => element.key == "sensorStatus").value);
-        print(userSensorInfo?.values.elementAt(0));
-      }
-      
       if (userSensorInfo!.containsKey("reportMsg")) {
-        final reportMsg = userSensorInfo.values.elementAt(3);
+        final reportMsg = userSensorInfo.entries.firstWhere((element) => element.key == "reportMsg").value;
         data = DataPayload(
             user: userId,
             sensorList: sensorList,
