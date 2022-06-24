@@ -1,7 +1,7 @@
-## Draft 3
+## Draft 4
 
-This is the third draft of data in both sending and storing.
-This draft is already tested.
+This is the fourth draft of data in both sending and storing.
+Constructors will be added later.
 
 ### Data Payload
 
@@ -41,43 +41,59 @@ This draft is already tested.
 
 **userSensor** : _type Map<dynamic, dynamic>_, contains user's sensor data block. This can be a list if user had more than 1 sensor in this device.
 
-**actuator** : _type Map<dynamic, dynamic>_, containes user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
+**actuator** : _type Map<dynamic, dynamic>_, contains user's actuator data block. This can be a list if user had more than 1 actuator to control the sensor.
 
 **encryption** : _type String_, contains type of encryption which used for encrypt sensitive data.
 
 ### Structure of sensor data block
 
-**sensorName** : _type String_, contains the name of the sensor.
+**sensorName** : _type dynamic_, contains the list of the sensor name. Integer is the key and sensor name as a value.
 
-**sensorType** : _type String_, contains the type of the sensor.
+**sensorType** : _type Map<String, String>_, contains the list of sensor type. Sensor name is a key and sensor as a value.
 
-**sensorStatus** : _type bool_, contains the status "on" or "off" of this sensor. This value is change by actuator.
+**sensorStatus** : _type Map<String, bool>_, contains the status "on" or "off" of this sensor. This value is change by actuator. Key: sensor name, Value: bool
 
-**sensorValue** : _type Map<dynamic, dynamic>_, contains map of timestamp as a key and (flag, message, value) as a value
+**sensorValue** : _type Map<dynamic, dynamic>_, contains nested map of sensor name as a key and timestamp with values of (flag, message, value) as a value
 
 - _flag_, type String, contains values error, warning or just value
 - _message_, type String, contains message from server. May be status, error, warning or others
 - _value_, type dynamic, contains value of sensor. It can be int, float, or others. This is nullable if errors are found.
 
-**sensorThresh** : _type String_, contains dynamic value such as int, float or others. This is a ceil that if the value reach, it will warn to do something.
+**sensorThresh** : _type Map<String, dynamic>_, contains dynamic value such as int, float or others. This is a ceil that if the value reach, it will warn to do something. Key: sensor name, Value: int, float or others.
 
-**sensorTiming** : _type String_, contains value for set timing of sensor (Manual, auto or custom time)
+**sensorTiming** : _type String_, contains value for set timing of sensor (Manual, auto or custom time). Key: sensor name, Value: String
+
+**calibrateValue** : _type Map<String, dynamic>_, contains sensor name as a key and double as a value. This value is increase or decrease the sensor value.
 
 ```json
 {
-    "sensorName": "Name of the sensor",
-    "sensorType": "Type of sensor",
-    "sensorStatus" : "Is sensor on or off?",
+    "sensorName": {
+        "index":"Name of the sensor"
+        },
+    "sensorType": {
+        "sensorName":"Type of sensor"
+        },
+    "sensorStatus" : {
+        "sensorName":"Is sensor on or off?"
+        },
     "sensorValue" : {
-        "time stamp" : {
+        "sensorName" : {
+            "time stamp" : {
             "flag" : "type of message: error(danger), warning or just value",
             "message" : "Message tells status or receive value",
             "value" : "sensor value. Is null if flag is error."
-        },
+            },
+        }
     },
-    "sensorThresh" : "Threshold value for working sensor, if more than exact value, do something",
-    "sensorTiming" : "Set sensor timing to be manual, auto or custom time.",
-    "calibrateValue" : "Increase or decrease sensor value  by this value.",
+    "sensorThresh" : {
+        "sensorName":"Threshold value for working sensor, if more than exact value, do something"
+        },
+    "sensorTiming" : {
+        "sensorName":"Set sensor timing to be manual, auto or custom time."
+        },
+    "calibrateValue" : {
+        "sensorName":"Increase or decrease sensor value  by this value."
+        },
 }
 ```
 
@@ -122,8 +138,21 @@ Map<String, dynamic> toJson() => {'key':value};
 
 Usage: for converting into Map then encode into Json
 
-In the future implementation, we will encode json object with base64 or others.
-
+**DataPayload Functions**
+```
+Map<String, dynamic>? loadUserDevices();
+MapEntry<String, dynamic>? displayDevice(String devicename);
+DataPayload encode(DataPayload payload, String encryption);
+DataPayload decode(DataPayload payload);
+Map<String, dynamic> toJson()=>{};
+factory DataPayload.fromJson(Map<String, dynamic> json){}
+```
+- **loadUserDevices** : return userDevice as Map<String, dynamic> and throw error if userDevice is null.
+- **displayDevice** : return a target device as MapEntry and throw error if device is not found.
+- **encode** : return encoded DataPayload with input encryption type (only at some sensitive data) and throw error if encryption is not supported.
+- **decode** : return decoded DataPayload and throw error if unsupported encryption type or unable to decode.
+- **toJson** : return Map of current object.
+- **fromJson** : Map a json value into the model.
 ### Additional Function
 
 If detects suspicious high value, discards it.

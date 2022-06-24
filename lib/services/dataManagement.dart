@@ -10,7 +10,7 @@ abstract class SmIOTDatabaseMethod{
   Future<String> sendReport(String? userId, Map<String, dynamic> reportMsg);
 }
 
-class DataPayload{
+class DataPayload {
   late String userId;
   late String role;
   late bool approved;
@@ -18,16 +18,15 @@ class DataPayload{
   Map<dynamic, dynamic>? widgetList;
   late String encryption;
 
-  DataPayload({
-    required this.userId,
-    required this.role,
-    required this.approved,
-    this.userDevice,
-    this.widgetList,
-    required this.encryption
-  });
+  DataPayload(
+      {required this.userId,
+        required this.role,
+        required this.approved,
+        this.userDevice,
+        this.widgetList,
+        required this.encryption});
 
-  DataPayload.createEmpty(){
+  DataPayload.createEmpty() {
     userId = "";
     role = "Unknown";
     approved = false;
@@ -37,15 +36,19 @@ class DataPayload{
   }
 
   Map<String, dynamic>? loadUserDevices() {
-    if (userDevice == null) throw "[ERROR] Devices are not loaded. There were no devices";
+    if (userDevice == null) {
+      throw "[ERROR] Devices are not loaded. There were no devices";
+    }
+
     return userDevice;
   }
 
-  MapEntry<String, dynamic>? displayDevice (String deviceName) {
+  MapEntry<String, dynamic>? displayDevice(String deviceName) {
     final devices = loadUserDevices();
     final MapEntry<String, dynamic>? targetDevice;
-    try{
-      targetDevice = devices?.entries.firstWhere((element) => element.key == deviceName);
+    try {
+      targetDevice =
+          devices?.entries.firstWhere((element) => element.key == deviceName);
     } catch (e) {
       throw "[ERROR] Searched and found 0 device";
     }
@@ -53,14 +56,16 @@ class DataPayload{
   }
 
   DataPayload encode(DataPayload payload, String encryption) {
-    switch(encryption) {
+    switch (encryption) {
       case "base64":
         payload.userId = base64.encode(utf8.encode(payload.userId));
-        print(payload.userId);
+        //print(payload.userId);
 
-        payload.widgetList?.forEach((key, value) {
-          payload.widgetList?[key] = base64.encode(utf8.encode(value));
-        },);
+        payload.widgetList?.forEach(
+              (key, value) {
+            payload.widgetList?[key] = base64.encode(utf8.encode(value));
+          },
+        );
 
         break;
       default:
@@ -76,19 +81,36 @@ class DataPayload{
 
         payload.userDevice?.forEach(
               (key, value) {
-            if(payload.userDevice?[key]["userSensor"] != null){
-              Map? sensorValue = payload.userDevice?[key]["userSensor"]["sensorValue"];
-              for(dynamic i in sensorValue!.keys) {
-                sensorValue[i] = utf8.decode(base64.decode(sensorValue[i]));
+            if (payload.userDevice?[key]["userSensor"] != null) {
+              Map? sensorList =
+              payload.userDevice?[key]["userSensor"]["sensorName"];
+              for (int i = 0; i < sensorList!.length; i++) {
+                for (dynamic name in payload
+                    .userDevice?[key]["userSensor"]["sensorValue"]
+                [sensorList[i.toString()]]
+                    .keys) {
+                  for (dynamic att in payload
+                      .userDevice?[key]["userSensor"]["sensorValue"]
+                  [sensorList[i.toString()]][name]
+                      .keys) {
+                    payload.userDevice?[key]["userSensor"]["sensorValue"]
+                    [sensorList[i.toString()]][name][att] =
+                        utf8.decode(base64.decode(payload.userDevice?[key]
+                        ["userSensor"]["sensorValue"]
+                        [sensorList[i.toString()]][name][att]));
+                  }
+                }
               }
             }
-            if(payload.userDevice?[key]["actuator"] != null){
-              Map? actuatorValue = payload.userDevice?[key]["actuator"]["value"];
-              for(dynamic i in actuatorValue!.keys){
+            if (payload.userDevice?[key]["actuator"] != null) {
+              Map? actuatorValue =
+              payload.userDevice?[key]["actuator"]["value"];
+              for (dynamic i in actuatorValue!.keys) {
                 actuatorValue[i] = utf8.decode(base64.decode(actuatorValue[i]));
               }
             }
-          },);
+          },
+        );
 
         payload.widgetList?.forEach(
               (key, value) {
@@ -104,12 +126,12 @@ class DataPayload{
   }
 
   Map<String, dynamic> toJson() => {
-    'userId':userId,
-    'role':role,
-    'approved':approved,
-    'userDevice':userDevice,
-    'widgetList':widgetList,
-    'encryption':encryption,
+    'userId': userId,
+    'role': role,
+    'approved': approved,
+    'userDevice': userDevice,
+    'widgetList': widgetList,
+    'encryption': encryption,
   };
 
   factory DataPayload.fromJson(Map<String, dynamic> json) {
@@ -127,61 +149,64 @@ class DeviceBlock {
   SensorDataBlock? userSensor;
   ActuatorDataBlock? actuator;
 
-  DeviceBlock(
-      this.userSensor,
-      this.actuator
-      );
+  DeviceBlock(this.userSensor, this.actuator);
 
-  DeviceBlock.createEncryptedModel(SensorDataBlock us, ActuatorDataBlock act){
+  DeviceBlock.createEncryptedModel(SensorDataBlock us, ActuatorDataBlock act) {
+    print("\n..Filling sensor and actuator into block..\n");
     userSensor = SensorDataBlock.createEncryptedModel(us);
     actuator = ActuatorDataBlock.createEncryptedModel(act);
+    print(
+        "[Process{DeviceModel}] \tCreated device block with size ${this.toJson().length} B");
   }
 
-  Map<String, dynamic> toJson() => {
-    'userSensor':userSensor?.toJson(),
-    'actuator':actuator?.toJson()
-  };
+  Map<String, dynamic> toJson() =>
+      {'userSensor': userSensor?.toJson(), 'actuator': actuator?.toJson()};
 }
 
 class SensorDataBlock {
-  String? sensorName;
-  String? sensorType;
-  bool? sensorStatus;
-  Map<dynamic, dynamic>? sensorValue;
-  String? sensorThresh;
-  String? sensorTiming;
+  dynamic sensorName;
+  Map<String, String>? sensorType;
+  Map<String, bool>? sensorStatus;
+  Map<String, dynamic>? sensorValue;
+  Map<String, dynamic>? sensorThresh;
+  Map<String, dynamic>? sensorTiming;
+  Map<String, dynamic>? calibrateValue;
 
-  SensorDataBlock(this.sensorName, this.sensorType, this.sensorStatus, this.sensorValue, this.sensorThresh, this.sensorTiming);
+  SensorDataBlock(this.sensorName, this.sensorType, this.sensorStatus,
+      this.sensorValue, this.sensorThresh, this.sensorTiming, this.calibrateValue);
 
-  SensorDataBlock.createEncryptedModel(SensorDataBlock? sensor){
+  SensorDataBlock.createEncryptedModel(SensorDataBlock? sensor) {
     sensorName = sensor?.sensorName;
     sensorType = sensor?.sensorType;
     sensorStatus = sensor?.sensorStatus;
     sensorValue = sensor?.sensorValue;
     sensorThresh = sensor?.sensorThresh;
     sensorTiming = sensor?.sensorTiming;
+    calibrateValue = sensor?.calibrateValue;
 
-    for(dynamic type in sensorValue!.keys) {
-      print("$type, ${type.runtimeType}");
-      sensorValue![type.toString()] = base64.encode(utf8.encode(sensorValue![type.toString()].toString()));
+    for (int i = 0; i < sensorName?.length; i++) {
+      for (dynamic name in sensorValue![sensorName[i.toString()]].keys) {
+        for (dynamic att in sensorValue![sensorName[i.toString()]][name].keys) {
+          sensorValue![sensorName[i.toString()]][name][att] = base64.encode(
+              utf8.encode(sensorValue![sensorName[i.toString()]][name][att]
+                  .toString()));
+        }
+      }
     }
-    SensorDataBlock(
-        sensorName,
-        sensorType,
-        sensorStatus,
-        sensorValue,
-        sensorThresh,
-        sensorTiming
-    );
+    SensorDataBlock(sensorName, sensorType, sensorStatus, sensorValue,
+        sensorThresh, sensorTiming, calibrateValue);
+    print(
+        "[Process{SensorModel}] \tCreated sensor block with size ${this.toJson().length} B");
   }
 
   Map<String, dynamic> toJson() => {
-    'sensorName':sensorName,
-    'sensorType':sensorType,
+    'sensorName': sensorName,
+    'sensorType': sensorType,
     'sensorStatus': sensorStatus,
     'sensorValue': sensorValue,
     'sensorThresh': sensorThresh,
-    'sensorTiming': sensorTiming
+    'sensorTiming': sensorTiming,
+    'calibrateValue':calibrateValue
   };
 }
 
@@ -193,24 +218,22 @@ class ActuatorDataBlock {
 
   ActuatorDataBlock(this.actuatorId, this.type, this.state, this.value);
 
-  ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock? act){
+  ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock? act) {
     actuatorId = act?.actuatorId;
     type = act?.type;
     state = act?.state;
     value = act?.value;
 
-    for(dynamic type in value!.keys) {
-      value![type.toString()] = base64.encode(utf8.encode(value![type.toString()].toString()));
+    for (dynamic type in value!.keys) {
+      value![type.toString()] =
+          base64.encode(utf8.encode(value![type.toString()].toString()));
     }
 
     ActuatorDataBlock(actuatorId, type, state, value);
+    print(
+        "[Process{ActuatorModel}] \tCreated actuator block with size ${this.toJson().length} B");
   }
 
-  Map<String, dynamic> toJson() => {
-    'actuatorId':actuatorId,
-    'type':type,
-    'state':state,
-    'value':value
-  };
-
+  Map<String, dynamic> toJson() =>
+      {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
 }
