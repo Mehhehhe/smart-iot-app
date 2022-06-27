@@ -2,11 +2,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:smart_iot_app/services/database_op.dart';
 
 abstract class SmIOTDatabaseMethod{
   Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> sensorStatus);
+  Future<void> testSendData(String? userId, Map<String, dynamic> data);
 }
 
 class DataPayload {
@@ -134,7 +134,6 @@ class DataPayload {
   };
 
   factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
-
     final List<String> keyList = ["userId","role","approved","userDevice","widgetList","encryption"];
     int count = 0;
     for(String key in keyList){
@@ -149,10 +148,15 @@ class DataPayload {
         count+=1;
       }
     }
+    print("Missing count $count");
     if(count == 6){
+      count = 0;
+      print("Data is empty");
       return DataPayload.createEmpty();
     }
-
+    if (kDebugMode) {
+      print("No missing keys. Loading data...");
+    }
     return DataPayload(
         userId: json['userId'],
         role: json['role'],
@@ -179,6 +183,10 @@ class DeviceBlock {
 
   Map<String, dynamic> toJson() =>
       {'userSensor': userSensor?.toJson(), 'actuator': actuator?.toJson()};
+
+  factory DeviceBlock.fromJson(Map<dynamic, dynamic> json) {
+    return DeviceBlock(json["userSensor"], json["actuator"]);
+  }
 }
 
 class SensorDataBlock {
@@ -226,6 +234,18 @@ class SensorDataBlock {
     'sensorTiming': sensorTiming,
     'calibrateValue':calibrateValue
   };
+
+  factory SensorDataBlock.fromJson(Map<dynamic, dynamic> json){
+    return SensorDataBlock(
+        json['sensorName'],
+        json['sensorType'],
+        json['sensorStatus'],
+        json['sensorValue'],
+        json['sensorThresh'],
+        json['sensorTiming'],
+        json['calibrateValue']
+    );
+  }
 }
 
 class ActuatorDataBlock {
@@ -265,27 +285,31 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     final event = await ref.child(userId).once(DatabaseEventType.value);
     // create empty model of DataPayload;
     DataPayload data = DataPayload.createEmpty();
-
+    print("Snap exist: ${snapshot.exists}");
     if (snapshot.exists) {
       final Map? userInfo = event.snapshot.value as Map?;
       // get user's data from snapshot
       final role = userInfo?.entries.firstWhere((element) => element.key == "role").value;
       final approved = userInfo?.entries.firstWhere((element) => element.key == "approved").value;
-      final userDevices = userInfo?.entries.firstWhere((element) => element.key == "userDevice").value;
-      final widgetList = userInfo?.entries.firstWhere((element) => element.key == "widgetList").value;
+      var userDevices = userInfo?.entries.firstWhere((element) => element.key == "userDevice").value;
+      var widgetList = userInfo?.entries.firstWhere((element) => element.key == "widgetList").value;
       final encryption  = userInfo?.entries.firstWhere((element) => element.key == "encryption").value;
+      userDevices = Map<String, dynamic>.from(userDevices);
+      widgetList = Map<String,dynamic>.from(widgetList);
       // assign value to empty model;
-      data.userId = userId;
-      data.role = role;
-      data.approved = approved;
-      data.userDevice = userDevices;
-      data.widgetList = widgetList;
-      data.encryption = encryption;
-
-      final json = jsonEncode(data.toJson());
-      Map<String, dynamic> jsonDecoded = jsonDecode(json);
+      data = DataPayload(
+          userId: userId,
+          role: role,
+          approved: approved,
+          encryption: encryption,
+          userDevice: userDevices,
+          widgetList: widgetList
+      );
+      final jsons = jsonEncode(data.toJson());
+      Map<String, dynamic> jsonDecoded = jsonDecode(jsons);
       return jsonDecoded;
     } else {
+      data = DataPayload.createEmpty();
       return data.toJson();
     }
   }
@@ -311,4 +335,8 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     });
   }
 
+  @override
+  Future<void> testSendData(String? userId, Map<String, dynamic> data) async {
+    await ref.child('$userId').update(data);
+  }
 }

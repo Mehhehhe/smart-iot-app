@@ -24,14 +24,19 @@ class _TestPageState extends State<TestPage>{
   }
 
   @override
+  void initState(){
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
         future: getFutureData(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.none && snapshot.hasData == null){
+          if(snapshot.connectionState == ConnectionState.none && snapshot.hasData == false){
             return Container();
-          } else if (snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == null) {
+          } else if (snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == false) {
             return CircularProgressIndicator();
           } else if (snapshot.connectionState == ConnectionState.done) {
             final Map? dataMapped = snapshot.data as Map?;
@@ -40,7 +45,56 @@ class _TestPageState extends State<TestPage>{
                 shrinkWrap: true,
                 itemCount: 1,
                 itemBuilder: (context, index) {
-                  return Text(dataPayload.toJson().toString());
+                  return Card(
+                    child: Column(
+                      children: <Widget>[
+                        Text(dataPayload.toJson().toString()),
+                        TextButton(
+                            onPressed: (){
+                              SensorDataBlock testSensorBlock = SensorDataBlock({
+                                "0": "sensor1"
+                              }, {
+                                "sensor1": "type1"
+                              }, {
+                                "sensor1": true
+                              }, {
+                                "sensor1": {
+                                  "2022-06-23 18:15:00": {
+                                    "flag": "flag{normal}",
+                                    "message": "status{fine}",
+                                    "value": "value{0.0}"
+                                  },
+                                }
+                              }, {
+                                "sensor1": "1.02"
+                              }, {
+                                "sensor1": "Auto"
+                              },{
+                                "sensor1": "0.0"
+                              });
+
+                              ActuatorDataBlock testActuator = ActuatorDataBlock(
+                                  {"0": "act1"}, {"act1": "type 1"}, {"act1": "normal"}, {"act1": "90"});
+
+                              DeviceBlock device1 =
+                              DeviceBlock.createEncryptedModel(testSensorBlock, testActuator);
+                              DataPayload data = DataPayload(
+                                userId: "a",
+                                role: "admin",
+                                approved: true,
+                                encryption: "base64",
+                                userDevice: {"device1": device1.toJson()},
+                                widgetList: {"widget1": "widget1"},
+                              );
+
+                              SmIOTDatabase db = SmIOTDatabase();
+                              db.testSendData(widget.userId, data.toJson());
+                            },
+                            child: Text("Test Send")
+                        ),
+                      ],
+                    ),
+                  );
                 }
             );
           } else {
