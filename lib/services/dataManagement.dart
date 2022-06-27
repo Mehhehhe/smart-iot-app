@@ -6,8 +6,7 @@ import 'package:smart_iot_app/services/database_op.dart';
 
 abstract class SmIOTDatabaseMethod{
   Future<Map<String, dynamic>> getData(String userId);
-  Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
-  Future<String> sendReport(String? userId, Map<String, dynamic> reportMsg);
+  Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> sensorStatus);
 }
 
 class DataPayload {
@@ -134,7 +133,26 @@ class DataPayload {
     'encryption': encryption,
   };
 
-  factory DataPayload.fromJson(Map<String, dynamic> json) {
+  factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
+
+    final List<String> keyList = ["userId","role","approved","userDevice","widgetList","encryption"];
+    int count = 0;
+    for(String key in keyList){
+      if(!json.containsKey(key)){
+        if(key == "userId" || key == "role" || key == "encryption") {
+          json[key] = "Unknown";
+        } else if(key == "userDevice" || key == "widgetList") {
+          json[key] = {};
+        } else if(key == "approved"){
+          json[key] = false;
+        }
+        count+=1;
+      }
+    }
+    if(count == 6){
+      return DataPayload.createEmpty();
+    }
+
     return DataPayload(
         userId: json['userId'],
         role: json['role'],
@@ -236,4 +254,61 @@ class ActuatorDataBlock {
 
   Map<String, dynamic> toJson() =>
       {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
+}
+
+class SmIOTDatabase implements SmIOTDatabaseMethod {
+  final ref = FirebaseDatabase.instance.ref();
+
+  @override
+  Future<Map<String, dynamic>> getData(String userId) async {
+    final snapshot = await ref.child(userId).get();
+    final event = await ref.child(userId).once(DatabaseEventType.value);
+    // create empty model of DataPayload;
+    DataPayload data = DataPayload.createEmpty();
+
+    if (snapshot.exists) {
+      final Map? userInfo = event.snapshot.value as Map?;
+      // get user's data from snapshot
+      final role = userInfo?.entries.firstWhere((element) => element.key == "role").value;
+      final approved = userInfo?.entries.firstWhere((element) => element.key == "approved").value;
+      final userDevices = userInfo?.entries.firstWhere((element) => element.key == "userDevice").value;
+      final widgetList = userInfo?.entries.firstWhere((element) => element.key == "widgetList").value;
+      final encryption  = userInfo?.entries.firstWhere((element) => element.key == "encryption").value;
+      // assign value to empty model;
+      data.userId = userId;
+      data.role = role;
+      data.approved = approved;
+      data.userDevice = userDevices;
+      data.widgetList = widgetList;
+      data.encryption = encryption;
+
+      final json = jsonEncode(data.toJson());
+      Map<String, dynamic> jsonDecoded = jsonDecode(json);
+      return jsonDecoded;
+    } else {
+      return data.toJson();
+    }
+  }
+
+  @override
+  Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> data) async {
+    final userSetting = data["userDevice"][whatDevice];
+
+    final userAct = userSetting["actuator"];
+    final userSen = userSetting["userSensor"];
+
+    await ref.child('$userId').update({
+      "userDevice" : {
+        "$whatDevice": {
+          "userSensor":{
+            "sensorThresh":userSen["sensorThresh"],
+            "sensorTiming":userSen["sensorTiming"],
+            "calibrateValue":userSen["calibrateValue"]
+          },
+          "actuator": userAct
+        }
+      }
+    });
+  }
+
 }

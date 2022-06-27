@@ -68,10 +68,12 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   Future<Map<String, dynamic>> getData(String userId) async {
     final snapshot = await ref.child(userId).get();
     final event = await ref.child(userId).once(DatabaseEventType.value);
+
     DataPayload data;
 
     if (snapshot.exists) {
       final Map? userSensorInfo = event.snapshot.value as Map?;
+      print(userSensorInfo?.length);
 
       final sensorList = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorList").value;
       final sensorState = userSensorInfo?.entries.firstWhere((element) => element.key == "sensorStatus").value;
@@ -96,7 +98,15 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       }
 
       final json = jsonEncode(data.toJson());
+
+      print("Encoded in json [SIZE] ${json.length} B");
+
       Map<String, dynamic> jsonDe = jsonDecode(json);
+
+      if(kDebugMode){
+        print("dataPayload [SIZE]: ${data.toJson().length}");
+      }
+
       return jsonDe;
     } else {
       if (kDebugMode) {

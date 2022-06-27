@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
+import 'package:smart_iot_app/pages/TestPage.dart';
 import 'dart:async';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
@@ -199,6 +200,20 @@ class _MainPageState extends State<MainPage> {
             IconButton(
               icon: const Icon(Icons.logout), // The "-" icon
               onPressed: signOut, // The `_decrementCounter` function
+            ),
+            IconButton(
+                onPressed: () async {
+                  final value = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TestPage(
+                              auth: widget.auth,
+                              userId: widget.userId
+                          )
+                      ),
+                  );
+                },
+                icon: const Icon(Icons.abc_sharp)
             ),
           ],
         ),
