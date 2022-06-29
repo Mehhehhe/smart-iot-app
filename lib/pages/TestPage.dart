@@ -1,3 +1,8 @@
+<<<<<<< Updated upstream
+=======
+import 'dart:convert';
+
+>>>>>>> Stashed changes
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
@@ -90,8 +95,35 @@ class _TestPageState extends State<TestPage>{
                               SmIOTDatabase db = SmIOTDatabase();
                               db.testSendData(widget.userId, data.toJson());
                             },
+<<<<<<< Updated upstream
                             child: Text("Test Send")
                         ),
+=======
+                            child: const Text("Test Send Payload")
+                        ),
+                        TextButton(
+                          onPressed: () {
+
+                            var device = dataPayload.userDevice?.entries.firstWhere((element) => element.key=="device1").value;
+
+                            device["userSensor"]["calibrateValue"]["sensor1"] = "+6";
+                            print("Set ${ device["userSensor"]["calibrateValue"]["sensor1"] }");
+                            SmIOTDatabase db = SmIOTDatabase();
+                            print("Current path ${db.ref.path}");
+                            db.sendData(widget.userId, "device1", {"sensor1":device["userSensor"]["calibrateValue"]["sensor1"] });
+                            print("Send successfully!");
+                          },
+                          child: const Text("Test Send Values"),
+                        ),
+                        TextButton(
+                            onPressed: () async {
+                              SmIOTDatabase db = SmIOTDatabase();
+                              final snapTest = await db.ref.child('${widget.userId}/userDevice/').get();
+                              print(snapTest.ref.path);
+                            }, 
+                            child: const Text("Check path")
+                        )
+>>>>>>> Stashed changes
                       ],
                     ),
                   );

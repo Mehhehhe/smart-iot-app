@@ -274,6 +274,13 @@ class ActuatorDataBlock {
 
   Map<String, dynamic> toJson() =>
       {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
+<<<<<<< Updated upstream
+=======
+
+  factory ActuatorDataBlock.fromJson(Map<dynamic, dynamic> json) {
+    return ActuatorDataBlock(json["actuatorId"],json["type"],json["state"],json["value"]);
+  }
+>>>>>>> Stashed changes
 }
 
 class SmIOTDatabase implements SmIOTDatabaseMethod {
@@ -296,6 +303,10 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       final encryption  = userInfo?.entries.firstWhere((element) => element.key == "encryption").value;
       userDevices = Map<String, dynamic>.from(userDevices);
       widgetList = Map<String,dynamic>.from(widgetList);
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
       // assign value to empty model;
       data = DataPayload(
           userId: userId,
@@ -316,6 +327,7 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
 
   @override
   Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> data) async {
+<<<<<<< Updated upstream
     final userSetting = data["userDevice"][whatDevice];
 
     final userAct = userSetting["actuator"];
@@ -338,5 +350,27 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   @override
   Future<void> testSendData(String? userId, Map<String, dynamic> data) async {
     await ref.child('$userId').update(data);
+=======
+    final userSetting = data[whatDevice];
+
+    TransactionResult result = await ref.child('$userId').runTransaction(
+            (Object? object) {
+              if(object == null){
+                return Transaction.abort();
+              }
+              Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
+              print(_obj);
+              print(data);
+              _obj["userDevice"][whatDevice]["userSensor"]["calibrateValue"] = data ?? {};
+              print("Sent!");
+              return Transaction.success(_obj);
+            }, applyLocally: false
+    );
+  }
+
+  @override
+  Future<void> testSendData(String? path, Map<String, dynamic>? data) async {
+    await ref.child('$path').update(data!);
+>>>>>>> Stashed changes
   }
 }
