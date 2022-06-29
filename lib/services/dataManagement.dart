@@ -3,6 +3,27 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+extension MapTrySet<K,V> on Map<K,V>{
+  // A function to set a value in a nested map
+  // return a map that has localized path as a key and its value
+  Map TrySet(Map<dynamic,dynamic> json, String target,[V? valueToSet,String nestedKey='']){
+    final Map<dynamic, dynamic> translations = {};
+    json.forEach((dynamic key, dynamic value) {
+      //print("$key : $value : nested $nestedKey");
+      if("$nestedKey$key"==target){
+        print("\t\tWAS SET TO $key ${json[key]}, NOW SET TO $valueToSet");
+        json[key] = valueToSet;
+      }
+      if(value is Map){
+        translations.addAll(TrySet(value, target, valueToSet,"$nestedKey$key."));
+      } else {
+        translations["$nestedKey$key"] = value;
+      }
+    });
+    return translations;
+  }
+}
+
 abstract class SmIOTDatabaseMethod{
   Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> sensorStatus);
@@ -274,13 +295,10 @@ class ActuatorDataBlock {
 
   Map<String, dynamic> toJson() =>
       {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
-<<<<<<< Updated upstream
-=======
 
   factory ActuatorDataBlock.fromJson(Map<dynamic, dynamic> json) {
     return ActuatorDataBlock(json["actuatorId"],json["type"],json["state"],json["value"]);
   }
->>>>>>> Stashed changes
 }
 
 class SmIOTDatabase implements SmIOTDatabaseMethod {
@@ -303,10 +321,6 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       final encryption  = userInfo?.entries.firstWhere((element) => element.key == "encryption").value;
       userDevices = Map<String, dynamic>.from(userDevices);
       widgetList = Map<String,dynamic>.from(widgetList);
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
       // assign value to empty model;
       data = DataPayload(
           userId: userId,
@@ -327,50 +341,45 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
 
   @override
   Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> data) async {
-<<<<<<< Updated upstream
-    final userSetting = data["userDevice"][whatDevice];
+    final userSetting = data[whatDevice];
 
-    final userAct = userSetting["actuator"];
-    final userSen = userSetting["userSensor"];
+    TransactionResult result = await ref.child('$userId').runTransaction(
+            (Object? object) {
+          if(object == null){
+            return Transaction.abort();
+          }
+          Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
 
-    await ref.child('$userId').update({
-      "userDevice" : {
-        "$whatDevice": {
-          "userSensor":{
-            "sensorThresh":userSen["sensorThresh"],
-            "sensorTiming":userSen["sensorTiming"],
-            "calibrateValue":userSen["calibrateValue"]
-          },
-          "actuator": userAct
-        }
-      }
-    });
+          _obj.TrySet(_obj, "userDevice.$whatDevice.userSensor.sensorStatus",data["sensorStatus"]);
+          _obj.TrySet(_obj, "userDevice.$whatDevice.userSensor.sensorThresh",data["sensorThresh"]);
+          _obj.TrySet(_obj, "userDevice.$whatDevice.userSensor.sensorTiming",data["sensorTiming"]);
+          _obj.TrySet(_obj, "userDevice.$whatDevice.userSensor.calibrateValue",data["calibrateValue"]);
+          _obj.TrySet(_obj, "userDevice.$whatDevice.actuator.value",data["actuatorVal"]);
+          /*
+          if (data["sensorStatus"] != {} || data["sensorStatus"] != null){
+            _obj["userDevice"][whatDevice]["userSensor"]["sensorStatus"] = data["sensorStatus"];
+          }
+          if (data["sensorThresh"] != {} || data["sensorThresh"] != null){
+            _obj["userDevice"][whatDevice]["userSensor"]["sensorThresh"] = data["sensorThresh"];
+          }
+          if (data["sensorTiming"] != {} || data["sensorTiming"] != null){
+            _obj["userDevice"][whatDevice]["userSensor"]["sensorTiming"] = data["sensorTiming"];
+          }
+          if (data["calibrateValue"] != {} || data["calibrateValue"] != null){
+            _obj["userDevice"][whatDevice]["userSensor"]["calibrateValue"] = data["calibrateValue"];
+          }
+          if (data["actuatorVal"] != {} || data["actuatorVal"] != null){
+            _obj["userDevice"][whatDevice]["actuator"]["value"] = data["actuatorVal"];
+          }*/
+          print("Sent!");
+          return Transaction.success(_obj);
+        }, applyLocally: false
+    );
   }
 
   @override
   Future<void> testSendData(String? userId, Map<String, dynamic> data) async {
     await ref.child('$userId').update(data);
-=======
-    final userSetting = data[whatDevice];
 
-    TransactionResult result = await ref.child('$userId').runTransaction(
-            (Object? object) {
-              if(object == null){
-                return Transaction.abort();
-              }
-              Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
-              print(_obj);
-              print(data);
-              _obj["userDevice"][whatDevice]["userSensor"]["calibrateValue"] = data ?? {};
-              print("Sent!");
-              return Transaction.success(_obj);
-            }, applyLocally: false
-    );
-  }
-
-  @override
-  Future<void> testSendData(String? path, Map<String, dynamic>? data) async {
-    await ref.child('$path').update(data!);
->>>>>>> Stashed changes
   }
 }

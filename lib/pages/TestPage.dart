@@ -1,8 +1,6 @@
-<<<<<<< Updated upstream
-=======
+
 import 'dart:convert';
 
->>>>>>> Stashed changes
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
@@ -84,7 +82,7 @@ class _TestPageState extends State<TestPage>{
                               DeviceBlock device1 =
                               DeviceBlock.createEncryptedModel(testSensorBlock, testActuator);
                               DataPayload data = DataPayload(
-                                userId: "a",
+                                userId: widget.userId,
                                 role: "admin",
                                 approved: true,
                                 encryption: "base64",
@@ -95,22 +93,27 @@ class _TestPageState extends State<TestPage>{
                               SmIOTDatabase db = SmIOTDatabase();
                               db.testSendData(widget.userId, data.toJson());
                             },
-<<<<<<< Updated upstream
-                            child: Text("Test Send")
-                        ),
-=======
-                            child: const Text("Test Send Payload")
+                            child: const Text("Set Payload Model to user")
                         ),
                         TextButton(
                           onPressed: () {
-
                             var device = dataPayload.userDevice?.entries.firstWhere((element) => element.key=="device1").value;
+                            Map<String, dynamic> data = <String,dynamic>{};
 
-                            device["userSensor"]["calibrateValue"]["sensor1"] = "+6";
-                            print("Set ${ device["userSensor"]["calibrateValue"]["sensor1"] }");
+                            // Sensor Status
+                            data["sensorStatus"] = device["userSensor"]["sensorStatus"];
+                            // Sensor Thresh
+                            data["sensorThresh"] = device["userSensor"]["sensorThresh"];
+                            // Sensor Timing
+                            data["sensorTiming"] = device["userSensor"]["sensorTiming"];
+                            // Calibrate Value
+                            data["calibrateValue"] = device["userSensor"]["calibrateValue"];
+                            // Actuator Value
+                            data["actuatorVal"] = device["actuator"]["value"];
+
+                            data["sensorStatus"] = {"sensor1":true};
                             SmIOTDatabase db = SmIOTDatabase();
-                            print("Current path ${db.ref.path}");
-                            db.sendData(widget.userId, "device1", {"sensor1":device["userSensor"]["calibrateValue"]["sensor1"] });
+                            db.sendData(widget.userId, "device1", data);
                             print("Send successfully!");
                           },
                           child: const Text("Test Send Values"),
@@ -123,7 +126,6 @@ class _TestPageState extends State<TestPage>{
                             }, 
                             child: const Text("Check path")
                         )
->>>>>>> Stashed changes
                       ],
                     ),
                   );
