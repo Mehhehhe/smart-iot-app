@@ -125,6 +125,35 @@ class _TestPageState extends State<TestPage>{
                               print(snapTest.ref.path);
                             }, 
                             child: const Text("Check path")
+                        ),
+                        TextButton(
+                            onPressed: (){
+                              Map<dynamic, dynamic>? testMap;
+                              Map testData = {
+                                "userDevice":{
+                                  "device1":{
+                                    "userSensor":{
+                                      "sensorStatus":{
+                                        "sensor1":true
+                                      },
+                                      "sensorThresh":{
+                                        "sensor1": 1.10
+                                      }
+                                    }
+                                  }
+                                }
+                              };
+
+                              try{
+                                testData = testData.transformAndLocalize();
+                                testMap = dataPayload.toJson().localizedTrySetFromMap(testData);
+                              } catch (e) {
+                                print(e);
+                              }
+                              // Feedback response from localizing and set a value from another map
+                              print(testMap);
+                            },
+                            child: Text("Test Try Set From Map")
                         )
                       ],
                     ),
