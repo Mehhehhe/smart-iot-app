@@ -29,7 +29,7 @@ extension MapTrySet<K,V> on Map<K,V>{
 
   // A function to set a value in a nested map
   // return a map that has localized path as a key and its value
-  Map localizedTrySet( String target,[Map<dynamic,dynamic>? json, V? valueToSet,String nestedKey='']){
+  Map localizedTrySet( String target,[ V? valueToSet,Map<dynamic,dynamic>? json,String nestedKey='']){
     final Map<dynamic, dynamic> translations = {};
     if(json!=null){
       json.forEach((dynamic key, dynamic value) {
@@ -38,7 +38,7 @@ extension MapTrySet<K,V> on Map<K,V>{
           translations["$nestedKey$key"] = valueToSet;
         }
         if(value is Map){
-          translations.addAll(localizedTrySet(target, value, valueToSet,"$nestedKey$key."));
+          translations.addAll(localizedTrySet(target,valueToSet,value,"$nestedKey$key."));
         }
       });
     } else {
@@ -48,7 +48,7 @@ extension MapTrySet<K,V> on Map<K,V>{
           translations["$nestedKey$key"] = valueToSet;
         }
         if(value is Map){
-          translations.addAll(localizedTrySet(target, value, valueToSet,"$nestedKey$key."));
+          translations.addAll(localizedTrySet(target, valueToSet,value, "$nestedKey$key."));
         }
       });
     }
@@ -86,7 +86,7 @@ extension MapTrySet<K,V> on Map<K,V>{
 
 abstract class SmIOTDatabaseMethod{
   Future<Map<String, dynamic>> getData(String userId);
-  Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> sensorStatus);
+  Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
   Future<void> testSendData(String? userId, Map<String, dynamic> data);
 }
 
@@ -400,8 +400,7 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   }
 
   @override
-  Future<void> sendData(String? userId, String? whatDevice, Map<String, dynamic> data) async {
-    final userSetting = data[whatDevice];
+  Future<void> sendData(String? userId, Map<String, dynamic> data) async {
 
     TransactionResult result = await ref.child('$userId').runTransaction(
             (Object? object) {
@@ -409,29 +408,7 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
             return Transaction.abort();
           }
           Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
-
-          var status = _obj.localizedTrySet("userDevice.$whatDevice.userSensor.sensorStatus",null,data["sensorStatus"]);
-          var sensorThresh = _obj.localizedTrySet("userDevice.$whatDevice.userSensor.sensorThresh",null,data["sensorThresh"]);
-          var timing = _obj.localizedTrySet("userDevice.$whatDevice.userSensor.sensorTiming",null,data["sensorTiming"]);
-          var calibrate = _obj.localizedTrySet("userDevice.$whatDevice.userSensor.calibrateValue",null,data["calibrateValue"]);
-          var actuatorVal = _obj.localizedTrySet( "userDevice.$whatDevice.actuator.value",null,data["actuatorVal"]);
-          print([status, sensorThresh, timing, calibrate, actuatorVal]);
-          /*
-          if (data["sensorStatus"] != {} || data["sensorStatus"] != null){
-            _obj["userDevice"][whatDevice]["userSensor"]["sensorStatus"] = data["sensorStatus"];
-          }
-          if (data["sensorThresh"] != {} || data["sensorThresh"] != null){
-            _obj["userDevice"][whatDevice]["userSensor"]["sensorThresh"] = data["sensorThresh"];
-          }
-          if (data["sensorTiming"] != {} || data["sensorTiming"] != null){
-            _obj["userDevice"][whatDevice]["userSensor"]["sensorTiming"] = data["sensorTiming"];
-          }
-          if (data["calibrateValue"] != {} || data["calibrateValue"] != null){
-            _obj["userDevice"][whatDevice]["userSensor"]["calibrateValue"] = data["calibrateValue"];
-          }
-          if (data["actuatorVal"] != {} || data["actuatorVal"] != null){
-            _obj["userDevice"][whatDevice]["actuator"]["value"] = data["actuatorVal"];
-          }*/
+          _obj.localizedTrySetFromMap(data);
           print("Sent!");
           return Transaction.success(_obj);
         }, applyLocally: true

@@ -97,23 +97,22 @@ class _TestPageState extends State<TestPage>{
                         ),
                         TextButton(
                           onPressed: () {
-                            var device = dataPayload.userDevice?.entries.firstWhere((element) => element.key=="device1").value;
+                            Map device = dataPayload.toJson();
                             Map<String, dynamic> data = <String,dynamic>{};
+                            device.removeWhere((key, value) => key != "userDevice");
+                            for(dynamic devices in device["userDevice"].keys){
+                              device["userDevice"]["$devices"]["userSensor"].remove('sensorName');
+                              device["userDevice"]["$devices"]["userSensor"].remove('sensorType');
+                              device["userDevice"]["$devices"]["userSensor"].remove('sensorValue');
 
-                            // Sensor Status
-                            data["sensorStatus"] = device["userSensor"]["sensorStatus"];
-                            // Sensor Thresh
-                            data["sensorThresh"] = device["userSensor"]["sensorThresh"];
-                            // Sensor Timing
-                            data["sensorTiming"] = device["userSensor"]["sensorTiming"];
-                            // Calibrate Value
-                            data["calibrateValue"] = device["userSensor"]["calibrateValue"];
-                            // Actuator Value
-                            data["actuatorVal"] = device["actuator"]["value"];
-
-                            data["sensorStatus"] = {"sensor1":true};
+                              device["userDevice"]["$devices"]["actuator"].remove('actuatorId');
+                              device["userDevice"]["$devices"]["actuator"].remove('type');
+                              device["userDevice"]["$devices"]["actuator"].remove('state');
+                            }
+                            device = device.transformAndLocalize();
+                            data = Map<String, dynamic>.from(device);
                             SmIOTDatabase db = SmIOTDatabase();
-                            db.sendData(widget.userId, "device1", data);
+                            db.sendData(widget.userId, data);
                             print("Send successfully!");
                           },
                           child: const Text("Test Send Values"),
@@ -167,5 +166,4 @@ class _TestPageState extends State<TestPage>{
       ),
     );
   }
-
 }
