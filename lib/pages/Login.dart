@@ -100,15 +100,21 @@ class _LogIn extends State<LogIn> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromRGBO(4, 97, 114, 1.0),
-              Color.fromRGBO(120, 220, 212, 1.0),
+              Color.fromRGBO(255, 63, 242, 1.0),
+              Color.fromRGBO(123, 168, 255, 1.0),
             ],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          //gradient : LinearGradient(
+          //                               begin: Alignment(0.38533756136894226,0.47234928607940674),
+          //                               end: Alignment(-0.47234928607940674,0.38533756136894226),
+          //                               colors: [Color.fromRGBO(255, 0, 184, 1),Color.fromRGBO(34, 0, 241, 0.4947916567325592),Color.fromRGBO(0, 255, 240, 0)]
+          //                           ),
         ),
         child: Stack(
           children: [
+          loginFrame(),
             _showForm(),
             _showCircularProgress(),
           ],
@@ -131,23 +137,28 @@ class _LogIn extends State<LogIn> {
 
   Widget _showForm() {
     return Container(
-      padding: const EdgeInsets.all(15.0),
-      child: Form(
-        key: _formKey,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              //showTitle(),
-              showProfile(),
-              showEmailInput(),
-              showPasswordInput(),
-              showLoginButton(),
-              showRegisterButton(),
-              forgotPassword(),
-              showOtherLogInOption(),
-              showErrorMsg(),
-            ],
+
+      child: Container(
+        padding: const EdgeInsets.all(15.0),
+        child: Form(
+          key: _formKey,
+          child: Center(
+            child: ListView(
+              shrinkWrap: true,
+              children: <Widget>[
+                //showTitle(),
+                showProfile(),
+                Emailtext(),
+                showEmailInput(),
+                Passwordtext(),
+                showPasswordInput(),
+                forgotPassword(),
+                showLoginButton(),
+                showRegisterButton(),
+                showOtherLogInOption(),
+                showErrorMsg(),
+              ],
+            ),
           ),
         ),
       ),
@@ -172,69 +183,116 @@ class _LogIn extends State<LogIn> {
     }
   }
 
+  Widget Emailtext(){
+    return Container(
+      margin: EdgeInsets.only(left: 30,bottom: 15),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+          "Email address",
+          textAlign: TextAlign.left,
+        style: TextStyle(color: Colors.white,fontSize: 17,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 2.0),
+              blurRadius: 12,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ],),
+      ),
+    );
+  }
+
   Widget showEmailInput() {
-    return SizedBox(
-      width: 300,
-      height: 70,
-      child: TextFormField(
-        obscureText: false,
-        maxLines: 1,
-        keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: const Icon(Icons.account_circle),
-          border: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.transparent),
-              borderRadius: BorderRadius.circular(30)),
-          labelText: 'Username',
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: 300,
+        height: 80,
+        child: TextFormField(
+          obscureText: false,
+          maxLines: 1,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color.fromRGBO(255, 255, 255, 0.8),
+            suffixIcon: const Icon(Icons.account_circle),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            hintText: 'Username',
+          ),
+          validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
+          onSaved: (value) => _email = value!.trim(),
         ),
-        validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
-        onSaved: (value) => _email = value!.trim(),
+      ),
+    );
+  }
+
+  Widget Passwordtext(){
+    return Container(
+      margin: EdgeInsets.only(left: 30,bottom: 15),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+        "Password",
+        textAlign: TextAlign.left,
+        style: TextStyle(color: Colors.white,fontSize: 17,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 2.0),
+              blurRadius: 12,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ],),
       ),
     );
   }
 
   Widget showPasswordInput() {
-    return SizedBox(
-      width: 300,
-      height: 80,
-      child: TextFormField(
-        obscureText: _isObscure,
-        //obscureText: true,
-        maxLines: 1,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: IconButton(
-            icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
-            onPressed: () {
-              setState(() {
-                _isObscure = !_isObscure;
-              });
-            },
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: 300,
+
+        child: TextFormField(
+          obscureText: _isObscure,
+          //obscureText: true,
+          maxLines: 1,
+          decoration: InputDecoration(
+
+            filled: true,
+            fillColor: const Color.fromRGBO(255, 255, 255, 0.8),
+            suffixIcon: IconButton(
+              icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+              onPressed: () {
+                setState(() {
+                  _isObscure = !_isObscure;
+                });
+              },
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            labelText: 'Password',
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          labelText: 'Password',
+          validator: (value) => value!.isEmpty ? 'Please enter password' : null,
+          onSaved: (value) => _password = value!.trim(),
         ),
-        validator: (value) => value!.isEmpty ? 'Please enter password' : null,
-        onSaved: (value) => _password = value!.trim(),
       ),
     );
   }
 
   Widget showLoginButton() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10,horizontal: 60),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color.fromRGBO(73, 187, 167, 1.0),
-              Color.fromRGBO(142, 238, 109, 1.0),
+              Color.fromRGBO(255, 57, 57, 1.0),
+              Color.fromRGBO(255, 224, 93, 1.0),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
@@ -274,13 +332,14 @@ class _LogIn extends State<LogIn> {
 
   Widget showRegisterButton() {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 60),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color.fromRGBO(220, 157, 41, 1.0),
-              Color.fromRGBO(255, 187, 118, 1.0),
+              Color.fromRGBO(41, 56, 220, 1.0),
+              Color.fromRGBO(118, 182, 255, 1.0),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
@@ -313,7 +372,7 @@ class _LogIn extends State<LogIn> {
           );
         },
         child: const Text(
-          'Register',
+          'Create new account',
           textAlign: TextAlign.left,
           style: TextStyle(
             fontFamily: "Roboto Slab",
@@ -353,28 +412,28 @@ class _LogIn extends State<LogIn> {
 
   Widget showProfile() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 26, horizontal: 40),
-      width: 234,
-      height: 280,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(154.5),
-          topRight: Radius.circular(154.5),
-          bottomLeft: Radius.circular(154.5),
-          bottomRight: Radius.circular(154.5),
+        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 80),
+        width: 150,
+        height: 190,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(154.5),
+            topRight: Radius.circular(154.5),
+            bottomLeft: Radius.circular(154.5),
+            bottomRight: Radius.circular(154.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pink.withOpacity(0.2),
+              spreadRadius: 4,
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            )
+          ],
+          image: const DecorationImage(
+              image: AssetImage('assets/images/profile.png'),
+              fit: BoxFit.fitWidth),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.pink.withOpacity(0.2),
-            spreadRadius: 4,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          )
-        ],
-        image: const DecorationImage(
-            image: AssetImage('assets/images/profile.png'),
-            fit: BoxFit.fitWidth),
-      ),
     );
   }
 
@@ -408,22 +467,72 @@ class _LogIn extends State<LogIn> {
   }
 
   Widget forgotPassword() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 40,
-      alignment: Alignment.bottomRight,
-      child: TextButton(
-        child: const Text(
-          "Forgot Password",
-          textAlign: TextAlign.right,
+    return Row(
+      children: [
+        Container(
+          margin: EdgeInsets.only(left: 30),
+          height: 15,width: 15,
+          decoration: BoxDecoration(
+          color: Colors.white
+          ),
         ),
-        onPressed: () async{
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) =>  ResetPassWord_Page(auth: widget.auth)),
-          );
-        },
-      ),
+        Container(
+          margin: EdgeInsets.only(left: 10),
+          //alignment: Alignment.bottomLeft,
+          child: Text(
+              "Keep me signin",
+              //textAlign: TextAlign.right,
+              style: TextStyle(color: Colors.white,
+                shadows: <Shadow>[
+                  Shadow(
+                    offset: Offset(0.0, 2.0),
+                    blurRadius: 12,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                ],),
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(left:70),
+          //alignment: Alignment.bottomRight,
+          child: TextButton(
+            child: const Text(
+              "Forgot Password",
+              //textAlign: TextAlign.right,
+              style: TextStyle(color: Colors.white,
+                shadows: <Shadow>[
+                  Shadow(
+                    offset: Offset(0.0, 2.0),
+                    blurRadius: 12,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                ],),
+            ),
+            onPressed: () async{
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>  ResetPassWord_Page(auth: widget.auth)),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget loginFrame(){
+    return Container(
+        height: 615,margin: EdgeInsets.only(top: 150,left: 20,right: 20),
+        decoration: BoxDecoration(
+          borderRadius : BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+          color : Color.fromRGBO(255, 255, 255, 0.3),
+        )
     );
   }
 }
+
