@@ -362,7 +362,11 @@ class _MainPageState extends State<MainPage> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const Manage_Page()));
+                            builder: (context) => Manage_Page(
+                              auth: widget.auth,
+                              device: "device1",
+                              userId: widget.userId,)
+                        ));
                   },
                   child: const Text('Manage'),
                 ),

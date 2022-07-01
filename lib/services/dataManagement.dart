@@ -123,16 +123,48 @@ class DataPayload {
     return userDevice;
   }
 
-  MapEntry<String, dynamic>? displayDevice(String deviceName) {
+  MapEntry<String, dynamic> displayDevice(String deviceName) {
     final devices = loadUserDevices();
-    final MapEntry<String, dynamic>? targetDevice;
+    final MapEntry<String, dynamic> targetDevice;
     try {
       targetDevice =
-          devices?.entries.firstWhere((element) => element.key == deviceName);
+          devices!.entries.firstWhere((element) => element.key == deviceName);
     } catch (e) {
       throw "[ERROR] Searched and found 0 device";
     }
     return targetDevice;
+  }
+
+  List<dynamic> checkDeviceStatus(String deviceName){
+    final Map<String, dynamic>? target = loadUserDevices();
+    List<dynamic> whereErr = [];
+
+    for(dynamic device in target!.keys){
+      if(device == deviceName){
+        for(dynamic part in target[device].keys){
+          // actuator and userSensor
+          for(dynamic att in target[device][part].keys){
+            // attribute of actuator and userSensor
+            if(att == "sensorStatus"){
+              for(dynamic sensor in target[device][part][att].keys){
+                if(target[device][part][att][sensor] == false){
+                  whereErr.add(sensor);
+                }
+              }
+            }
+            if(att == "state"){
+              for(dynamic act in target[device][part][att].keys){
+                if(target[device][part][att][act] != "normal" || target[device][part][att][act] == false){
+                  whereErr.add(act);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    print(whereErr);
+    return whereErr;
   }
 
   DataPayload encode(DataPayload payload, String encryption) {
