@@ -146,7 +146,11 @@ class _MainPageState extends State<MainPage> {
       print(response);
     }
   }
-
+  int index = 0;
+  final screens = [
+    Center(child: Text('Home ',style: TextStyle(fontSize: 72),),),
+    Center(child: Text('History',style: TextStyle(fontSize: 72),),),
+  ];
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -182,20 +186,6 @@ class _MainPageState extends State<MainPage> {
               },
             ),
           ),
-          bottom: const TabBar(
-            indicatorColor: Colors.white,
-            indicatorWeight: 3,
-            tabs: [
-              Tab(
-                icon: Icon(Icons.home),
-                text: 'Home',
-              ),
-              Tab(
-                icon: Icon(Icons.phone_in_talk),
-                text: 'Contact Admin',
-              ),
-            ],
-          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.logout), // The "-" icon
@@ -217,35 +207,35 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromRGBO(12, 210, 193, 1.0),
-                Color.fromRGBO(195, 255, 232, 1.0),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+        body: screens[index],
+        bottomNavigationBar : NavigationBarTheme(
+          data: NavigationBarThemeData(
+            indicatorColor: Colors.blue.shade100,
+            labelTextStyle: MaterialStateProperty.all(
+              TextStyle(fontSize: 14,fontWeight: FontWeight.w500)
+            )
           ),
-          child: TabBarView(
-            children: [
-              Center(
-                child: Stack(
-                  children: [
-                    _showForm(),
-                  ],
-                ),
-              ),
-              Center(
-                child: Form(
-                  key: _formKey,
-                  child: contactAdmin(),
-                ),
-              ),
-            ],
+
+          child: NavigationBar(
+            height: 80,
+          backgroundColor: Color(0xFFf1f5fb),
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          selectedIndex: index,
+          animationDuration: Duration(seconds: 0.5),
+          onDestinationSelected: (index) =>
+            setState(() => this.index = index),
+          destinations: [
+            NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home'),
+            NavigationDestination(
+                icon: Icon(Icons.history),
+                label: 'History'),
+          ],
           ),
         ),
+
       ),
     );
   }

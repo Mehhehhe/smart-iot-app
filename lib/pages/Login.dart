@@ -147,7 +147,7 @@ class _LogIn extends State<LogIn> {
               shrinkWrap: true,
               children: <Widget>[
                 //showTitle(),
-                showProfile(),
+                showLogo(),
                 Emailtext(),
                 showEmailInput(),
                 Passwordtext(),
@@ -386,33 +386,10 @@ class _LogIn extends State<LogIn> {
     );
   }
 
-  Widget showTitle() {
-    return Container(
-        padding: const EdgeInsets.all(20.0),
-        child: const Text(
-          'SMART IOT APP',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-              color: Color.fromRGBO(0, 0, 0, 1),
-              fontFamily: 'Roboto Slab',
-              fontSize: 30,
-              letterSpacing:
-                  0 /*percentages not used in flutter. defaulting to zero*/,
-              fontWeight: FontWeight.bold,
-              height: 1,
-              shadows: [
-                Shadow(
-                  blurRadius: 30,
-                  color: Colors.black,
-                  offset: Offset(0, 3),
-                ),
-              ]),
-        ));
-  }
 
-  Widget showProfile() {
+  Widget showLogo() {
     return Container(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 80),
+        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 85),
         width: 150,
         height: 190,
         decoration: BoxDecoration(
@@ -430,10 +407,8 @@ class _LogIn extends State<LogIn> {
               offset: const Offset(0, 3),
             )
           ],
-          image: const DecorationImage(
-              image: AssetImage('assets/images/profile.png'),
-              fit: BoxFit.fitWidth),
         ),
+      child: Image.network('https://bursakerja.jatengprov.go.id/assets/default-logo.png',fit: BoxFit.fitWidth),
     );
   }
 
