@@ -91,17 +91,18 @@ class _RegisterState extends State<Register> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromRGBO(120, 220, 212, 1.0),
-                  Color.fromRGBO(4, 97, 114, 1.0),
+                  Color.fromRGBO(255, 63, 242, 1.0),
+                  Color.fromRGBO(123, 168, 255, 1.0),
                 ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
 
 
           _showCircularProgress(),
+          loginFrame(),
           _showForm()
         ],
       ),
@@ -147,9 +148,13 @@ class _RegisterState extends State<Register> {
           shrinkWrap: true,
           children: <Widget>[
             //showTitle(),
-            textTitle(),
+            //textTitle(),
+            showLogo(),
+            UserNametext(),
             userNameBox(),
+            Emailtext(),
             emailRegis(),
+            Passwordtext(),
             passwordRegis(),
             regisButton(),
           ],
@@ -178,10 +183,28 @@ class _RegisterState extends State<Register> {
         ),
     );
   }
+  Widget UserNametext(){
+    return Container(
+      margin: EdgeInsets.only(left: 30,bottom: 15),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+        "Username",
+        textAlign: TextAlign.left,
+        style: TextStyle(color: Colors.white,fontSize: 17,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 2.0),
+              blurRadius: 12,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ],),
+      ),
+    );
+  }
 
   Widget userNameBox() {
     return Container(
-      margin: const EdgeInsets.only(left: 30, right: 30, bottom: 10,top: 30),
+      margin: const EdgeInsets.only(left: 30, right: 30, bottom: 20),
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
@@ -189,9 +212,11 @@ class _RegisterState extends State<Register> {
         decoration: InputDecoration(
           filled: true,
           fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          suffixIcon: const Icon(Icons.account_circle),
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+          suffixIcon: const Icon(Icons.account_box_outlined),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(12),
+          ),
           labelText: 'Username',
         ),
         validator: (value) =>
@@ -201,9 +226,28 @@ class _RegisterState extends State<Register> {
     );
   }
 
+  Widget Emailtext(){
+    return Container(
+      margin: EdgeInsets.only(left: 30,bottom: 15),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+        "Email address",
+        textAlign: TextAlign.left,
+        style: TextStyle(color: Colors.white,fontSize: 17,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 2.0),
+              blurRadius: 12,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ],),
+      ),
+    );
+  }
+
   Widget emailRegis(){
     return Container(
-      margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 10, top: 10),
+      margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 20),
       child: TextFormField(
         obscureText: false,
         maxLines: 1,
@@ -212,8 +256,10 @@ class _RegisterState extends State<Register> {
           filled: true,
           fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
           suffixIcon: const Icon(Icons.account_circle),
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(12),
+          ),
           labelText: 'Email',
         ),
         validator: (value) =>
@@ -223,11 +269,29 @@ class _RegisterState extends State<Register> {
     );
   }
 
+  Widget Passwordtext(){
+    return Container(
+      margin: EdgeInsets.only(left: 30,bottom: 15),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+        "Password",
+        textAlign: TextAlign.left,
+        style: TextStyle(color: Colors.white,fontSize: 17,
+          shadows: <Shadow>[
+            Shadow(
+              offset: Offset(0.0, 2.0),
+              blurRadius: 12,
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ],),
+      ),
+    );
+  }
 
   Widget passwordRegis(){
     return Container(
       //margin: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
-        margin: const EdgeInsets.only(left: 30, top: 10, right: 30 ,bottom: 10),
+        margin: const EdgeInsets.only(left: 30, right: 30 ,bottom: 20),
       child: TextFormField(
         obscureText: _isObscure,
         //obscureText: true,
@@ -245,7 +309,8 @@ class _RegisterState extends State<Register> {
             },
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(12),
           ),
           labelText: 'Password',
         ),
@@ -257,16 +322,18 @@ class _RegisterState extends State<Register> {
   }
 
 
-  Widget regisButton(){
+
+
+  Widget regisButton() {
     return Container(
-      margin: const EdgeInsets.only(left: 160, top: 50, right: 30),
+      margin: EdgeInsets.only(left: 60,right: 60,bottom: 30,top: 20),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color.fromRGBO(73, 187, 167, 1.0),
-              Color.fromRGBO(142, 238, 109, 1.0),
+              Color.fromRGBO(41, 56, 220, 1.0),
+              Color.fromRGBO(118, 182, 255, 1.0),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
@@ -285,8 +352,7 @@ class _RegisterState extends State<Register> {
       child: OutlinedButton(
         style: ButtonStyle(
           shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
           ),
         ),
         onPressed: validateAndSubmit,
@@ -304,6 +370,46 @@ class _RegisterState extends State<Register> {
       ),
     );
   }
+
+  Widget loginFrame(){
+    return Container(
+        height: 615,margin: EdgeInsets.only(top: 150,left: 20,right: 20),
+        decoration: BoxDecoration(
+          borderRadius : BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+          color : Color.fromRGBO(255, 255, 255, 0.3),
+        )
+    );
+  }
+  Widget showLogo() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 100),
+      width: 150,
+      height: 190,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(154.5),
+          topRight: Radius.circular(154.5),
+          bottomLeft: Radius.circular(154.5),
+          bottomRight: Radius.circular(154.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.pink.withOpacity(0.2),
+            spreadRadius: 4,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
+      child: Image.network('https://bursakerja.jatengprov.go.id/assets/default-logo.png',fit: BoxFit.fitWidth),
+    );
+  }
+
 }
 
 
