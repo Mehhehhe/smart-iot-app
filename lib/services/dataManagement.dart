@@ -196,27 +196,27 @@ class DataPayload {
   DataPayload decode(DataPayload payload) {
     switch (payload.encryption) {
       case "base64":
-        payload.userId = utf8.decode(base64.decode(payload.userId));
+        //payload.userId = utf8.decode(base64.decode(payload.userId));
 
         payload.userDevice?.forEach(
               (key, value) {
             if (payload.userDevice?[key]["userSensor"] != null) {
-              Map? sensorList =
+              List? sensorList =
               payload.userDevice?[key]["userSensor"]["sensorName"];
               for (int i = 0; i < sensorList!.length; i++) {
                 for (dynamic name in payload
                     .userDevice?[key]["userSensor"]["sensorValue"]
-                [sensorList[i.toString()]]
+                [sensorList[i]]
                     .keys) {
                   for (dynamic att in payload
                       .userDevice?[key]["userSensor"]["sensorValue"]
-                  [sensorList[i.toString()]][name]
+                  [sensorList[i]][name]
                       .keys) {
                     payload.userDevice?[key]["userSensor"]["sensorValue"]
-                    [sensorList[i.toString()]][name][att] =
+                    [sensorList[i]][name][att] =
                         utf8.decode(base64.decode(payload.userDevice?[key]
                         ["userSensor"]["sensorValue"]
-                        [sensorList[i.toString()]][name][att]));
+                        [sensorList[i]][name][att]));
                   }
                 }
               }
@@ -230,12 +230,14 @@ class DataPayload {
             }
           },
         );
-
+/*
         payload.widgetList?.forEach(
               (key, value) {
             payload.widgetList?[key] = utf8.decode(base64.decode(value));
           },
         );
+
+ */
 
         break;
       default:

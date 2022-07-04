@@ -237,6 +237,7 @@ class _Manage_PageState extends State<Manage_Page> {
                         ConnectionState.done) {
                       final Map? dataMapped = snapshot.data as Map?;
                       dataPayload = DataPayload.fromJson(dataMapped ?? {});
+                      dataPayload = dataPayload.decode(dataPayload);
                       Map device = dataPayload.toJson();
                       device.removeWhere((key, value) => key != "userDevice");
 
