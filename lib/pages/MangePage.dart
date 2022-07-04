@@ -140,13 +140,11 @@ class _Manage_PageState extends State<Manage_Page> {
                     final Map? dataMapped = snapshot.data as Map?;
                     dataPayload = DataPayload.fromJson(dataMapped ?? {});
                     var check = dataPayload.checkDeviceStatus(widget.device);
-                    print("Check var: $check");
                     if(check.length == 0){
                       status = "Status: Normal";
                     } else{
                       status = "Status: Error";
                     }
-                    print("Status check: $status");
 
                     return Container(
                       margin: EdgeInsets.only(right: 42),
@@ -227,7 +225,6 @@ class _Manage_PageState extends State<Manage_Page> {
               FutureBuilder(
                   future: getFutureUserDataMap(),
                   builder: (context, snapshot) {
-                    print(snapshot.connectionState);
 
                     if (snapshot.connectionState == ConnectionState.none &&
                         snapshot.hasData == false) {
@@ -244,7 +241,6 @@ class _Manage_PageState extends State<Manage_Page> {
                       device.removeWhere((key, value) => key != "userDevice");
 
                       device = device.transformAndLocalize();
-                      print(device);
 
                       return ListView.builder(
                           physics: NeverScrollableScrollPhysics(),
@@ -252,7 +248,7 @@ class _Manage_PageState extends State<Manage_Page> {
                           itemCount: dataPayload
                               .userDevice!["${widget.device}"]["userSensor"]
                                   ["sensorName"]
-                              .length,
+                              .length??1,
                           itemBuilder: (context, index) {
                             return Card(
                               clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -502,6 +498,12 @@ class _Manage_PageState extends State<Manage_Page> {
                                                                                   textAlign: TextAlign.center,
                                                                                   controller: _threshController,
                                                                                   keyboardType: TextInputType.number,
+                                                                                  decoration: InputDecoration(
+                                                                                      contentPadding: EdgeInsets.all(8),
+                                                                                      border: OutlineInputBorder(
+                                                                                          borderRadius: BorderRadius.circular(5)
+                                                                                      )
+                                                                                  ),
                                                                                 ),
                                                                               ),
                                                                             ],
@@ -530,6 +532,47 @@ class _Manage_PageState extends State<Manage_Page> {
                                                                 ),
                                                                 TextButton(
                                                                     onPressed: (){
+                                                                      print("Thresh set to ${_threshController.text}");
+                                                                      dataPayload.userDevice![widget.device]["userSensor"]["sensorThresh"][dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index].toString()] = _threshController.text;
+                                                                      dataPayload.userDevice![widget.device]["actuator"]["value"][dataPayload.userDevice![widget.device]["actuator"]["actuatorId"][index].toString()] = _controller.text;
+                                                                      Map device = dataPayload.toJson();
+                                                                      Map<String, dynamic> data = <String,dynamic>{};
+
+                                                                      // Remove unused data
+                                                                      device.removeWhere((key, value) => key != "userDevice");
+                                                                      device["userDevice"][widget.device]["userSensor"].remove('sensorName');
+                                                                      device["userDevice"][widget.device]["userSensor"].remove('sensorType');
+                                                                      device["userDevice"][widget.device]["userSensor"].remove('sensorValue');
+
+                                                                      device["userDevice"][widget.device]["actuator"].remove('actuatorId');
+                                                                      device["userDevice"][widget.device]["actuator"].remove('type');
+                                                                      device["userDevice"][widget.device]["actuator"].remove('state');
+
+                                                                      // Building a block process
+
+                                                                      ActuatorDataBlock act = ActuatorDataBlock.createForSending(device["userDevice"][widget.device]["actuator"]["value"]);
+                                                                      var encryptedAct = ActuatorDataBlock.createEncryptedModelWithOnlyValue(act);
+
+                                                                      SensorDataBlock sen = SensorDataBlock.createForSending(
+                                                                          Map<String,bool>.from(device["userDevice"][widget.device]["userSensor"]["sensorStatus"]),
+                                                                          device["userDevice"][widget.device]["userSensor"]["sensorTiming"],
+                                                                          device["userDevice"][widget.device]["userSensor"]["calibrateValue"],
+                                                                          device["userDevice"][widget.device]["userSensor"]["sensorThresh"]
+                                                                      );
+                                                                      //print(sen.toJsonForSending());
+                                                                      DeviceBlock dev = DeviceBlock.createPartialEncryptedModel(sen, encryptedAct);
+                                                                      //print(dev.toJsonForSending());
+                                                                      DataPayload dataP = DataPayload.createForSending({widget.device:dev.toJsonForSending()});
+                                                                      //print("Json: ${dataP.toJsonForSending()}");
+                                                                      device = dataP.toJsonForSending().transformAndLocalize();
+                                                                      data = Map<String, dynamic>.from(device);
+                                                                      //print(data);
+                                                                      //device = device.transformAndLocalize();
+                                                                      //data = Map<String, dynamic>.from(device);
+                                                                      SmIOTDatabase db = SmIOTDatabase();
+
+                                                                      db.sendData(widget.userId, data);
+                                                                      print("Send successfully!");
 
                                                                       Navigator.pop(context);
                                                                     },

@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
 
@@ -153,6 +154,21 @@ class _TestPageState extends State<TestPage>{
                               print(testMap);
                             },
                             child: Text("Test Try Set From Map")
+                        ),
+                        TextButton(
+                            onPressed: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Manage_Page(
+                                        auth: widget.auth,
+                                        userId: widget.userId,
+                                        device: "device1"
+                                    ),
+                                )
+                              );
+                            },
+                            child: Text("Navigate to manage")
                         )
                       ],
                     ),
