@@ -60,7 +60,9 @@ extension MapTrySet<K,V> on Map<K,V>{
     final Map<dynamic, dynamic> translations = {};
     if(json!=null){
       json.forEach((dynamic key, dynamic value) {
+        print("In json: \t$key $prefix$key ${pathAndValueMap["$prefix$key"]}");
         if(pathAndValueMap.containsKey("$prefix$key") == true){
+          print("Json with key: ${json[key]}");
           json[key] = pathAndValueMap["$prefix$key"];
           translations["$prefix$key"] = pathAndValueMap["$prefix$key"];
         }
@@ -70,7 +72,9 @@ extension MapTrySet<K,V> on Map<K,V>{
       });
     } else {
       forEach((dynamic key, dynamic value) {
+        print("$key $prefix$key");
         if(pathAndValueMap.containsKey("$prefix$key") == true){
+          print("This with key: ${this[key]}");
           this[key] = pathAndValueMap["$prefix$key"];
           translations["$prefix$key"] = pathAndValueMap["$prefix$key"];
         }
@@ -79,7 +83,7 @@ extension MapTrySet<K,V> on Map<K,V>{
         }
       });
     }
-
+    print("Return translation $translations");
     return translations;
   }
 }
@@ -113,6 +117,10 @@ class DataPayload {
     userDevice = {};
     widgetList = {};
     encryption = "";
+  }
+
+  DataPayload.createForSending(Map<String, dynamic> dev) {
+    userDevice = dev;
   }
 
   Map<String, dynamic>? loadUserDevices() {
@@ -163,7 +171,6 @@ class DataPayload {
         }
       }
     }
-    print(whereErr);
     return whereErr;
   }
 
@@ -246,6 +253,10 @@ class DataPayload {
     'encryption': encryption,
   };
 
+  Map<String, dynamic> toJsonForSending() => {
+    'userDevice' : userDevice
+  };
+
   factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
     final List<String> keyList = ["userId","role","approved","userDevice","widgetList","encryption"];
     int count = 0;
@@ -261,14 +272,9 @@ class DataPayload {
         count+=1;
       }
     }
-    print("Missing count $count");
     if(count == 6){
       count = 0;
-      print("Data is empty");
       return DataPayload.createEmpty();
-    }
-    if (kDebugMode) {
-      print("No missing keys. Loading data...");
     }
     return DataPayload(
         userId: json['userId'],
@@ -294,8 +300,18 @@ class DeviceBlock {
         "[Process{DeviceModel}] \tCreated device block with size ${this.toJson().length} B");
   }
 
+  // Require user to manually encrypted data
+  DeviceBlock.createPartialEncryptedModel(SensorDataBlock sen, ActuatorDataBlock act){
+    userSensor = sen;
+    actuator = act;
+  }
+
   Map<String, dynamic> toJson() =>
       {'userSensor': userSensor?.toJson(), 'actuator': actuator?.toJson()};
+
+  Map<String, dynamic> toJsonForSending() => {
+    'userSensor':userSensor?.toJsonForSending(), 'actuator': actuator?.toJsonWithOnlyValue()
+  };
 
   factory DeviceBlock.fromJson(Map<dynamic, dynamic> json) {
     return DeviceBlock(json["userSensor"], json["actuator"]);
@@ -314,6 +330,7 @@ class SensorDataBlock {
   SensorDataBlock(this.sensorName, this.sensorType, this.sensorStatus,
       this.sensorValue, this.sensorThresh, this.sensorTiming, this.calibrateValue);
 
+  // For using in report, not for sending data in normal process.
   SensorDataBlock.createEncryptedModel(SensorDataBlock? sensor) {
     sensorName = sensor?.sensorName;
     sensorType = sensor?.sensorType;
@@ -338,6 +355,7 @@ class SensorDataBlock {
         "[Process{SensorModel}] \tCreated sensor block with size ${this.toJson().length} B");
   }
 
+  SensorDataBlock.createForSending(this.sensorStatus, this.sensorTiming, this.calibrateValue, this.sensorThresh);
   Map<String, dynamic> toJson() => {
     'sensorName': sensorName,
     'sensorType': sensorType,
@@ -346,6 +364,13 @@ class SensorDataBlock {
     'sensorThresh': sensorThresh,
     'sensorTiming': sensorTiming,
     'calibrateValue':calibrateValue
+  };
+
+  Map<String, dynamic> toJsonForSending() => {
+    'sensorStatus': sensorStatus,
+    'sensorThresh': sensorThresh,
+    'sensorTiming': sensorTiming,
+    'calibrateValue': calibrateValue
   };
 
   factory SensorDataBlock.fromJson(Map<dynamic, dynamic> json){
@@ -369,6 +394,8 @@ class ActuatorDataBlock {
 
   ActuatorDataBlock(this.actuatorId, this.type, this.state, this.value);
 
+  ActuatorDataBlock.createForSending(this.value);
+
   ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock? act) {
     actuatorId = act?.actuatorId;
     type = act?.type;
@@ -385,8 +412,18 @@ class ActuatorDataBlock {
         "[Process{ActuatorModel}] \tCreated actuator block with size ${this.toJson().length} B");
   }
 
+  ActuatorDataBlock.createEncryptedModelWithOnlyValue(ActuatorDataBlock? act){
+    value = act?.value;
+    for (dynamic type in value!.keys) {
+      value![type.toString()] =
+          base64.encode(utf8.encode(value![type.toString()].toString()));
+    }
+  }
+
   Map<String, dynamic> toJson() =>
       {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
+
+  Map<String, dynamic> toJsonWithOnlyValue() => {'value':value};
 
   factory ActuatorDataBlock.fromJson(Map<dynamic, dynamic> json) {
     return ActuatorDataBlock(json["actuatorId"],json["type"],json["state"],json["value"]);
@@ -402,7 +439,6 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     final event = await ref.child(userId).once(DatabaseEventType.value);
     // create empty model of DataPayload;
     DataPayload data = DataPayload.createEmpty();
-    print("Snap exist: ${snapshot.exists}");
     if (snapshot.exists) {
       final Map? userInfo = event.snapshot.value as Map?;
       // get user's data from snapshot
@@ -440,8 +476,9 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
             return Transaction.abort();
           }
           Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
+          print("Data : $data");
           _obj.localizedTrySetFromMap(data);
-          print("Sent!");
+          //print("Sent! $_obj");
           return Transaction.success(_obj);
         }, applyLocally: true
     );
