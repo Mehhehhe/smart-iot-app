@@ -71,17 +71,15 @@ class _Profile_PageState extends State<Profile_Page> {
         ),
         body: Container(
 
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromRGBO(12, 210, 193, 1.0),
-                Color.fromRGBO(195, 255, 232, 1.0),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image : AssetImage('assets/images/bg_profile.jpg'),
+              fit: BoxFit.cover
             ),
+
           ),child: ListView(
           children: [
+            showProfile(),
             _showForm(),
           ],
         ),
@@ -103,13 +101,14 @@ class _Profile_PageState extends State<Profile_Page> {
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-
-              showProfile(),
-              addPhoto(),
               textUser(),
               email(),
+              changePassword(),
+              activeDevice(),
+              //systenMessage(),
+
               submitButton(),
-              forgotPassword(),
+              //forgotPassword(),
             ],
           ),
         ),
@@ -117,95 +116,209 @@ class _Profile_PageState extends State<Profile_Page> {
     );
   }
 
-  Widget showProfile() {
-    return Builder(
-      builder: (context)=>Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child:  CircleAvatar(
-                  radius: 130,
-                  backgroundColor: Colors.grey,
-                  child: ClipOval(
-                    child: SizedBox(
-                      width: 240,
-                      height: 240,
-                      child: imageNet ?? Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
-                    ),
+
+Widget showProfile(){
+    return Container(
+      //  padding: EdgeInsets.symmetric(vertical: 10),
+      child: RawMaterialButton(
+        onPressed: () {
+          getImage();
+        },
+        elevation: 2.0,
+        fillColor: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child:  CircleAvatar(
+                radius: 100,
+                backgroundColor: Colors.grey,
+                child: ClipOval(
+                  child: SizedBox(
+
+                    width: 240,
+                    height: 240,
+                    child: imageNet ?? Image.network("https://icon-library.com/images/9272.png",fit:BoxFit.fill ,) ,
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(3.0),
+        shape: CircleBorder(),
       ),
-
     );
-  }
-
-  Widget addPhoto(){
-    return Padding(
-  padding:const EdgeInsets.only(left: 200),
-  child: IconButton(
-  onPressed: (){
-    getImage();
-    //widget.auth.getProfile();
-  },
-  icon: const Icon(Icons.add_a_photo,size: 30,),
-  ),
-  );
 }
-//icon: Image.asset('assets/images/profile.png'),
+
+
 
   Widget textUser(){
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20,horizontal: 70),
-      child: ListTile(
-        title: Text(displayName),
-        trailing: IconButton(
-          icon: const Icon(Icons.edit_outlined),
-          onPressed: (){
-            editThread();
-          },
-        )
+      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 70),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(displayName, style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            shadows: [
+              Shadow(
+                offset: Offset(0.0, 0.0),
+                blurRadius: 0.0,
+                color: Colors.black,
+              ),
+            ]
+          ),),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: (){
+              editThread();
+            },
+          )
+        ],
+
       ),
     );
   }
 
-  Widget email(){
-    return Container(
-      width: 300,
-      height: 60,
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
-          border: Border.all(
-            color: const Color.fromRGBO(66, 66, 66, 0.6),
-          ),
-          borderRadius: BorderRadius.circular(40)
+   Widget email(){
+     return Container(
+       padding: const EdgeInsets.only(top: 15),
+       child: Row(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           Text(login, style: TextStyle(
+               fontSize: 15,
+               shadows: [
+                 Shadow(
+                   offset: Offset(0.0, 0.0),
+                   blurRadius: 0.0,
+                   color: Colors.black,
+                 ),
+               ]
+           ),),
+         ],
+
+       ),
+     );
+   }
+
+   Widget changePassword(){
+    return TextButton(
+      style: TextButton.styleFrom( primary: Color.fromARGB(255, 0, 0, 183),
+        textStyle: const TextStyle(fontSize: 16,),
       ),
+      onPressed: () {forgotDialog();},
+      child: const Text('Change password'),
+    );
+   }
+   Widget activeDevice(){
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 15),
       child: Container(
-        padding: const EdgeInsets.only(top: 21,left: 15),
-        child: Text(login),
+          height: 100,
+          //margin: EdgeInsets.only(top: 150,left: 20,right: 20),
+          decoration: BoxDecoration(
+            borderRadius : BorderRadius.circular(8),
+            color : Color.fromRGBO(255, 255, 255, 0.2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius:2,
+                blurRadius: 5,
+                offset: Offset(0, 10), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(left: 10),
+            child: Row(mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.phone_android_rounded,size: 80,),
+              Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text('Active Device', style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
+                  Text('null devices actived', style: TextStyle(fontSize:17 ,color: Colors.white,))
+                ],
+              )
+            ],
+      ),
+          )
       ),
     );
-  }
+   }
+
+   Widget systenMessage(){
+     return Container(
+         height: 200,
+         //margin: EdgeInsets.only(top: 150,left: 20,right: 20),
+         decoration: BoxDecoration(
+           borderRadius : BorderRadius.circular(8),
+           color : Color.fromRGBO(255, 255, 255, 0.2),
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withOpacity(0.1),
+               spreadRadius:2,
+               blurRadius: 5,
+               offset: Offset(0, 10), // changes position of shadow
+             ),
+           ],
+         ),
+         child: Padding(
+           padding: EdgeInsets.only(left: 10),
+           child: Row(
+             children: [
+               Icon(Icons.person,size: 80,),
+               Column(mainAxisAlignment: MainAxisAlignment.spaceAround,
+                 children: [
+                   Text('System massage', style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
+                   Container(
+                     height: 70,width: 240,
+                     decoration: BoxDecoration(
+                       borderRadius : BorderRadius.circular(8),
+                       color : Color.fromRGBO(255, 255, 255, 0.2),
+                     ),
+                     child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Text('05/07/2022 15:02'),
+                         Text('Massage : Hello World!')
+                       ],
+                     ),
+                   ),
+                   Container(
+                     height: 70,width: 240,
+                     decoration: BoxDecoration(
+                       borderRadius : BorderRadius.circular(8),
+                       color : Color.fromRGBO(255, 255, 255, 0.2),
+                     ),
+                     child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Text('05/07/2022 15:05'),
+                         Text('Massage : Bye bye')
+                       ],
+                     ),
+                   ),
+                 ],
+               )
+             ],
+           ),
+         )
+     );
+   }
 
   Widget submitButton(){
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0),
+      padding: const EdgeInsets.symmetric(vertical: 50),
       child: Container(
-        width: 200,
+        width: z,
         height: 50,
         decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
-                Color.fromRGBO(220, 41, 104, 1.0),
-                Color.fromRGBO(255, 118, 196, 1.0),
+                Color.fromRGBO(255, 0, 0, 1.0),
+                Color.fromRGBO(255, 120, 120, 1.0),
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
@@ -239,7 +352,7 @@ class _Profile_PageState extends State<Profile_Page> {
             style: TextStyle(
               fontFamily: "Roboto Slab",
               fontWeight: FontWeight.w600,
-              fontSize: 18,
+              fontSize: 22,
               letterSpacing: 0.0,
               color: Colors.white,
             ),
@@ -340,56 +453,6 @@ class _Profile_PageState extends State<Profile_Page> {
       );
   }
 
-  Widget forgotPassword() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 0),
-      child: Container(
-        width: 200,
-        height: 50,
-        decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                Color.fromRGBO(220, 41, 104, 1.0),
-                Color.fromRGBO(255, 118, 196, 1.0),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(25.0),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.pink.withOpacity(0.2),
-                spreadRadius: 4,
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              )
-            ]),
-        child: OutlinedButton(
-          style: ButtonStyle(
-            shape: MaterialStateProperty.all(
-              RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0)),
-            ),
-          ),
-          onPressed: () {forgotDialog();},
-          child: const Text(
-            'Reset Password',
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontFamily: "Roboto Slab",
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              letterSpacing: 0.0,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> forgotDialog() async {
     showDialog(
         context: context,
@@ -449,4 +512,6 @@ class _Profile_PageState extends State<Profile_Page> {
       }
     }
   }
+
+
 }
