@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
@@ -25,6 +26,36 @@ class _TestPageState extends State<TestPage>{
     Future<Map<String, dynamic>> dataF = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataF;
     return msg;
+  }
+
+  Future<DataPayload> testAlbumSend(DataPayload data) async {
+    final http.Response response = await http.post(
+      Uri.parse('http://192.168.1.56:1880/userData'),
+      headers: <String, String>{
+        'Content-Type':"application/json; charset=UTF-8"
+      },
+      body: jsonEncode(data.toJsonForSending()),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      return DataPayload.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to create data payload');
+    }
+
+  }
+
+  Future<DataPayload> testFetchAlbum() async {
+    final http.Response response = await http.get(
+      Uri.parse('http://192.168.1.56:1880/CurrentTime'),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      print("GET: ${json.decode(response.body)}");
+      return DataPayload.createEmpty();
+    } else {
+      throw Exception('Failed to load data');
+    }
   }
 
   @override
@@ -169,7 +200,19 @@ class _TestPageState extends State<TestPage>{
                               );
                             },
                             child: Text("Navigate to manage")
-                        )
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            testAlbumSend(dataPayload);
+                          },
+                          child: Text("Test Send to Node-RED"),
+                        ),
+                        TextButton(
+                          onPressed: (){
+                            testFetchAlbum();
+                          },
+                          child: Text("Test Get From Node-RED"),
+                        ),
                       ],
                     ),
                   );
