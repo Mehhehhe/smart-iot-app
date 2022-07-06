@@ -47,12 +47,25 @@ class _TestPageState extends State<TestPage>{
 
   Future<DataPayload> testFetchAlbum() async {
     final http.Response response = await http.get(
-      Uri.parse('http://192.168.1.56:1880/CurrentTime'),
+      Uri.parse('http://192.168.1.56:1880/userInfo'),
     );
     print(response.statusCode);
     if(response.statusCode == 200){
       print("GET: ${json.decode(response.body)}");
-      return DataPayload.createEmpty();
+      return DataPayload.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<void> fetchDeviceMap(String mapID) async {
+    print(mapID);
+    final http.Response response = await http.get(
+      Uri.parse('http://192.168.1.56:1880/userInfo?deviceMap=$mapID'),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      print("query GET: ${json.decode(response.body)}");
     } else {
       throw Exception('Failed to load data');
     }
@@ -119,7 +132,6 @@ class _TestPageState extends State<TestPage>{
                                 approved: true,
                                 encryption: "base64",
                                 userDevice: {"device1": device1.toJson()},
-                                widgetList: {"widget1": "widget1"},
                               );
 
                               SmIOTDatabase db = SmIOTDatabase();
@@ -208,8 +220,18 @@ class _TestPageState extends State<TestPage>{
                           child: Text("Test Send to Node-RED"),
                         ),
                         TextButton(
-                          onPressed: (){
-                            testFetchAlbum();
+                          onPressed: () async {
+                            DataPayload dataGET = await testFetchAlbum();
+                            fetchDeviceMap(dataGET.userDevice?.entries.elementAt(0).value);
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context){
+                                  return AlertDialog(
+                                    title: Text("GET completed"),
+                                    content: Text(dataGET.toJson().toString()),
+                                  );
+                                }
+                            );
                           },
                           child: Text("Test Get From Node-RED"),
                         ),
