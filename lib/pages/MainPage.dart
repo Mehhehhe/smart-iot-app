@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/pages/ContactPage.dart';
 import 'package:smart_iot_app/pages/HomePage.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
@@ -9,6 +10,8 @@ import 'package:smart_iot_app/pages/TestPage.dart';
 import 'dart:async';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
+
+import 'SettingPage.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage(
@@ -232,13 +235,15 @@ class _MainPageState extends State<MainPage> {
                         leading: Icon(Icons.settings, color: Colors.white,),
                         title: Text('Setting', style: TextStyle(color: Colors.white),),
                         hoverColor: Colors.white70,
-                        onTap: (){},
+                        onTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Setting_Page()));
+                        },
                       ),
                       ListTile(
                         leading: Icon(Icons.phone, color: Colors.white,),
                         title: Text('Contact', style: TextStyle(color: Colors.white),),
                         hoverColor: Colors.white70,
-                        onTap: (){},
+                        onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => Contact_page()));},
                       ),
                       const SizedBox(height: 24,),
                       Divider(color: Colors.white70,),
