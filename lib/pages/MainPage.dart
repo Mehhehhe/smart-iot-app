@@ -2,12 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/pages/ContactPage.dart';
+import 'package:smart_iot_app/pages/HomePage.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'package:smart_iot_app/pages/TestPage.dart';
 import 'dart:async';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
+
+import 'SettingPage.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage(
@@ -148,14 +152,16 @@ class _MainPageState extends State<MainPage> {
   }
   int index = 0;
   final screens = [
-    Center(child: Text('Home ',style: TextStyle(fontSize: 72),),),
+    Home_Page(),
     Center(child: Text('History',style: TextStyle(fontSize: 72),),),
   ];
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+
         appBar: AppBar(
           flexibleSpace: Container(
             decoration: const BoxDecoration(
@@ -172,40 +178,9 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
           titleSpacing: 0,
-          leading: GestureDetector(
-            child: IconButton(
-              icon: const Icon(Icons.account_circle), // The "-" icon
-              onPressed: () async {
-                final value = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Profile_Page(
-                              auth: widget.auth,
-                            )));
-                findDisplayName();
-              },
-            ),
+
+          leading: Icon((Icons.account_circle),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout), // The "-" icon
-              onPressed: signOut, // The `_decrementCounter` function
-            ),
-            IconButton(
-                onPressed: () async {
-                  final value = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => TestPage(
-                              auth: widget.auth,
-                              userId: widget.userId
-                          )
-                      ),
-                  );
-                },
-                icon: const Icon(Icons.abc_sharp)
-            ),
-          ],
         ),
         body: screens[index],
         bottomNavigationBar : NavigationBarTheme(
@@ -235,8 +210,74 @@ class _MainPageState extends State<MainPage> {
           ],
           ),
         ),
+          endDrawer: Drawer(
+              child: Material(
+                color: Colors.blue,
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: ListView(
+                    children: <Widget>[
+                      const SizedBox(height: 48,),
+                      ListTile(
+                        leading: Icon(Icons.account_circle, color: Colors.white,),
+                        title: Text('Profile', style: TextStyle(color: Colors.white),),
+                        hoverColor: Colors.white70,
+                        onTap: ()async {
+                          final value = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Profile_Page(
+                                    auth: widget.auth,
+                                  )));
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.settings, color: Colors.white,),
+                        title: Text('Setting', style: TextStyle(color: Colors.white),),
+                        hoverColor: Colors.white70,
+                        onTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Setting_Page()));
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.phone, color: Colors.white,),
+                        title: Text('Contact', style: TextStyle(color: Colors.white),),
+                        hoverColor: Colors.white70,
+                        onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => Contact_page()));},
+                      ),
+                      const SizedBox(height: 24,),
+                      Divider(color: Colors.white70,),
+                      const SizedBox(height: 24,),
+                      ListTile(
+                        leading: Icon(Icons.logout, color: Colors.white,),
+                        title: Text('Signout', style: TextStyle(color: Colors.white),),
+                        hoverColor: Colors.white70,
+                        onTap: signOut,
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.abc_sharp, color: Colors.white,),
+                        title: Text('test backend', style: TextStyle(color: Colors.white),),
+                        hoverColor: Colors.white70,
+                        onTap: () async {
+                          final value = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => TestPage(
+                                    auth: widget.auth,
+                                    userId: widget.userId
+                                )
+                            ),
+                          );
+                        },
+                      ),
 
+                    ],
+
+                  ),
+                ),
+              ),
       ),
+      )
     );
   }
 

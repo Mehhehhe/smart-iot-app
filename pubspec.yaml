@@ -40,12 +40,16 @@ dependencies:
   firebase_core_platform_interface: ^4.4.0
   firebase_database_platform_interface: ^0.2.1+7
   firebase_database_web: ^0.2.0+14
+  firebase_storage: ^10.2.17
+  image_picker: ^0.8.5+3
+
+  dropdown_button2: ^1.6.3
+
 
   google_sign_in: ^5.3.3
   google_sign_in_android: ^5.2.8
   google_sign_in_platform_interface: ^2.1.3
-  firebase_storage: ^10.2.17
-  image_picker: ^0.8.5+3
+
 
   crypto: ^3.0.2
   http: ^0.13.4
@@ -77,8 +81,10 @@ flutter:
     - assets/images/google_icon.png
     - assets/images/Facebook_icon.png
     - assets/images/profile.png
-
-  # An image asset can refer to one or more resolution-specific "variants", see
+    - assets/images/bg_profile.jpg
+    - assets/images/bg_setting.jpg
+    - assets/images/bg_contact.jpg
+    # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
   # For details regarding adding assets from package dependencies, see
