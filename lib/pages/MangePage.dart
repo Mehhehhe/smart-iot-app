@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,7 +31,7 @@ class Manage_Page extends StatefulWidget {
 class _Manage_PageState extends State<Manage_Page> {
 
   _Manage_PageState(){
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) { });
+    timer = Timer.periodic(const Duration(seconds: 30), updateDataInGraph);
   }
 
   bool sensorValue = true;
@@ -57,10 +59,7 @@ class _Manage_PageState extends State<Manage_Page> {
   void initState() {
     _controller.text = value.toString();
     chartData = <_ChartData>[
-      _ChartData(DateTime(2018,1,2,3), 36.5),
-      _ChartData(DateTime(2018,1,2,4), 37.5),
-      _ChartData(DateTime(2018,1,2,5), 34.5),
-      _ChartData(DateTime.now(), 100.2)
+      _ChartData(DateTime.now(), 0.0),
     ];
     print(chartData.toString());
     super.initState();
@@ -72,6 +71,42 @@ class _Manage_PageState extends State<Manage_Page> {
     chartData?.clear();
     _chartSeriesController = null;
     super.dispose();
+  }
+
+  void updateDataInGraph(Timer timer) async {
+    final http.Response response = await http.get(
+      Uri.parse('http://192.168.1.56:1880/userInfo?liveSensorVal=true'),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      print("Getting data...");
+      CircularProgressIndicator();
+      var sv = json.decode(response.body);
+      print(response.headers.toString());
+      print(sv.runtimeType);
+      Map jsonSV = Map<String, dynamic>.from(sv);
+      print(jsonSV);
+      jsonSV.map((key, value){
+        key = DateTime.parse(key).toLocal();
+        value = Map<String, dynamic>.from(value);
+        print("value $value ${value.runtimeType}");
+        chartData.add(_ChartData(key, value["sensorVal"]));
+        return MapEntry(key, value);
+      });
+      if(chartData.length == 30){
+        chartData.removeAt(0);
+        _chartSeriesController!.updateDataSource(
+          addedDataIndexes: <int>[chartData.length-1],
+          removedDataIndexes: <int>[0]
+        );
+      } else {
+        _chartSeriesController!.updateDataSource(
+          addedDataIndexes: <int>[chartData!.length-1]
+        );
+      }
+    } else {
+      throw Exception("Failed to load data");
+    }
   }
 
   @override
@@ -203,7 +238,7 @@ class _Manage_PageState extends State<Manage_Page> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 0.4,
-      color: Colors.white,
+      color: Colors.grey,
       //padding: EdgeInsets.all(50.0),
       child: buildLiveChart(),
     );
@@ -212,7 +247,17 @@ class _Manage_PageState extends State<Manage_Page> {
   SfCartesianChart buildLiveChart(){
     return SfCartesianChart(
       plotAreaBorderWidth: 0,
-      primaryXAxis: DateTimeAxis(),
+      backgroundColor: Colors.white,
+      plotAreaBackgroundColor: Colors.white54,
+      palette: const [
+        Color.fromRGBO(208, 31, 49, 1.0),
+        Color.fromRGBO(246, 129, 33, 1.0),
+        Color.fromRGBO(251, 221, 11, 1.0),
+        Color.fromRGBO(0, 123, 97, 1.0),
+        Color.fromRGBO(0, 114, 185, 1.0),
+      ],
+      plotAreaBorderColor: Colors.grey,
+      primaryXAxis: DateTimeAxis(autoScrollingMode: AutoScrollingMode.start, enableAutoIntervalOnZooming: true, ),
       primaryYAxis: NumericAxis(axisLine: const AxisLine(width: 0), majorTickLines: const MajorTickLines(size: 0)),
       series: <LineSeries<_ChartData, DateTime>>[
         LineSeries<_ChartData, DateTime>(
@@ -645,6 +690,6 @@ class _Manage_PageState extends State<Manage_Page> {
 
 class _ChartData{
   _ChartData(this.date, this.values);
-  final dynamic date;
+  final DateTime date;
   final double values;
 }
