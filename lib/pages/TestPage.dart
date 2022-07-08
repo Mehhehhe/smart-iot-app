@@ -60,12 +60,18 @@ class _TestPageState extends State<TestPage>{
 
   Future<void> fetchDeviceMap(String mapID) async {
     print(mapID);
-    final http.Response response = await http.get(
+    http.Response response = await http.get(
       Uri.parse('http://192.168.1.56:1880/userInfo?deviceMap=$mapID'),
     );
     print(response.statusCode);
     if(response.statusCode == 200){
       print("query GET: ${json.decode(response.body)}");
+      response = await http.get(
+        Uri.parse('http://192.168.1.56:1880/userInfo?sensorValsRequest=true'),
+      );
+      List<dynamic> senValues = json.decode(response.body);
+      print("sensor query GET: ${senValues.length}");
+      print("sensor test first 10 elements: ${senValues[1]}");
     } else {
       throw Exception('Failed to load data');
     }
@@ -222,7 +228,11 @@ class _TestPageState extends State<TestPage>{
                         TextButton(
                           onPressed: () async {
                             DataPayload dataGET = await testFetchAlbum();
-                            fetchDeviceMap(dataGET.userDevice?.entries.elementAt(0).value);
+                            try{
+                              fetchDeviceMap(dataGET.userDevice?.entries.elementAt(0).value);
+                            } catch (e) {
+                              print(e);
+                            }
                             showDialog(
                                 context: context,
                                 builder: (BuildContext context){

@@ -1,10 +1,14 @@
 import 'dart:ui';
+import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
 import 'package:smart_iot_app/services/authentication.dart';
+
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class Manage_Page extends StatefulWidget {
   const Manage_Page(
@@ -23,11 +27,20 @@ class Manage_Page extends StatefulWidget {
 }
 
 class _Manage_PageState extends State<Manage_Page> {
+
+  _Manage_PageState(){
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) { });
+  }
+
   bool sensorValue = true;
   late DataPayload dataPayload;
   String status = "Status: Normal";
   double value=0;
   double thresh = 0;
+
+  Timer? timer;
+  late List<_ChartData> chartData;
+  ChartSeriesController? _chartSeriesController;
 
   final scaffKey = GlobalKey<ScaffoldState>();
   TextEditingController _controller = TextEditingController();
@@ -41,9 +54,24 @@ class _Manage_PageState extends State<Manage_Page> {
   }
 
   @override
-  void init() async {
-    super.initState();
+  void initState() {
     _controller.text = value.toString();
+    chartData = <_ChartData>[
+      _ChartData(DateTime(2018,1,2,3), 36.5),
+      _ChartData(DateTime(2018,1,2,4), 37.5),
+      _ChartData(DateTime(2018,1,2,5), 34.5),
+      _ChartData(DateTime.now(), 100.2)
+    ];
+    print(chartData.toString());
+    super.initState();
+  }
+
+  @override
+  void dispose(){
+    timer?.cancel();
+    chartData?.clear();
+    _chartSeriesController = null;
+    super.dispose();
   }
 
   @override
@@ -74,31 +102,10 @@ class _Manage_PageState extends State<Manage_Page> {
             ),
           ],
         ),
-        /*
-        Column(
-          children: <Widget>[
-            managePageHeader(),
-            carouselPlaceholder(),
-            sensorSettings()
-            //_showForm(),
-          ],
-        ),*/
       ),
       extendBodyBehindAppBar: true,
     );
   }
-/*
-  Widget _showForm() {
-    return Form(
-      //key: _formKey,
-      child: Center(
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[deviceName(), deviceImage(), mangeSensor()],
-        ),
-      ),
-    );
-  }*/
 
   Widget managePageHeader() {
     return Container(
@@ -196,12 +203,27 @@ class _Manage_PageState extends State<Manage_Page> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 0.4,
-      color: Colors.grey,
-      padding: EdgeInsets.all(50.0),
-      child: Text(
-        "Placeholder for images and graphs",
-        style: TextStyle(fontSize: 16, height: 10),
-      ),
+      color: Colors.white,
+      //padding: EdgeInsets.all(50.0),
+      child: buildLiveChart(),
+    );
+  }
+
+  SfCartesianChart buildLiveChart(){
+    return SfCartesianChart(
+      plotAreaBorderWidth: 0,
+      primaryXAxis: DateTimeAxis(),
+      primaryYAxis: NumericAxis(axisLine: const AxisLine(width: 0), majorTickLines: const MajorTickLines(size: 0)),
+      series: <LineSeries<_ChartData, DateTime>>[
+        LineSeries<_ChartData, DateTime>(
+          onRendererCreated: (ChartSeriesController controller){
+            _chartSeriesController = controller;
+          },
+            dataSource: chartData!,
+            xValueMapper: (_ChartData inf,_) => inf.date as DateTime,
+            yValueMapper: (_ChartData inf,_) => inf.values
+        )
+      ]
     );
   }
 
@@ -621,3 +643,8 @@ class _Manage_PageState extends State<Manage_Page> {
   }
 }
 
+class _ChartData{
+  _ChartData(this.date, this.values);
+  final dynamic date;
+  final double values;
+}

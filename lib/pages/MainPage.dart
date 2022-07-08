@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/ContactPage.dart';
-import 'package:smart_iot_app/pages/HomePage.dart';
+//import 'package:smart_iot_app/pages/HomePage.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'package:smart_iot_app/pages/TestPage.dart';
@@ -152,7 +152,7 @@ class _MainPageState extends State<MainPage> {
   }
   int index = 0;
   final screens = [
-    Home_Page(),
+    //Home_Page(),
     Center(child: Text('History',style: TextStyle(fontSize: 72),),),
   ];
 
