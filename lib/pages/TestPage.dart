@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 class TestPage extends StatefulWidget {
 
@@ -20,6 +21,7 @@ class TestPage extends StatefulWidget {
 class _TestPageState extends State<TestPage>{
 
   late DataPayload dataPayload;
+  MQTTClientWrapper newclient = MQTTClientWrapper();
 
   Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = SmIOTDatabase();
@@ -75,6 +77,11 @@ class _TestPageState extends State<TestPage>{
     } else {
       throw Exception('Failed to load data');
     }
+  }
+
+  void prepareMQTT(){
+    newclient.prepareMqttClient();
+
   }
 
   @override
@@ -245,6 +252,12 @@ class _TestPageState extends State<TestPage>{
                           },
                           child: Text("Test Get From Node-RED"),
                         ),
+                        TextButton(
+                          onPressed: (){
+                            prepareMQTT();
+                          },
+                          child: Text("Prepare MQTT"),
+                        )
                       ],
                     ),
                   );
