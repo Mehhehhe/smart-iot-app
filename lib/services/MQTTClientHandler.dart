@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -11,17 +12,15 @@ enum MqttCurrentConnectionState {
   ERROR_WHEN_CONNECTING
 }
 
-enum MqttSubscriptionState {
-  IDLE,
-  SUBSCRIBED
-}
+enum MqttSubscriptionState { IDLE, SUBSCRIBED }
 
 class MQTTClientWrapper {
-
   late MqttServerClient client;
 
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
+
+  late Stream<List<MqttReceivedMessage<MqttMessage>>> subscription;
 
   // using async tasks, so the connection won't hinder the code flow
   void prepareMqttClient() async {
@@ -29,6 +28,36 @@ class MQTTClientWrapper {
     await _connectClient();
     _subscribeToTopic('Dart/Mqtt_client/testtopic');
     _publishMessage('Hello');
+  }
+
+  Future<Stream<String>> subscribeToResponse() async {
+    String msgToReturn = "";
+    // Subscribe to get response for once from data in Node-RED
+    client.subscribe("liveDataResponse", MqttQos.exactlyOnce);
+    // Send message to topic "liveData" for requesting data response.
+    // response will be sent through topic "liveDataResponse" which was subscribed.
+    _publishMessage("requestLiveData", "liveData");
+    // Initialize for updates of data
+    subscription = client.updates!;
+
+    var stmSubscription =
+        subscription.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+      final MqttPublishMessage recMess = c[0].payload as MqttPublishMessage;
+      var message =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+    });
+
+    // transform Mqtt message into stream of message
+    var data = subscription.map((event) {
+      final MqttPublishMessage recMess = event[0].payload as MqttPublishMessage;
+      var message =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      return message;
+    });
+
+    stmSubscription.cancel();
+    client.unsubscribe("liveDataResponse");
+    return data;
   }
 
   // waiting for the connection, if an error occurs, print it and disconnect
@@ -56,15 +85,16 @@ class MQTTClientWrapper {
   }
 
   void _setupMqttClient() {
-    client = MqttServerClient.withPort('79de4ca025cd4477b9cb4823aca4b3a5.s2.eu.hivemq.cloud', "Pakin", 8883);
+    client = MqttServerClient.withPort(
+        '79de4ca025cd4477b9cb4823aca4b3a5.s2.eu.hivemq.cloud', "Pakin", 8883);
     // the next 2 lines are necessary to connect with tls, which is used by HiveMQ Cloud
     client.secure = true;
     client.securityContext = SecurityContext.defaultContext;
-    client.keepAlivePeriod = 20;
+    client.keepAlivePeriod = 2;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
-    }
+  }
 
   void _subscribeToTopic(String topicName) {
     print('Subscribing to the $topicName topic');
@@ -73,19 +103,20 @@ class MQTTClientWrapper {
     // print the message when it is received
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage recMess = c[0].payload as MqttPublishMessage;
-      var message = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      var message =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
 
-      print('YOU GOT A NEW MESSAGE:');
-      print(message);
+      //print('YOU GOT A NEW MESSAGE:');
+      //print(message);
     });
   }
 
-  void _publishMessage(String message) {
+  void _publishMessage(String message, [String? topic]) {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
-
-    print('Publishing message "$message" to topic ${'Dart/Mqtt_client/testtopic'}');
-    client.publishMessage('Dart/Mqtt_client/testtopic', MqttQos.exactlyOnce, builder.payload!);
+    topic = topic ?? 'Dart/Mqtt_client/testtopic';
+    //print('Publishing message "$message" to topic $topic');
+    client.publishMessage(topic!, MqttQos.exactlyOnce, builder.payload!);
   }
 
   // callbacks for different events
@@ -103,5 +134,4 @@ class MQTTClientWrapper {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print('OnConnected client callback - Client connection was successful');
   }
-
 }
