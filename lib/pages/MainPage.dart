@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/ContactPage.dart';
-//import 'package:smart_iot_app/pages/HomePage.dart';
+import 'package:smart_iot_app/pages/HistoryPage.dart';
+import 'package:smart_iot_app/pages/HomePage.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'package:smart_iot_app/pages/TestPage.dart';
@@ -152,8 +153,8 @@ class _MainPageState extends State<MainPage> {
   }
   int index = 0;
   final screens = [
-    //Home_Page(),
-    Center(child: Text('History',style: TextStyle(fontSize: 72),),),
+    Home_Page(),
+    History_Page()
   ];
 
   @override
@@ -166,8 +167,8 @@ class _MainPageState extends State<MainPage> {
           flexibleSpace: Container(
             decoration: const BoxDecoration(
                 gradient: LinearGradient(colors: [
-              Color.fromRGBO(146, 222, 84, 1.0),
-              Color.fromRGBO(54, 174, 185, 1.0),
+              Color.fromRGBO(78, 92, 252, 1.0),
+              Color.fromRGBO(168, 30, 255, 1.0),
             ], begin: Alignment.bottomRight, end: Alignment.topLeft)),
           ),
           elevation: 10,
@@ -192,8 +193,8 @@ class _MainPageState extends State<MainPage> {
           ),
 
           child: NavigationBar(
-            height: 80,
-          backgroundColor: Color(0xFFf1f5fb),
+            height: 60,
+          backgroundColor: Color(0xffe1e1e1),
           labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
           selectedIndex: index,
           animationDuration: Duration(milliseconds: 500),
