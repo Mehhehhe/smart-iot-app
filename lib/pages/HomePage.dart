@@ -19,16 +19,12 @@ class _Home_PageState extends State<Home_Page> {
       body: Container(
         decoration: const BoxDecoration(
 
-
-            color : Color.fromRGBO(241, 241, 241, 1.0),
-
-
       ),
 
         child: Stack(
           children: [
           Container(
-        margin: EdgeInsets.symmetric(horizontal: 10,vertical: 8),
+        margin: EdgeInsets.symmetric(horizontal: 10,vertical: 16),
         decoration: BoxDecoration(
             color:  Color.fromARGB(50, 133, 133, 133),
             borderRadius: BorderRadius.all(Radius.circular(22))
@@ -64,24 +60,25 @@ class _Home_PageState extends State<Home_Page> {
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
           children: [
-            Container(color: Colors.red,),
-            Container(color: Colors.yellow,),
-            Container(color: Colors.blue,),
-            Container(color: Colors.greenAccent,),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
+            cardPreset(),
 
           ],
         ),
       ),
-            //_showForm(),
+            _showForm(),
 
           ],
         ),
       ),
     );
-
-
   }
-
 
   Widget _showForm() {
     return Container(
@@ -92,7 +89,7 @@ class _Home_PageState extends State<Home_Page> {
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-              cardPreset()
+              //cardPreset()
             ],
           ),
         ),
@@ -100,14 +97,42 @@ class _Home_PageState extends State<Home_Page> {
     );
   }
 
-
-
-  Widget cardPreset(){
-    return Container(
-      
+  Widget cardPreset() {
+    return Card(
+      //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      shadowColor: Colors.black,
+      elevation: 15,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              Ink.image(
+                image: const NetworkImage(
+                    'https://static.onecms.io/wp-content/uploads/sites/20/2021/04/30/petlibro-automatic-cat-feeder-timed-tout.jpg'),
+                height: 115 ,
+                fit: BoxFit.cover,
+                child: InkWell(
+                  onTap: () {},
+                ),
+              ),
+            ],
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(bottom: 5),
+                child:
+                Text('Cat feeding machine'),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
-
-
 
 }

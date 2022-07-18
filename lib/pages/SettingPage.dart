@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 class Setting_Page extends StatefulWidget {
@@ -148,6 +147,7 @@ class _Setting_PageState extends State<Setting_Page> {
                     setState(() {
                       themeButton_1 = value;
                       themeButton_1 == true ? themeButton_2 = false : themeButton_2 = true ;
+                      theme.setLightMode();
                     });
                   },activeTrackColor: Colors.lightGreenAccent,
                     activeColor: Colors.green,)
@@ -160,6 +160,7 @@ class _Setting_PageState extends State<Setting_Page> {
                     setState(() {
                       themeButton_2 = value;
                       themeButton_2 == true ? themeButton_1 = false : themeButton_1 = true ;
+                      theme.setDarkMode();
                     });
                   },activeTrackColor: Colors.lightGreenAccent,
                     activeColor: Colors.green,)
