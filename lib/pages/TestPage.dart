@@ -1,10 +1,12 @@
 
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 class TestPage extends StatefulWidget {
 
@@ -19,12 +21,67 @@ class TestPage extends StatefulWidget {
 class _TestPageState extends State<TestPage>{
 
   late DataPayload dataPayload;
+  MQTTClientWrapper newclient = MQTTClientWrapper();
 
   Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = SmIOTDatabase();
     Future<Map<String, dynamic>> dataF = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataF;
     return msg;
+  }
+
+  Future<DataPayload> testAlbumSend(DataPayload data) async {
+    final http.Response response = await http.post(
+      Uri.parse('http://192.168.1.56:1880/userData'),
+      headers: <String, String>{
+        'Content-Type':"application/json; charset=UTF-8"
+      },
+      body: jsonEncode(data.toJsonForSending()),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      return DataPayload.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to create data payload');
+    }
+
+  }
+
+  Future<DataPayload> testFetchAlbum() async {
+    final http.Response response = await http.get(
+      Uri.parse('http://192.168.1.56:1880/userInfo'),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      print("GET: ${json.decode(response.body)}");
+      return DataPayload.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<void> fetchDeviceMap(String mapID) async {
+    print(mapID);
+    http.Response response = await http.get(
+      Uri.parse('http://192.168.1.56:1880/userInfo?deviceMap=$mapID'),
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      print("query GET: ${json.decode(response.body)}");
+      response = await http.get(
+        Uri.parse('http://192.168.1.56:1880/userInfo?sensorValsRequest=true'),
+      );
+      List<dynamic> senValues = json.decode(response.body);
+      print("sensor query GET: ${senValues.length}");
+      print("sensor test first 10 elements: ${senValues[1]}");
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  void prepareMQTT(){
+    newclient.prepareMqttClient();
+
   }
 
   @override
@@ -88,7 +145,6 @@ class _TestPageState extends State<TestPage>{
                                 approved: true,
                                 encryption: "base64",
                                 userDevice: {"device1": device1.toJson()},
-                                widgetList: {"widget1": "widget1"},
                               );
 
                               SmIOTDatabase db = SmIOTDatabase();
@@ -169,6 +225,38 @@ class _TestPageState extends State<TestPage>{
                               );
                             },
                             child: Text("Navigate to manage")
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            testAlbumSend(dataPayload);
+                          },
+                          child: Text("Test Send to Node-RED"),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            DataPayload dataGET = await testFetchAlbum();
+                            try{
+                              fetchDeviceMap(dataGET.userDevice?.entries.elementAt(0).value);
+                            } catch (e) {
+                              print(e);
+                            }
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context){
+                                  return AlertDialog(
+                                    title: Text("GET completed"),
+                                    content: Text(dataGET.toJson().toString()),
+                                  );
+                                }
+                            );
+                          },
+                          child: Text("Test Get From Node-RED"),
+                        ),
+                        TextButton(
+                          onPressed: (){
+                            prepareMQTT();
+                          },
+                          child: Text("Prepare MQTT"),
                         )
                       ],
                     ),

@@ -1,8 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 extension MapTrySet<K,V> on Map<K,V>{
 
   Map transformAndLocalize([Map<dynamic, dynamic>? json,String nestedKey=""]){
@@ -99,7 +97,6 @@ class DataPayload {
   late String role;
   late bool approved;
   Map<String, dynamic>? userDevice;
-  Map<dynamic, dynamic>? widgetList;
   late String encryption;
 
   DataPayload(
@@ -107,7 +104,6 @@ class DataPayload {
         required this.role,
         required this.approved,
         this.userDevice,
-        this.widgetList,
         required this.encryption});
 
   DataPayload.createEmpty() {
@@ -115,7 +111,6 @@ class DataPayload {
     role = "Unknown";
     approved = false;
     userDevice = {};
-    widgetList = {};
     encryption = "";
   }
 
@@ -174,30 +169,9 @@ class DataPayload {
     return whereErr;
   }
 
-  DataPayload encode(DataPayload payload, String encryption) {
-    switch (encryption) {
-      case "base64":
-        payload.userId = base64.encode(utf8.encode(payload.userId));
-        //print(payload.userId);
-
-        payload.widgetList?.forEach(
-              (key, value) {
-            payload.widgetList?[key] = base64.encode(utf8.encode(value));
-          },
-        );
-
-        break;
-      default:
-        throw "[ERROR] Encoding error. Not supported type";
-    }
-    return payload;
-  }
-
   DataPayload decode(DataPayload payload) {
     switch (payload.encryption) {
       case "base64":
-        //payload.userId = utf8.decode(base64.decode(payload.userId));
-
         payload.userDevice?.forEach(
               (key, value) {
             if (payload.userDevice?[key]["userSensor"] != null) {
@@ -230,15 +204,6 @@ class DataPayload {
             }
           },
         );
-/*
-        payload.widgetList?.forEach(
-              (key, value) {
-            payload.widgetList?[key] = utf8.decode(base64.decode(value));
-          },
-        );
-
- */
-
         break;
       default:
         throw "[ERROR] Decoding error. Unable to decode or unsupported";
@@ -251,7 +216,6 @@ class DataPayload {
     'role': role,
     'approved': approved,
     'userDevice': userDevice,
-    'widgetList': widgetList,
     'encryption': encryption,
   };
 
@@ -260,14 +224,14 @@ class DataPayload {
   };
 
   factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
-    final List<String> keyList = ["userId","role","approved","userDevice","widgetList","encryption"];
+    final List<String> keyList = ["userId","role","approved","userDevice","encryption"];
     int count = 0;
     for(String key in keyList){
       if(!json.containsKey(key)){
         if(key == "userId" || key == "role" || key == "encryption") {
           json[key] = "Unknown";
-        } else if(key == "userDevice" || key == "widgetList") {
-          json[key] = {};
+        } else if(key == "userDevice") {
+          json[key] = {"mapID":json["userDeviceMapId"]??""};
         } else if(key == "approved"){
           json[key] = false;
         }
@@ -283,7 +247,6 @@ class DataPayload {
         role: json['role'],
         approved: json['approved'],
         userDevice: json['userDevice'],
-        widgetList: json['widgetList'],
         encryption: json['encryption']);
   }
 }
@@ -458,7 +421,6 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
           approved: approved,
           encryption: encryption,
           userDevice: userDevices,
-          widgetList: widgetList
       );
       final jsons = jsonEncode(data.toJson());
       Map<String, dynamic> jsonDecoded = jsonDecode(jsons);
@@ -489,6 +451,5 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   @override
   Future<void> testSendData(String? userId, Map<String, dynamic> data) async {
     await ref.child('$userId').update(data);
-
   }
 }
