@@ -9,11 +9,10 @@ import 'package:smart_iot_app/pages/root.dart';
 
 import 'Theme/ThemeManager.dart';
 
-
 void main() async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
-  try{
+  try {
     // Check if firebase already running in app. Instance: DEFAULT
     Firebase.app('[DEFAULT]');
   } catch (e) {
@@ -24,14 +23,16 @@ void main() async {
           apiKey: "AIzaSyCB3LceCnDLpShGwKRSZ9NhW2Kg9txwv5U",
           appId: "1:774636778498:android:cab8029c00fecc576f231b",
           messagingSenderId: "774636778498",
-          projectId: "smartiotapp-8b124"
-      ),
+          projectId: "smartiotapp-8b124"),
     );
   }
-  runApp(const SmartIOTApp());
+  return runApp(ChangeNotifierProvider(
+    create: (_) => ThemeNotifier(),
+    child: const SmartIOTApp(),
+  ));
 }
 
-bool themeState = false ;
+bool themeState = false;
 
 ThemeData lightTheme = ThemeData(
   scaffoldBackgroundColor: Colors.white,
@@ -45,22 +46,18 @@ ThemeData DarkTheme = ThemeData(
   dividerColor: Colors.white,
 );
 
-class SmartIOTApp extends StatelessWidget{
+class SmartIOTApp extends StatelessWidget {
   const SmartIOTApp({Key? key}) : super(key: key);
 
-
-
   @override
-  Widget build(BuildContext context)  {
-
+  Widget build(BuildContext context) {
     return Consumer<ThemeNotifier>(
-      builder: (context, theme, _) => MaterialApp(
-          title: 'Smart IOT',
-          debugShowCheckedModeBanner: false,
-      theme: theme.getTheme(),
-          //theme: themeState ? DarkTheme: lightTheme,
-          home: RootPage(auth: Auth()),
-    );
+        builder: (context, theme, _) => MaterialApp(
+              title: 'Smart IOT',
+              debugShowCheckedModeBanner: false,
+              theme: theme.getTheme(),
+              //theme: themeState ? DarkTheme: lightTheme,
+              home: RootPage(auth: Auth()),
+            ));
   }
 }
-

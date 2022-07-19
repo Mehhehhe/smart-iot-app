@@ -22,7 +22,7 @@ class ThemeNotifier with ChangeNotifier {
     dividerColor: Colors.white54,
   );
 
-  late ThemeData _themeData;
+  ThemeData _themeData = ThemeData();
   ThemeData getTheme() => _themeData;
 
   ThemeNotifier() {
