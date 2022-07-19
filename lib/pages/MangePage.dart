@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
+import 'package:smart_iot_app/services/notification.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -40,6 +42,8 @@ class _Manage_PageState extends State<Manage_Page> {
   String status = "Status: Normal";
   double value = 0;
   double thresh = 0;
+  bool toggle = false;
+  late List<bool> switchToggles = <bool>[];
 
   Timer? timer;
   late List<_ChartData> chartData;
@@ -104,19 +108,32 @@ class _Manage_PageState extends State<Manage_Page> {
         jsonSV.map((key, value) {
           key = DateTime.parse(key).toLocal();
           value = Map<String, dynamic>.from(value);
-          if (chartData.where((element) => element.date == key).isEmpty) {
-            print(key);
-            chartData.add(_ChartData(key, value["sensorVal"]));
-            return MapEntry(key, value);
-          }
           //updateInChartData(true);
           chartData.add(_ChartData(key, value["sensorVal"]));
+          if (value["sensorVal"] >=
+              double.parse(dataPayload.toJson()["userDevice"][widget.device]
+                  ["userSensor"]["sensorThresh"]["sensor1"])) {
+            NotifyUser notifyUser = NotifyUser();
+            notifyUser.initialize();
+            notifyUser.pushNotification(
+                Importance.high,
+                Priority.high,
+                "Warning",
+                "Value touched threshold",
+                "Sensor's value reached the threshold value from your setting. Please check the timeline.");
+          }
           return MapEntry(key, value);
         });
       });
       print(chartData.length);
       updateInChartData(null, 600, [0, 9]);
     });
+  }
+
+  void setBoolSwitches(int num) {
+    if (switchToggles.isEmpty) {
+      switchToggles = List.filled(num, true);
+    }
   }
 
   @override
@@ -193,7 +210,6 @@ class _Manage_PageState extends State<Manage_Page> {
                     } else {
                       status = "Status: Error";
                     }
-
                     return Container(
                       margin: const EdgeInsets.only(right: 42),
                       padding: const EdgeInsets.all(10),
@@ -352,6 +368,9 @@ class _Manage_PageState extends State<Manage_Page> {
                     device.removeWhere((key, value) => key != "userDevice");
 
                     device = device.transformAndLocalize();
+                    setBoolSwitches(dataPayload
+                        .userDevice![widget.device]["userSensor"]["sensorName"]
+                        .length);
 
                     return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
@@ -398,8 +417,12 @@ class _Manage_PageState extends State<Manage_Page> {
                                       padding: const EdgeInsets.only(
                                           right: 10, top: 10),
                                       child: CupertinoSwitch(
-                                        value: true,
-                                        onChanged: (bool value) {},
+                                        value: switchToggles[index],
+                                        onChanged: (bool value) {
+                                          setState(() {
+                                            switchToggles[index] = value;
+                                          });
+                                        },
                                       ),
                                     ),
                                   ],
