@@ -1,5 +1,7 @@
 // Use for initialize page aka setup for firebase
 
+
+
 import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,8 +9,20 @@ import 'package:provider/provider.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/root.dart';
 
-import 'Theme/ThemeManager.dart';
 
+
+class Mytheme with ChangeNotifier {
+  bool _isDark = false ;
+
+  ThemeMode currentTheme() {
+    return _isDark ? ThemeMode.dark : ThemeMode.light ;
+  }
+
+  void switchTheme(){
+    _isDark = !_isDark;
+    notifyListeners();
+  }
+}
 
 void main() async {
   // Check if app open properly
@@ -28,22 +42,13 @@ void main() async {
       ),
     );
   }
-  runApp(const SmartIOTApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) => Mytheme(),
+      child: SmartIOTApp(),
+  ));
 }
 
-bool themeState = false ;
 
-ThemeData lightTheme = ThemeData(
-  scaffoldBackgroundColor: Colors.white,
-  colorScheme: ColorScheme.light(),
-  dividerColor: Colors.black,
-);
-
-ThemeData DarkTheme = ThemeData(
-  scaffoldBackgroundColor: Colors.grey.shade900,
-  colorScheme: ColorScheme.dark(),
-  dividerColor: Colors.white,
-);
 
 class SmartIOTApp extends StatelessWidget{
   const SmartIOTApp({Key? key}) : super(key: key);
@@ -53,12 +58,21 @@ class SmartIOTApp extends StatelessWidget{
   @override
   Widget build(BuildContext context)  {
 
-    return Consumer<ThemeNotifier>(
-      builder: (context, theme, _) => MaterialApp(
+    return MaterialApp(
           title: 'Smart IOT',
           debugShowCheckedModeBanner: false,
-      theme: theme.getTheme(),
-          //theme: themeState ? DarkTheme: lightTheme,
+          theme: ThemeData.light().copyWith(
+            scaffoldBackgroundColor: Colors.white,
+            colorScheme: ColorScheme.light(),
+            dividerColor: Colors.black,
+
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: Colors.grey.shade900,
+            colorScheme: ColorScheme.dark(),
+            dividerColor: Colors.white,
+          ),
+          themeMode: context.watch<Mytheme>().currentTheme(),
           home: RootPage(auth: Auth()),
     );
   }

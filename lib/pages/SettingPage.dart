@@ -1,5 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class Setting_Page extends StatefulWidget {
   const Setting_Page({Key? key}) : super(key: key);
@@ -8,12 +12,20 @@ class Setting_Page extends StatefulWidget {
   State<Setting_Page> createState() => _Setting_PageState();
 }
 
-class _Setting_PageState extends State<Setting_Page> {
+class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMixin{
 
   bool notiButton_1 = true;
   bool notiButton_2 = false;
-  bool themeButton_1 = true;
-  bool themeButton_2 = false;
+
+  bool changeThemestate = false;
+
+  late final AnimationController _controller;
+
+  @override
+  void initstate() {
+    super.initState();
+    _controller = new AnimationController(vsync: this);
+  }
 
 
   final List<String> topics = [
@@ -38,9 +50,11 @@ class _Setting_PageState extends State<Setting_Page> {
             image: DecorationImage(
                 image : AssetImage('assets/images/bg_setting.jpg'),
                 fit: BoxFit.cover
+
             ),
 
-          ),child: ListView(
+          ),
+        child: ListView(
           children: [
             _showForm(),
           ],
@@ -135,38 +149,12 @@ class _Setting_PageState extends State<Setting_Page> {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 15,horizontal: 10),
                 child: Text('Theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: Colors.white),),
               ),
-              Divider(color: Colors.white70,),
+
               const SizedBox(height: 5,),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Light theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),),
-                  Switch(value: themeButton_1, onChanged: (value) {
-                    setState(() {
-                      themeButton_1 = value;
-                      themeButton_1 == true ? themeButton_2 = false : themeButton_2 = true ;
-                      theme.setLightMode();
-                    });
-                  },activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,)
-                ],
-              ),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Dark theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),),
-                  Switch(value: themeButton_2, onChanged: (value) {
-                    setState(() {
-                      themeButton_2 = value;
-                      themeButton_2 == true ? themeButton_1 = false : themeButton_1 = true ;
-                      theme.setDarkMode();
-                    });
-                  },activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,)
-                ],
-              ),
-              Divider(color: Colors.white70,),
+              themeChange(),
               const SizedBox(height: 5,),
               submitButton(),
             ],
@@ -198,7 +186,7 @@ class _Setting_PageState extends State<Setting_Page> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.pink.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.2),
                       spreadRadius: 4,
                       blurRadius: 10,
                       offset: const Offset(0, 3),
@@ -245,7 +233,7 @@ class _Setting_PageState extends State<Setting_Page> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.pink.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.2),
                       spreadRadius: 4,
                       blurRadius: 10,
                       offset: const Offset(0, 3),
@@ -292,7 +280,7 @@ class _Setting_PageState extends State<Setting_Page> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 4,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -325,6 +313,7 @@ class _Setting_PageState extends State<Setting_Page> {
     );
   }
 
+
   Widget submitButton(){
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 30),
@@ -345,7 +334,7 @@ class _Setting_PageState extends State<Setting_Page> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.pink.withOpacity(0.2),
+                color: Colors.black.withOpacity(0.2),
                 spreadRadius: 4,
                 blurRadius: 10,
                 offset: const Offset(0, 3),
@@ -374,6 +363,134 @@ class _Setting_PageState extends State<Setting_Page> {
       ),
     );
   }
+
+
+  Widget themeChange(){
+    return Row(mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: 160,
+            height: 45,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: changeThemestate
+                      ? [
+                    const Color.fromRGBO(203, 203, 203, 0.4),
+                    const Color.fromRGBO(175, 175, 175, 0.4),
+                  ]
+                      : [
+                    const Color.fromRGBO(255, 255, 255, 1.0),
+                    const Color.fromRGBO(217, 217, 217, 1.0),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(25.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 4,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ]),
+            child: OutlinedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  changeThemestate = !changeThemestate;
+                  context.read<Mytheme>().switchTheme();
+                });
+              },
+              child: const Text(
+                'Light',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: "Roboto Slab",
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: 0.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: 160,
+            height: 45,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: changeThemestate
+                      ? [
+                    const Color.fromRGBO(23, 23, 23, 1.0),
+                    const Color.fromRGBO(54, 54, 54, 1.0),
+                  ]
+                      : [
+                    const Color.fromRGBO(203, 203, 203, 0.2),
+                    const Color.fromRGBO(175, 175, 175, 0.2),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(25.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 4,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ]),
+            child: OutlinedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  changeThemestate = !changeThemestate;
+                  context.read<Mytheme>().switchTheme();
+                });
+              },
+              child: const Text(
+                'Dark',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: "Roboto Slab",
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: 0.0,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
+
+
 }
 
 

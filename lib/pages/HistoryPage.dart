@@ -1,5 +1,7 @@
 import 'package:animated_theme_switcher/animated_theme_switcher.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smart_iot_app/main.dart';
 
 
@@ -10,7 +12,8 @@ class History_Page extends StatefulWidget {
   State<History_Page> createState() => _History_PageState();
 }
 
-class _History_PageState extends State<History_Page> {
+class _History_PageState extends State<History_Page>{
+
   @override
   Widget build(BuildContext context) {
 
@@ -41,7 +44,8 @@ class _History_PageState extends State<History_Page> {
             shrinkWrap: true,
             children: <Widget>[
               sortHistory(),
-              history_cardPreset()
+              history_cardPreset(),
+              testTheme()
             ],
           ),
       ),
@@ -92,9 +96,8 @@ class _History_PageState extends State<History_Page> {
             Radius.circular(25.0),
           ),),
 
-        
-        child: ThemeSwitcher(
-          builder: (context) => OutlinedButton(
+
+        child: OutlinedButton(
             style: ButtonStyle(
               shape: MaterialStateProperty.all(
                 RoundedRectangleBorder(
@@ -102,6 +105,7 @@ class _History_PageState extends State<History_Page> {
               ),
             ),
             onPressed: () {
+
             },
             child: const Text(
               'Sort History',
@@ -114,7 +118,6 @@ class _History_PageState extends State<History_Page> {
                 color: Color.fromRGBO(70, 70, 70, 0.80196078431372547),
               ),
             ),
-          ),
         ),
 
 
@@ -123,5 +126,15 @@ class _History_PageState extends State<History_Page> {
     );
   }
 
+  Widget testTheme() {
+    return Container(
+      child: CupertinoSwitch(
+        value: context.read<Mytheme>().currentTheme() == ThemeData.dark,
+        onChanged: (value){
+          context.read<Mytheme>().switchTheme();
+        },
+      ),
+    );
+  }
 }
 
