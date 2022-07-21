@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -9,8 +8,8 @@ import 'package:smart_iot_app/services/dataManagement.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 class TestPage extends StatefulWidget {
-
-  TestPage({Key? key, required this.auth, required this.userId}) :super(key: key);
+  TestPage({Key? key, required this.auth, required this.userId})
+      : super(key: key);
 
   final BaseAuth auth;
   final String userId;
@@ -18,8 +17,7 @@ class TestPage extends StatefulWidget {
   State<StatefulWidget> createState() => _TestPageState();
 }
 
-class _TestPageState extends State<TestPage>{
-
+class _TestPageState extends State<TestPage> {
   late DataPayload dataPayload;
   MQTTClientWrapper newclient = MQTTClientWrapper();
 
@@ -34,17 +32,16 @@ class _TestPageState extends State<TestPage>{
     final http.Response response = await http.post(
       Uri.parse('http://192.168.1.56:1880/userData'),
       headers: <String, String>{
-        'Content-Type':"application/json; charset=UTF-8"
+        'Content-Type': "application/json; charset=UTF-8"
       },
       body: jsonEncode(data.toJsonForSending()),
     );
     print(response.statusCode);
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       return DataPayload.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to create data payload');
     }
-
   }
 
   Future<DataPayload> testFetchAlbum() async {
@@ -52,7 +49,7 @@ class _TestPageState extends State<TestPage>{
       Uri.parse('http://192.168.1.56:1880/userInfo'),
     );
     print(response.statusCode);
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       print("GET: ${json.decode(response.body)}");
       return DataPayload.fromJson(json.decode(response.body));
     } else {
@@ -66,7 +63,7 @@ class _TestPageState extends State<TestPage>{
       Uri.parse('http://192.168.1.56:1880/userInfo?deviceMap=$mapID'),
     );
     print(response.statusCode);
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       print("query GET: ${json.decode(response.body)}");
       response = await http.get(
         Uri.parse('http://192.168.1.56:1880/userInfo?sensorValsRequest=true'),
@@ -79,13 +76,12 @@ class _TestPageState extends State<TestPage>{
     }
   }
 
-  void prepareMQTT(){
+  void prepareMQTT() {
     newclient.prepareMqttClient();
-
   }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
   }
 
@@ -95,9 +91,11 @@ class _TestPageState extends State<TestPage>{
       body: FutureBuilder(
         future: getFutureData(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.none && snapshot.hasData == false){
+          if (snapshot.connectionState == ConnectionState.none &&
+              snapshot.hasData == false) {
             return Container();
-          } else if (snapshot.connectionState == ConnectionState.waiting && snapshot.hasData == false) {
+          } else if (snapshot.connectionState == ConnectionState.waiting &&
+              snapshot.hasData == false) {
             return CircularProgressIndicator();
           } else if (snapshot.connectionState == ConnectionState.done) {
             final Map? dataMapped = snapshot.data as Map?;
@@ -111,34 +109,32 @@ class _TestPageState extends State<TestPage>{
                       children: <Widget>[
                         Text(dataPayload.toJson().toString()),
                         TextButton(
-                            onPressed: (){
-                              SensorDataBlock testSensorBlock = SensorDataBlock({
-                                "0": "sensor1"
-                              }, {
-                                "sensor1": "type1"
-                              }, {
-                                "sensor1": true
-                              }, {
-                                "sensor1": {
-                                  "2022-06-23 18:15:00": {
-                                    "flag": "flag{normal}",
-                                    "message": "status{fine}",
-                                    "value": "value{0.0}"
-                                  },
-                                }
-                              }, {
-                                "sensor1": "1.02"
-                              }, {
-                                "sensor1": "Auto"
-                              },{
-                                "sensor1": "0.0"
-                              });
+                            onPressed: () {
+                              SensorDataBlock testSensorBlock = SensorDataBlock(
+                                {"0": "sensor1"},
+                                {"sensor1": "type1"},
+                                {"sensor1": true},
+                                {
+                                  "sensor1": {
+                                    "2022-06-23 18:15:00": {
+                                      "flag": "flag{normal}",
+                                      "message": "status{fine}",
+                                      "value": "value{0.0}"
+                                    },
+                                  }
+                                },
+                                {"sensor1": "1.02"},
+                              );
 
-                              ActuatorDataBlock testActuator = ActuatorDataBlock(
-                                  {"0": "act1"}, {"act1": "type 1"}, {"act1": "normal"}, {"act1": "90"});
+                              ActuatorDataBlock testActuator =
+                                  ActuatorDataBlock(
+                                {"0": "act1"},
+                                {"act1": "type 1"},
+                              );
 
                               DeviceBlock device1 =
-                              DeviceBlock.createEncryptedModel(testSensorBlock, testActuator);
+                                  DeviceBlock.createEncryptedModel(
+                                      testSensorBlock, testActuator);
                               DataPayload data = DataPayload(
                                 userId: widget.userId,
                                 role: "admin",
@@ -150,21 +146,27 @@ class _TestPageState extends State<TestPage>{
                               SmIOTDatabase db = SmIOTDatabase();
                               db.testSendData(widget.userId, data.toJson());
                             },
-                            child: const Text("Set Payload Model to user")
-                        ),
+                            child: const Text("Set Payload Model to user")),
                         TextButton(
                           onPressed: () {
                             Map device = dataPayload.toJson();
-                            Map<String, dynamic> data = <String,dynamic>{};
-                            device.removeWhere((key, value) => key != "userDevice");
-                            for(dynamic devices in device["userDevice"].keys){
-                              device["userDevice"]["$devices"]["userSensor"].remove('sensorName');
-                              device["userDevice"]["$devices"]["userSensor"].remove('sensorType');
-                              device["userDevice"]["$devices"]["userSensor"].remove('sensorValue');
+                            Map<String, dynamic> data = <String, dynamic>{};
+                            device.removeWhere(
+                                (key, value) => key != "userDevice");
+                            for (dynamic devices in device["userDevice"].keys) {
+                              device["userDevice"]["$devices"]["userSensor"]
+                                  .remove('sensorName');
+                              device["userDevice"]["$devices"]["userSensor"]
+                                  .remove('sensorType');
+                              device["userDevice"]["$devices"]["userSensor"]
+                                  .remove('sensorValue');
 
-                              device["userDevice"]["$devices"]["actuator"].remove('actuatorId');
-                              device["userDevice"]["$devices"]["actuator"].remove('type');
-                              device["userDevice"]["$devices"]["actuator"].remove('state');
+                              device["userDevice"]["$devices"]["actuator"]
+                                  .remove('actuatorId');
+                              device["userDevice"]["$devices"]["actuator"]
+                                  .remove('type');
+                              device["userDevice"]["$devices"]["actuator"]
+                                  .remove('state');
                             }
                             device = device.transformAndLocalize();
                             data = Map<String, dynamic>.from(device);
@@ -177,55 +179,51 @@ class _TestPageState extends State<TestPage>{
                         TextButton(
                             onPressed: () async {
                               SmIOTDatabase db = SmIOTDatabase();
-                              final snapTest = await db.ref.child('${widget.userId}/userDevice/').get();
+                              final snapTest = await db.ref
+                                  .child('${widget.userId}/userDevice/')
+                                  .get();
                               print(snapTest.ref.path);
-                            }, 
-                            child: const Text("Check path")
-                        ),
+                            },
+                            child: const Text("Check path")),
                         TextButton(
-                            onPressed: (){
+                            onPressed: () {
                               Map<dynamic, dynamic>? testMap;
                               Map testData = {
-                                "userDevice":{
-                                  "device1":{
-                                    "userSensor":{
-                                      "sensorStatus":{
-                                        "sensor1":true
-                                      },
-                                      "sensorThresh":{
-                                        "sensor1": 1.10
-                                      }
+                                "userDevice": {
+                                  "device1": {
+                                    "userSensor": {
+                                      "sensorStatus": {"sensor1": true},
+                                      "sensorThresh": {"sensor1": 1.10}
                                     }
                                   }
                                 }
                               };
 
-                              try{
+                              try {
                                 testData = testData.transformAndLocalize();
-                                testMap = dataPayload.toJson().localizedTrySetFromMap(testData);
+                                testMap = dataPayload
+                                    .toJson()
+                                    .localizedTrySetFromMap(testData);
                               } catch (e) {
                                 print(e);
                               }
                               // Feedback response from localizing and set a value from another map
                               print(testMap);
                             },
-                            child: Text("Test Try Set From Map")
-                        ),
+                            child: Text("Test Try Set From Map")),
                         TextButton(
-                            onPressed: (){
+                            onPressed: () {
                               Navigator.push(
-                                context,
-                                MaterialPageRoute(
+                                  context,
+                                  MaterialPageRoute(
                                     builder: (context) => Manage_Page(
-                                        auth: widget.auth,
-                                        userId: widget.userId,
-                                        device: "device1"
+                                      userId: widget.userId,
+                                      device: "device1",
+                                      user: Stream<String>.empty(),
                                     ),
-                                )
-                              );
+                                  ));
                             },
-                            child: Text("Navigate to manage")
-                        ),
+                            child: Text("Navigate to manage")),
                         TextButton(
                           onPressed: () {
                             testAlbumSend(dataPayload);
@@ -235,25 +233,26 @@ class _TestPageState extends State<TestPage>{
                         TextButton(
                           onPressed: () async {
                             DataPayload dataGET = await testFetchAlbum();
-                            try{
-                              fetchDeviceMap(dataGET.userDevice?.entries.elementAt(0).value);
+                            try {
+                              fetchDeviceMap(dataGET.userDevice?.entries
+                                  .elementAt(0)
+                                  .value);
                             } catch (e) {
                               print(e);
                             }
                             showDialog(
                                 context: context,
-                                builder: (BuildContext context){
+                                builder: (BuildContext context) {
                                   return AlertDialog(
                                     title: Text("GET completed"),
                                     content: Text(dataGET.toJson().toString()),
                                   );
-                                }
-                            );
+                                });
                           },
                           child: Text("Test Get From Node-RED"),
                         ),
                         TextButton(
-                          onPressed: (){
+                          onPressed: () {
                             prepareMQTT();
                           },
                           child: Text("Prepare MQTT"),
@@ -261,8 +260,7 @@ class _TestPageState extends State<TestPage>{
                       ],
                     ),
                   );
-                }
-            );
+                });
           } else {
             return CircularProgressIndicator();
           }

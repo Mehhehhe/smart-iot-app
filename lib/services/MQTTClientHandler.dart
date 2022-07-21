@@ -60,6 +60,33 @@ class MQTTClientWrapper {
     return data;
   }
 
+  Future<String> publishSettings(Map msgMap) async {
+    var device_name = "";
+    var sensor = "";
+    String result = "";
+    msgMap.forEach((key, value) {
+      if (key == "id") {
+        device_name = value.toString().split('.')[0];
+        sensor = value.toString().split('.')[1];
+      }
+      bool isActValue = key == "actuator_value";
+      bool isTreshValue = key == "threshold";
+      _publishMessage(
+          isActValue
+              ? value
+              : isTreshValue
+                  ? value
+                  : "unknown",
+          isActValue
+              ? "$device_name/actuator/value/set"
+              : isTreshValue
+                  ? "$device_name/sensor/threshold/set"
+                  : null);
+    });
+    result = device_name.isNotEmpty ? "success" : "failed";
+    return result;
+  }
+
   // waiting for the connection, if an error occurs, print it and disconnect
   Future<void> _connectClient() async {
     try {

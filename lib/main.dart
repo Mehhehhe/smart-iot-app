@@ -4,6 +4,7 @@ import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/root.dart';
 
@@ -28,7 +29,7 @@ void main() async {
   }
   return runApp(ChangeNotifierProvider(
     create: (_) => ThemeNotifier(),
-    child: const SmartIOTApp(),
+    child: SmartIOTApp(),
   ));
 }
 
@@ -47,17 +48,20 @@ ThemeData DarkTheme = ThemeData(
 );
 
 class SmartIOTApp extends StatelessWidget {
-  const SmartIOTApp({Key? key}) : super(key: key);
+  SmartIOTApp({Key? key}) : super(key: key);
+
+  //MQTTClientWrapper userClient = MQTTClientWrapper();
 
   @override
   Widget build(BuildContext context) {
+    //print(userClient);
     return Consumer<ThemeNotifier>(
         builder: (context, theme, _) => MaterialApp(
               title: 'Smart IOT',
               debugShowCheckedModeBanner: false,
               theme: theme.getTheme(),
               //theme: themeState ? DarkTheme: lightTheme,
-              home: RootPage(auth: Auth()),
+              home: RootPage(auth: Auth(), client: MQTTClientWrapper()),
             ));
   }
 }

@@ -1,16 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:smart_iot_app/pages/ContactPage.dart';
 import 'package:smart_iot_app/pages/HistoryPage.dart';
 import 'package:smart_iot_app/pages/HomePage.dart';
 import 'package:smart_iot_app/pages/MangePage.dart';
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'package:smart_iot_app/pages/TestPage.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'dart:async';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/database_op.dart';
+import 'package:smart_iot_app/services/notification.dart';
 
 import 'SettingPage.dart';
 
@@ -19,18 +24,33 @@ class MainPage extends StatefulWidget {
       {Key? key,
       required this.auth,
       required this.logoutCallback,
-      required this.userId})
+      required this.userId,
+      required this.user})
       : super(key: key);
 
   final BaseAuth auth;
   final VoidCallback logoutCallback;
   final String userId;
+  final MQTTClientWrapper user;
 
   @override
   State<StatefulWidget> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+  static late MQTTClientWrapper cli;
+  Timer? timer;
+  static Stream<String>? syncDataResponse;
+  static String userId = "";
+  _MainPageState() {
+    //print("[MainPage] ${widget.user}");
+    //cli = widget.user;
+    //userId = widget.userId;
+    timer = Timer.periodic(const Duration(seconds: 10), syncData);
+    //syncDataResponse = const Stream<String>.empty();
+    //print(syncDataResponse);
+  }
+
   // boolean for checking button in contact page
   bool _hasBeenPressed1 = true;
   bool _hasBeenPressed2 = true;
@@ -66,12 +86,25 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
-    super.initState();
     if (kDebugMode) {
       print("User Id: ${widget.userId}");
     }
     showEmail();
     findDisplayName();
+
+    setState(() {
+      userId = widget.userId;
+      cli = widget.user;
+    });
+    cli.prepareMqttClient();
+    print("Prepare completed");
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   String login = '....';
@@ -95,6 +128,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = SmIOTDatabase();
+    print("[GET][FutureData] $userId");
     Future<Map<String, dynamic>> dataFuture = db.getData(widget.userId);
     Map<String, dynamic> msg = await dataFuture;
     return msg;
@@ -122,7 +156,7 @@ class _MainPageState extends State<MainPage> {
 
   bool validateAndSave() {
     final form = _formKey.currentState;
-    if (form!.validate()){
+    if (form!.validate()) {
       form.save();
       return true;
     }
@@ -135,7 +169,7 @@ class _MainPageState extends State<MainPage> {
       _isFeedbackForm = true;
     });
 
-    if (validateAndSave()){
+    if (validateAndSave()) {
       SmIOTDatabase db = SmIOTDatabase();
       String category = "";
       if (_hasBeenPressed1) category = "Bug";
@@ -144,144 +178,210 @@ class _MainPageState extends State<MainPage> {
       if (_hasBeenPressed4) category = "Others";
 
       final reportMsg = {
-        "category":category,
-        "description":description,
+        "category": category,
+        "description": description,
       };
       String? response = await db.sendReport(widget.userId, reportMsg);
       print(response);
     }
   }
+
+  void syncData(Timer timer) async {
+    print(cli.connectionState);
+    syncDataResponse = await cli.subscribeToResponse();
+    setState(() {
+      syncDataResponse!.forEach((element) {
+        var sv = json.decode(element);
+        Map jsonSv = Map<String, dynamic>.from(sv);
+        jsonSv.map((key, value) {
+          key = DateTime.parse(key);
+          value = Map<String, dynamic>.from(value);
+          if (value["flag"] != "flag{normal}") {
+            NotifyUser notifyUser = NotifyUser();
+            bool flagTypeCheck = value["flag"] == "flag{warning}";
+            notifyUser.initialize();
+            notifyUser.pushNotification(
+                flagTypeCheck ? Importance.low : Importance.high,
+                flagTypeCheck ? Priority.low : Priority.high,
+                flagTypeCheck ? "Warning" : "Error/Unknown",
+                value["message"]);
+          }
+          return MapEntry(key, value);
+        });
+      });
+    });
+  }
+
   int index = 0;
-  final screens = [
-    Home_Page(),
-    History_Page()
+  List<StatefulWidget> screens = [
+    Home_Page(
+      user: syncDataResponse ?? Stream<String>.empty(),
+      userId: userId,
+    ),
+    const History_Page()
   ];
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-
-        appBar: AppBar(
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [
-              Color.fromRGBO(78, 92, 252, 1.0),
-              Color.fromRGBO(168, 30, 255, 1.0),
-            ], begin: Alignment.bottomRight, end: Alignment.topLeft)),
-          ),
-          elevation: 10,
-          title: Text(
-            displayName,
-            style: const TextStyle(
-              fontSize: 15,
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [
+                Color.fromRGBO(78, 92, 252, 1.0),
+                Color.fromRGBO(168, 30, 255, 1.0),
+              ], begin: Alignment.bottomRight, end: Alignment.topLeft)),
+            ),
+            elevation: 10,
+            title: Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 15,
+              ),
+            ),
+            titleSpacing: 0,
+            leading: const Icon(
+              (Icons.account_circle),
             ),
           ),
-          titleSpacing: 0,
-
-          leading: Icon((Icons.account_circle),
+          body: screens[index],
+          bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+                indicatorColor: Colors.blue.shade100,
+                labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w500))),
+            child: NavigationBar(
+              height: 60,
+              backgroundColor: const Color(0xffe1e1e1),
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.onlyShowSelected,
+              selectedIndex: index,
+              animationDuration: const Duration(milliseconds: 500),
+              onDestinationSelected: (index) =>
+                  setState(() => this.index = index),
+              destinations: [
+                const NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Home'),
+                const NavigationDestination(
+                    icon: Icon(Icons.history), label: 'History'),
+              ],
+            ),
           ),
-        ),
-        body: screens[index],
-        bottomNavigationBar : NavigationBarTheme(
-          data: NavigationBarThemeData(
-            indicatorColor: Colors.blue.shade100,
-            labelTextStyle: MaterialStateProperty.all(
-              TextStyle(fontSize: 14,fontWeight: FontWeight.w500)
-            )
-          ),
-
-          child: NavigationBar(
-            height: 60,
-          backgroundColor: Color(0xffe1e1e1),
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          selectedIndex: index,
-          animationDuration: Duration(milliseconds: 500),
-          onDestinationSelected: (index) =>
-            setState(() => this.index = index),
-          destinations: [
-            NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Home'),
-            NavigationDestination(
-                icon: Icon(Icons.history),
-                label: 'History'),
-          ],
-          ),
-        ),
           endDrawer: Drawer(
-              child: Material(
-                color: Colors.blue,
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: ListView(
-                    children: <Widget>[
-                      const SizedBox(height: 48,),
-                      ListTile(
-                        leading: Icon(Icons.account_circle, color: Colors.white,),
-                        title: Text('Profile', style: TextStyle(color: Colors.white),),
-                        hoverColor: Colors.white70,
-                        onTap: ()async {
-                          final value = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Profile_Page(
-                                    auth: widget.auth,
-                                  )));
-                        },
+            child: Material(
+              color: Colors.blue,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: ListView(
+                  children: <Widget>[
+                    const SizedBox(
+                      height: 48,
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.account_circle,
+                        color: Colors.white,
                       ),
-                      ListTile(
-                        leading: Icon(Icons.settings, color: Colors.white,),
-                        title: Text('Setting', style: TextStyle(color: Colors.white),),
-                        hoverColor: Colors.white70,
-                        onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Setting_Page()));
-                        },
+                      title: const Text(
+                        'Profile',
+                        style: TextStyle(color: Colors.white),
                       ),
-                      ListTile(
-                        leading: Icon(Icons.phone, color: Colors.white,),
-                        title: Text('Contact', style: TextStyle(color: Colors.white),),
-                        hoverColor: Colors.white70,
-                        onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => Contact_page()));},
-                      ),
-                      const SizedBox(height: 24,),
-                      Divider(color: Colors.white70,),
-                      const SizedBox(height: 24,),
-                      ListTile(
-                        leading: Icon(Icons.logout, color: Colors.white,),
-                        title: Text('Signout', style: TextStyle(color: Colors.white),),
-                        hoverColor: Colors.white70,
-                        onTap: signOut,
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.abc_sharp, color: Colors.white,),
-                        title: Text('test backend', style: TextStyle(color: Colors.white),),
-                        hoverColor: Colors.white70,
-                        onTap: () async {
-                          final value = await Navigator.push(
+                      hoverColor: Colors.white70,
+                      onTap: () async {
+                        final value = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => TestPage(
-                                    auth: widget.auth,
-                                    userId: widget.userId
-                                )
-                            ),
-                          );
-                        },
+                                builder: (context) => Profile_Page(
+                                      auth: widget.auth,
+                                    )));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.settings,
+                        color: Colors.white,
                       ),
-
-                    ],
-
-                  ),
+                      title: const Text(
+                        'Setting',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      hoverColor: Colors.white70,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Setting_Page()));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.phone,
+                        color: Colors.white,
+                      ),
+                      title: const Text(
+                        'Contact',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      hoverColor: Colors.white70,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Contact_page()));
+                      },
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    const Divider(
+                      color: Colors.white70,
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.logout,
+                        color: Colors.white,
+                      ),
+                      title: const Text(
+                        'Signout',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      hoverColor: Colors.white70,
+                      onTap: signOut,
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.abc_sharp,
+                        color: Colors.white,
+                      ),
+                      title: const Text(
+                        'test backend',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      hoverColor: Colors.white70,
+                      onTap: () async {
+                        final value = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TestPage(
+                                  auth: widget.auth, userId: widget.userId)),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-      ),
-      )
-    );
+            ),
+          ),
+        ));
   }
-
+/*
   Widget _showForm() {
     return Form(
       child: Center(
@@ -395,10 +495,11 @@ class _MainPageState extends State<MainPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => Manage_Page(
-                              auth: widget.auth,
-                              device: "device1",
-                              userId: widget.userId,)
-                        ));
+                                  auth: widget.auth,
+                                  device: "device1",
+                                  userId: widget.userId,
+                                  user: widget.user,
+                                )));
                   },
                   child: const Text('Manage'),
                 ),
@@ -477,7 +578,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 20,top: 30),
+                padding: const EdgeInsets.only(left: 20, top: 30),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -538,7 +639,7 @@ class _MainPageState extends State<MainPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 30,bottom: 70),
+                padding: const EdgeInsets.only(top: 30, bottom: 70),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -594,7 +695,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 20,top: 30,bottom: 70),
+                padding: const EdgeInsets.only(left: 20, top: 30, bottom: 70),
                 child: Container(
                   width: 150,
                   height: 50,
@@ -620,7 +721,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.pink.withOpacity(0.2),
                           spreadRadius: 4,
                           blurRadius: 10,
-                          offset: const Offset(0,3),
+                          offset: const Offset(0, 3),
                         )
                       ]),
                   child: OutlinedButton(
@@ -657,13 +758,15 @@ class _MainPageState extends State<MainPage> {
             keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
+              fillColor:
+                  const Color.fromRGBO(255, 255, 255, 0.6000000238418579),
               border: OutlineInputBorder(
                   borderSide: const BorderSide(color: Colors.transparent),
                   borderRadius: BorderRadius.circular(30)),
               labelText: 'Details',
             ),
-            validator: (value) => value!.isEmpty ? 'Please give us your feedback' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Please give us your feedback' : null,
             onSaved: (value) => description = value!.trim(),
           ),
           Row(
@@ -703,18 +806,20 @@ class _MainPageState extends State<MainPage> {
                     ),
                     onPressed: () {
                       setState(() {
-                        check = _hasBeenPressed1 == false ? check+1 : check+0;
-                        check = _hasBeenPressed2 == false ? check+1 : check+0;
-                        check = _hasBeenPressed3 == false ? check+1 : check+0;
-                        check = _hasBeenPressed4 == false ? check+1 : check+0;
+                        check =
+                            _hasBeenPressed1 == false ? check + 1 : check + 0;
+                        check =
+                            _hasBeenPressed2 == false ? check + 1 : check + 0;
+                        check =
+                            _hasBeenPressed3 == false ? check + 1 : check + 0;
+                        check =
+                            _hasBeenPressed4 == false ? check + 1 : check + 0;
                         check == 1 ? contactMessage() : contactMessageError();
-                        check=0;
+                        check = 0;
                         _hasBeenPressed1 = true;
                         _hasBeenPressed2 = true;
                         _hasBeenPressed3 = true;
                         _hasBeenPressed4 = true;
-
-
                       });
                     },
                     child: const Text(
@@ -742,41 +847,43 @@ class _MainPageState extends State<MainPage> {
     showDialog(
         context: context,
         builder: (context) => SimpleDialog(
-        title: const ListTile(
-            title: Center(child: Text('Rquest Sent')),
-          ),
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              title: const ListTile(
+                title: Center(child: Text('Rquest Sent')),
+              ),
               children: [
-                TextButton(
-                    onPressed: (){
-                      validateAndSubmit();
-                      Navigator.pop(context);
-                      },
-                    child: const Text('Close')),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                        onPressed: () {
+                          validateAndSubmit();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Close')),
+                  ],
+                )
               ],
-            )
-          ],
-        ));
+            ));
   }
+
   Future<void> contactMessageError() async {
     showDialog(
         context: context,
         builder: (context) => SimpleDialog(
-          title: const ListTile(
-            title: Center(child: Text('Prees select Only one per Submit')),
-          ),
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              title: const ListTile(
+                title: Center(child: Text('Prees select Only one per Submit')),
+              ),
               children: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close')),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close')),
+                  ],
+                )
               ],
-            )
-          ],
-        ));
+            ));
   }
+*/
 }

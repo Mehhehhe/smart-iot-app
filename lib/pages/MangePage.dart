@@ -19,14 +19,14 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 class Manage_Page extends StatefulWidget {
   const Manage_Page(
       {Key? key,
-      required this.auth,
-      required this.userId,
-      required this.device})
+      required this.device,
+      required this.user,
+      required this.userId})
       : super(key: key);
 
-  final BaseAuth auth;
-  final String userId;
   final String device;
+  final Stream<String> user;
+  final String userId;
 
   @override
   State<Manage_Page> createState() => _Manage_PageState();
@@ -729,132 +729,26 @@ class _Manage_PageState extends State<Manage_Page> {
                                                                     )),
                                                                 TextButton(
                                                                     onPressed:
-                                                                        () {
-                                                                      print(
-                                                                          "Thresh set to ${_threshController.text}");
-                                                                      dataPayload
-                                                                              .userDevice![
-                                                                          widget
-                                                                              .device]["userSensor"]["sensorThresh"][dataPayload
-                                                                          .userDevice![
-                                                                              widget.device]
-                                                                              ["userSensor"]
-                                                                              ["sensorName"]
-                                                                              [index]
-                                                                          .toString()] = _threshController.text;
-                                                                      dataPayload
-                                                                              .userDevice![
-                                                                          widget
-                                                                              .device]["actuator"]["value"][dataPayload
-                                                                          .userDevice![
-                                                                              widget.device]
-                                                                              ["actuator"]
-                                                                              ["actuatorId"]
-                                                                              [index]
-                                                                          .toString()] = _controller.text;
-                                                                      Map device =
-                                                                          dataPayload
-                                                                              .toJson();
-                                                                      Map<String,
-                                                                              dynamic>
-                                                                          data =
-                                                                          <String,
-                                                                              dynamic>{};
+                                                                        () async {
+                                                                      // Localized thresh and actuator setting
+                                                                      // - Send to MQTT to set threshold (topic:=device_name/threshold/set)
+                                                                      // - Send to MQTT to set actuator (topic:=device_name/actuator/value/set)
+                                                                      Map payload =
+                                                                          {
+                                                                        "id":
+                                                                            "",
+                                                                        "actuator_value":
+                                                                            _controller.text,
+                                                                        "threshold":
+                                                                            _threshController.text
+                                                                      };
+                                                                      payload["id"] =
+                                                                          "${widget.device.toString()}.${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}";
 
-                                                                      // Remove unused data
-                                                                      device.removeWhere((key,
-                                                                              value) =>
-                                                                          key !=
-                                                                          "userDevice");
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "userSensor"]
-                                                                          .remove(
-                                                                              'sensorName');
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "userSensor"]
-                                                                          .remove(
-                                                                              'sensorType');
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "userSensor"]
-                                                                          .remove(
-                                                                              'sensorValue');
-
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "actuator"]
-                                                                          .remove(
-                                                                              'actuatorId');
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "actuator"]
-                                                                          .remove(
-                                                                              'type');
-                                                                      device["userDevice"][widget.device]
-                                                                              [
-                                                                              "actuator"]
-                                                                          .remove(
-                                                                              'state');
-
-                                                                      // Building a block process
-
-                                                                      ActuatorDataBlock
-                                                                          act =
-                                                                          ActuatorDataBlock.createForSending(device["userDevice"][widget.device]["actuator"]
-                                                                              [
-                                                                              "value"]);
-                                                                      var encryptedAct =
-                                                                          ActuatorDataBlock.createEncryptedModelWithOnlyValue(
-                                                                              act);
-
-                                                                      SensorDataBlock sen = SensorDataBlock.createForSending(
-                                                                          Map<String, bool>.from(device["userDevice"][widget.device]["userSensor"]
-                                                                              [
-                                                                              "sensorStatus"]),
-                                                                          device["userDevice"][widget.device]["userSensor"]
-                                                                              [
-                                                                              "sensorTiming"],
-                                                                          device["userDevice"][widget.device]["userSensor"]
-                                                                              [
-                                                                              "calibrateValue"],
-                                                                          device["userDevice"][widget.device]["userSensor"]
-                                                                              ["sensorThresh"]);
-                                                                      //print(sen.toJsonForSending());
-                                                                      DeviceBlock
-                                                                          dev =
-                                                                          DeviceBlock.createPartialEncryptedModel(
-                                                                              sen,
-                                                                              encryptedAct);
-                                                                      //print(dev.toJsonForSending());
-                                                                      DataPayload
-                                                                          dataP =
-                                                                          DataPayload
-                                                                              .createForSending({
-                                                                        widget.device:
-                                                                            dev.toJsonForSending()
-                                                                      });
-                                                                      //print("Json: ${dataP.toJsonForSending()}");
-                                                                      device = dataP
-                                                                          .toJsonForSending()
-                                                                          .transformAndLocalize();
-                                                                      data = Map<
-                                                                          String,
-                                                                          dynamic>.from(device);
-                                                                      //print(data);
-                                                                      //device = device.transformAndLocalize();
-                                                                      //data = Map<String, dynamic>.from(device);
-                                                                      SmIOTDatabase
-                                                                          db =
-                                                                          SmIOTDatabase();
-
-                                                                      db.sendData(
-                                                                          widget
-                                                                              .userId,
-                                                                          data);
-                                                                      print(
-                                                                          "Send successfully!");
+                                                                      String
+                                                                          pubStateCheck =
+                                                                          await newClient
+                                                                              .publishSettings(payload);
 
                                                                       Navigator.pop(
                                                                           context);
