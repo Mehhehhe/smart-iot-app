@@ -56,7 +56,7 @@ class MQTTClientWrapper {
     });
 
     stmSubscription.cancel();
-    client.unsubscribe("liveDataResponse");
+    //client.unsubscribe("liveDataResponse");
     return data;
   }
 

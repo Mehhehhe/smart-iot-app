@@ -1,18 +1,12 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
-import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
-import 'package:smart_iot_app/services/notification.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -21,11 +15,13 @@ class Manage_Page extends StatefulWidget {
       {Key? key,
       required this.device,
       required this.user,
-      required this.userId})
+      required this.userId,
+      required this.liveData})
       : super(key: key);
 
   final String device;
   final MQTTClientWrapper user;
+  final Stream<String> liveData;
   final String userId;
 
   @override
@@ -49,6 +45,9 @@ class _Manage_PageState extends State<Manage_Page> {
   late List<_ChartData> chartData;
   ChartSeriesController? _chartSeriesController;
   static late MQTTClientWrapper newClient;
+  late Stream<String> liveData;
+  late List<dynamic> statusList;
+  late List<dynamic> flagList;
 
   final scaffKey = GlobalKey<ScaffoldState>();
   final TextEditingController _controller = TextEditingController();
@@ -67,10 +66,15 @@ class _Manage_PageState extends State<Manage_Page> {
     chartData = <_ChartData>[
       _ChartData(DateTime.now(), 0.0),
     ];
+    statusList = ["Loading"];
+    flagList = ["Loading"];
     print(chartData.toString());
     setState(() {
       newClient = widget.user;
+      liveData = widget.liveData;
+      print("[SET] livedata & client");
     });
+    print("[SET] $liveData");
     super.initState();
   }
 
@@ -78,6 +82,8 @@ class _Manage_PageState extends State<Manage_Page> {
   void dispose() {
     timer?.cancel();
     chartData?.clear();
+    statusList?.clear();
+    flagList.clear();
     _chartSeriesController = null;
     super.dispose();
   }
@@ -85,7 +91,12 @@ class _Manage_PageState extends State<Manage_Page> {
   void updateInChartData(
       [bool? removeZeroInd, int? maxRange, List<int>? range]) {
     if (maxRange == null) {
-      if (removeZeroInd == true) chartData.removeAt(0);
+      if (removeZeroInd == true) {
+        chartData.removeAt(0);
+        statusList.removeAt(0);
+        flagList.removeAt(0);
+      }
+
       _chartSeriesController!.updateDataSource(
           addedDataIndexes: <int>[chartData.length - 1],
           removedDataIndexes: <int>[0]);
@@ -93,6 +104,8 @@ class _Manage_PageState extends State<Manage_Page> {
     }
     if (chartData.length >= maxRange) {
       chartData.removeRange(range![0], range[1] - 1);
+      statusList.removeRange(range![0], range[1] - 1);
+      flagList.removeRange(range![0], range[1] - 1);
       updateInChartData(true);
     } else {
       _chartSeriesController!
@@ -101,29 +114,18 @@ class _Manage_PageState extends State<Manage_Page> {
   }
 
   void updateDataInGraph(Timer timer) async {
-    Stream<String> response = await newClient.subscribeToResponse();
-
+    //Stream<String> response = await newClient.subscribeToResponse();
     setState(() {
-      response.forEach((element) {
-        var sv = json.decode(element);
+      liveData.forEach((event) {
+        var sv = json.decode(event);
         Map jsonSV = Map<String, dynamic>.from(sv);
         jsonSV.map((key, value) {
           key = DateTime.parse(key).toLocal();
           value = Map<String, dynamic>.from(value);
           //updateInChartData(true);
-          chartData.add(_ChartData(key, value["sensorVal"]));
-          if (value["sensorVal"] >=
-              double.parse(dataPayload.toJson()["userDevice"][widget.device]
-                  ["userSensor"]["sensorThresh"]["sensor1"])) {
-            NotifyUser notifyUser = NotifyUser();
-            notifyUser.initialize();
-            notifyUser.pushNotification(
-                Importance.high,
-                Priority.high,
-                "Warning",
-                "Value touched threshold",
-                "Sensor's value reached the threshold value from your setting. Please check the timeline.");
-          }
+          chartData.add(_ChartData(key, value["value"]));
+          statusList.add(value["state"]);
+          flagList.add(value["flag"]);
           return MapEntry(key, value);
         });
       });
@@ -193,24 +195,20 @@ class _Manage_PageState extends State<Manage_Page> {
                   ),
                 ),
               ),
-              FutureBuilder(
-                future: getFutureUserDataMap(),
+              StreamBuilder(
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.none &&
-                      snapshot.hasData == false) {
-                    return Container();
-                  } else if (snapshot.connectionState ==
-                          ConnectionState.waiting &&
-                      snapshot.hasData == false) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                    final Map? dataMapped = snapshot.data as Map?;
-                    dataPayload = DataPayload.fromJson(dataMapped ?? {});
-                    var check = dataPayload.checkDeviceStatus(widget.device);
-                    if (check.length == 0) {
+                  print(
+                      "[ConnectState] ${snapshot.connectionState}, hasData: ${snapshot.hasData}");
+                  if (snapshot.connectionState == ConnectionState.active &&
+                      snapshot.hasData) {
+                    if (statusList.last == "unknown" ||
+                        flagList.last == "flag{threshNotSet}" ||
+                        flagList.last == "flag{error}" ||
+                        flagList.last == "flag{warning}") {
+                      status = "Status: Unknown";
+                    } else if (statusList.last == "normal" &&
+                        flagList.last == "flag{normal}") {
                       status = "Status: Normal";
-                    } else {
-                      status = "Status: Error";
                     }
                     return Container(
                       margin: const EdgeInsets.only(right: 42),
@@ -241,13 +239,14 @@ class _Manage_PageState extends State<Manage_Page> {
                     return const CircularProgressIndicator();
                   }
                 },
-              ),
+                stream: liveData,
+              )
             ],
           ),
           Padding(
             padding: const EdgeInsets.only(left: 42.0, bottom: 10.0),
             child: Text(
-              widget.device,
+              widget.device.toString(),
               style: const TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
@@ -365,21 +364,20 @@ class _Manage_PageState extends State<Manage_Page> {
                   } else if (snapshot.connectionState == ConnectionState.done) {
                     final Map? dataMapped = snapshot.data as Map?;
                     dataPayload = DataPayload.fromJson(dataMapped ?? {});
-                    dataPayload = dataPayload.decode(dataPayload);
+                    //dataPayload = dataPayload.decode(dataPayload);
                     Map device = dataPayload.toJson();
                     device.removeWhere((key, value) => key != "userDevice");
 
                     device = device.transformAndLocalize();
+                    //print("device's sensor list: $device");
                     setBoolSwitches(dataPayload
-                        .userDevice![widget.device]["userSensor"]["sensorName"]
-                        .length);
+                        .userDevice![widget.device]["sensor"]["id"].length);
 
                     return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: dataPayload
-                                .userDevice![widget.device]["userSensor"]
-                                    ["sensorName"]
+                                .userDevice![widget.device]["sensor"]["id"]
                                 .length ??
                             1,
                         itemBuilder: (context, index) {
@@ -399,7 +397,7 @@ class _Manage_PageState extends State<Manage_Page> {
                                   padding:
                                       const EdgeInsets.only(left: 10, top: 10),
                                   child: Text(
-                                    "${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}",
+                                    "${device["userDevice.${widget.device}.sensor.id"][index]}",
                                     style: const TextStyle(fontSize: 20),
                                   ),
                                 ),
@@ -433,355 +431,8 @@ class _Manage_PageState extends State<Manage_Page> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 10),
-                                        child: TextButton(
-                                            onPressed: () {
-                                              Scaffold.of(context)
-                                                  .showBottomSheet<void>(
-                                                (context) {
-                                                  return BackdropFilter(
-                                                    filter: ImageFilter.blur(
-                                                        sigmaX: 3,
-                                                        sigmaY: 3,
-                                                        tileMode:
-                                                            TileMode.decal),
-                                                    child: Container(
-                                                      height: 200,
-                                                      color: Colors.indigo,
-                                                      child: Center(
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            Text(
-                                                              "${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}",
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontSize: 24,
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                          .only(
-                                                                      top: 30),
-                                                              child: Text(
-                                                                "Status: ${dataPayload.userDevice![widget.device]["userSensor"]["sensorStatus"][dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index].toString()] == true ? "Normal" : "Error"}",
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        16),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                          .only(
-                                                                      top: 10,
-                                                                      bottom:
-                                                                          30),
-                                                              child: Text(
-                                                                "Actuator ${dataPayload.userDevice![widget.device]["actuator"]["actuatorId"][index]}: ${dataPayload.userDevice![widget.device]["actuator"]["state"][dataPayload.userDevice![widget.device]["actuator"]["actuatorId"][index].toString()] == "normal" ? "Normal" : "Error"}",
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .amber,
-                                                                    fontSize:
-                                                                        16),
-                                                              ),
-                                                            ),
-                                                            TextButton(
-                                                                onPressed: () {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                },
-                                                                child:
-                                                                    const Text(
-                                                                  "Close",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .white,
-                                                                      fontSize:
-                                                                          19),
-                                                                ))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                elevation: 10.0,
-                                              );
-                                            },
-                                            child: const Text(
-                                              "More detail",
-                                              style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 26, 255, 1.0),
-                                                  fontSize: 15),
-                                            ))),
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 10),
-                                        child: TextButton(
-                                            onPressed: () {
-                                              value = double.parse(device[
-                                                  "userDevice.${widget.device}.actuator.value.${dataPayload.userDevice![widget.device]["actuator"]["actuatorId"][index].toString()}"]);
-                                              _controller.text =
-                                                  value.toStringAsFixed(1);
-                                              Scaffold.of(context)
-                                                  .showBottomSheet<void>(
-                                                (context) {
-                                                  return BackdropFilter(
-                                                    filter: ImageFilter.blur(
-                                                        sigmaX: 3,
-                                                        sigmaY: 3,
-                                                        tileMode:
-                                                            TileMode.decal),
-                                                    child: Container(
-                                                      height: 400,
-                                                      color: Colors.indigo,
-                                                      child: Center(
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            Align(
-                                                              alignment: Alignment
-                                                                  .centerLeft,
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        left:
-                                                                            20,
-                                                                        bottom:
-                                                                            50),
-                                                                child: Text(
-                                                                  "${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}",
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontSize:
-                                                                        24,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            StatefulBuilder(
-                                                              builder: (context,
-                                                                  setState) {
-                                                                return Container(
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Slider(
-                                                                        value:
-                                                                            value,
-                                                                        min:
-                                                                            0.0,
-                                                                        max:
-                                                                            200.0,
-                                                                        divisions:
-                                                                            2000,
-                                                                        label: value
-                                                                            .toStringAsFixed(1),
-                                                                        onChanged:
-                                                                            (double
-                                                                                newValue) {
-                                                                          setState(
-                                                                              () {
-                                                                            value =
-                                                                                double.parse(newValue.toStringAsFixed(1));
-                                                                            _controller.text =
-                                                                                value.toStringAsFixed(1);
-                                                                          });
-                                                                        },
-                                                                        activeColor:
-                                                                            Colors.green,
-                                                                        inactiveColor:
-                                                                            Colors.grey,
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(
-                                                                            top:
-                                                                                50,
-                                                                            bottom:
-                                                                                20),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceEvenly,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          children: [
-                                                                            Container(
-                                                                                child: InkWell(
-                                                                              child: const Icon(
-                                                                                Icons.remove,
-                                                                                size: 18,
-                                                                                color: Colors.white,
-                                                                              ),
-                                                                              onTap: () {
-                                                                                value -= 0.1;
-                                                                                _controller.text = (value > 0 ? value : 0).toStringAsFixed(1);
-                                                                              },
-                                                                            )),
-                                                                            Container(
-                                                                                width:
-                                                                                    100,
-                                                                                color: Colors
-                                                                                    .white,
-                                                                                child: TextFormField(textAlign: TextAlign.center, decoration: InputDecoration(contentPadding: const EdgeInsets.all(8), border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))), controller: _controller, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true), inputFormatters: [
-                                                                                  LengthLimitingTextInputFormatter(6)
-                                                                                ])),
-                                                                            Container(
-                                                                                child: InkWell(
-                                                                              child: const Icon(
-                                                                                Icons.add,
-                                                                                size: 18,
-                                                                                color: Colors.white,
-                                                                              ),
-                                                                              onTap: () {
-                                                                                setState(() {
-                                                                                  value += 0.1;
-                                                                                  if (value > 200.0) {
-                                                                                    value = 200;
-                                                                                  }
-                                                                                  _controller.text = value.toStringAsFixed(1);
-                                                                                });
-                                                                              },
-                                                                            )),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(
-                                                                            top:
-                                                                                20,
-                                                                            bottom:
-                                                                                20),
-                                                                        child:
-                                                                            Row(
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceEvenly,
-                                                                          children: [
-                                                                            const Text(
-                                                                              "Threshold : ",
-                                                                              style: TextStyle(color: Colors.white, fontSize: 16),
-                                                                            ),
-                                                                            Container(
-                                                                              width: 75,
-                                                                              color: Colors.grey,
-                                                                              child: TextFormField(
-                                                                                textAlign: TextAlign.center,
-                                                                                controller: _threshController,
-                                                                                keyboardType: TextInputType.number,
-                                                                                decoration: InputDecoration(contentPadding: const EdgeInsets.all(8), border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceEvenly,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                    },
-                                                                    child:
-                                                                        const Text(
-                                                                      "Close",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .white,
-                                                                          fontSize:
-                                                                              19),
-                                                                    )),
-                                                                TextButton(
-                                                                    onPressed:
-                                                                        () async {
-                                                                      // Localized thresh and actuator setting
-                                                                      // - Send to MQTT to set threshold (topic:=device_name/threshold/set)
-                                                                      // - Send to MQTT to set actuator (topic:=device_name/actuator/value/set)
-                                                                      Map payload =
-                                                                          {
-                                                                        "id":
-                                                                            "",
-                                                                        "actuator_value":
-                                                                            _controller.text,
-                                                                        "threshold":
-                                                                            _threshController.text
-                                                                      };
-                                                                      payload["id"] =
-                                                                          "${widget.device.toString()}.${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}";
-
-                                                                      String
-                                                                          pubStateCheck =
-                                                                          await newClient
-                                                                              .publishSettings(payload);
-
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                    },
-                                                                    child:
-                                                                        const Text(
-                                                                      "Save Setting",
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .white,
-                                                                          fontSize:
-                                                                              19),
-                                                                    )),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                elevation: 10.0,
-                                              );
-                                            },
-                                            child: const Text(
-                                              "Configure",
-                                              style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 26, 255, 1.0),
-                                                  fontSize: 15),
-                                            )))
+                                    sensorDetails(context, device, index),
+                                    valueSetScaff(context, device, index)
                                   ],
                                 ),
                               ],
@@ -796,6 +447,292 @@ class _Manage_PageState extends State<Manage_Page> {
         ),
       ],
     );
+  }
+
+  Widget sensorDetails(BuildContext context, Map device, int index) {
+    return Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: TextButton(
+            onPressed: () {
+              Scaffold.of(context).showBottomSheet<void>(
+                (context) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(
+                        sigmaX: 3, sigmaY: 3, tileMode: TileMode.decal),
+                    child: Container(
+                      height: 200,
+                      color: Colors.indigo,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${device["userDevice.${widget.device}.sensor.id"][index]}",
+                              style: const TextStyle(
+                                fontSize: 24,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 30),
+                              child: Text(
+                                "Status: ${flagList.last}",
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 30),
+                              child: Text(
+                                "Actuator ${device["userDevice.${widget.device}.actuator.id"][index]}: ${statusList.last == "normal" ? "Normal" : "Error"}",
+                                style: const TextStyle(
+                                    color: Colors.amber, fontSize: 16),
+                              ),
+                            ),
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text(
+                                  "Close",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 19),
+                                ))
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                elevation: 10.0,
+              );
+            },
+            child: const Text(
+              "More detail",
+              style: TextStyle(
+                  color: Color.fromRGBO(0, 26, 255, 1.0), fontSize: 15),
+            )));
+  }
+
+  Widget valueSetScaff(BuildContext context, Map device, int index) {
+    return Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: TextButton(
+            onPressed: () {
+              value = double.parse(device[
+                      "userDevice.${widget.device}.sensor.threshold.${device["userDevice.${widget.device}.sensor.id"][index]}"]
+                  .toString());
+              _controller.text = value.toStringAsFixed(1);
+              Scaffold.of(context).showBottomSheet<void>(
+                (context) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(
+                        sigmaX: 3, sigmaY: 3, tileMode: TileMode.decal),
+                    child: Container(
+                      height: 400,
+                      color: Colors.indigo,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 20, bottom: 50),
+                                child: Text(
+                                  "${device["userDevice.${widget.device}.sensor.id"][index]}",
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            StatefulBuilder(
+                              builder: (context, setState) {
+                                return Container(
+                                  child: Column(
+                                    children: [
+                                      Slider(
+                                        value: value,
+                                        min: 0.0,
+                                        max: 200.0,
+                                        divisions: 2000,
+                                        label: value.toStringAsFixed(1),
+                                        onChanged: (double newValue) {
+                                          setState(() {
+                                            value = double.parse(
+                                                newValue.toStringAsFixed(1));
+                                            _controller.text =
+                                                value.toStringAsFixed(1);
+                                          });
+                                        },
+                                        activeColor: Colors.green,
+                                        inactiveColor: Colors.grey,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 50, bottom: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                                child: InkWell(
+                                              child: const Icon(
+                                                Icons.remove,
+                                                size: 18,
+                                                color: Colors.white,
+                                              ),
+                                              onTap: () {
+                                                value -= 0.1;
+                                                _controller.text =
+                                                    (value > 0 ? value : 0)
+                                                        .toStringAsFixed(1);
+                                              },
+                                            )),
+                                            Container(
+                                                width: 100,
+                                                color: Colors.white,
+                                                child: TextFormField(
+                                                    textAlign: TextAlign.center,
+                                                    decoration: InputDecoration(
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .all(8),
+                                                        border:
+                                                            OutlineInputBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5))),
+                                                    controller: _controller,
+                                                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                                                    inputFormatters: [
+                                                      LengthLimitingTextInputFormatter(
+                                                          6)
+                                                    ])),
+                                            Container(
+                                                child: InkWell(
+                                              child: const Icon(
+                                                Icons.add,
+                                                size: 18,
+                                                color: Colors.white,
+                                              ),
+                                              onTap: () {
+                                                setState(() {
+                                                  value += 0.1;
+                                                  if (value > 100.0) {
+                                                    value = 100;
+                                                  }
+                                                  _controller.text =
+                                                      value.toStringAsFixed(1);
+                                                });
+                                              },
+                                            )),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 20, bottom: 20),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            const Text(
+                                              "Threshold : ",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16),
+                                            ),
+                                            Container(
+                                              width: 75,
+                                              color: Colors.grey,
+                                              child: TextFormField(
+                                                textAlign: TextAlign.center,
+                                                controller: _threshController,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                decoration: InputDecoration(
+                                                    contentPadding:
+                                                        const EdgeInsets.all(8),
+                                                    border: OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5))),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text(
+                                      "Close",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 19),
+                                    )),
+                                TextButton(
+                                    onPressed: () async {
+                                      // Localized thresh and actuator setting
+                                      // - Send to MQTT to set threshold (topic:=device_name/threshold/set)
+                                      // - Send to MQTT to set actuator (topic:=device_name/actuator/value/set)
+                                      Map payload = {
+                                        "id": "",
+                                        "actuator_value": _controller.text,
+                                        "threshold": _threshController.text
+                                      };
+                                      payload["id"] =
+                                          "${widget.device.toString()}.${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}";
+
+                                      String pubStateCheck = await newClient
+                                          .publishSettings(payload);
+
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text(
+                                      "Save Setting",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 19),
+                                    )),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                elevation: 10.0,
+              );
+            },
+            child: const Text(
+              "Configure",
+              style: TextStyle(
+                  color: Color.fromRGBO(0, 26, 255, 1.0), fontSize: 15),
+            )));
   }
 }
 

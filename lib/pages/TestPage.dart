@@ -220,6 +220,7 @@ class _TestPageState extends State<TestPage> {
                                       userId: widget.userId,
                                       device: "device1",
                                       user: MQTTClientWrapper(),
+                                      liveData: Stream<String>.empty(),
                                     ),
                                   ));
                             },

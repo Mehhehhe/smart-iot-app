@@ -55,6 +55,7 @@ dependencies:
   provider: ^6.0.3
   animated_theme_switcher: "^2.0.5"
   shared_preferences: ^2.0.15
+  rxdart: ^0.27.5
 
 dev_dependencies:
   flutter_test:

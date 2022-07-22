@@ -146,10 +146,7 @@ class DataPayload {
 
   // Reduction here!
   // Must change to Node-RED
-  List<dynamic> checkDeviceStatus(String deviceName, [Map? source]) {
-    Map<String, dynamic>? target = loadUserDevices();
-    List<dynamic> whereErr = [];
-
+  String checkDeviceStatus(String deviceName, [Map? source]) {
     // Get MQTT client and subscribe to "flag_checker"
     // require: accessId in localized map from Node-RED
     // accessId := device.sensor_name
@@ -167,34 +164,7 @@ class DataPayload {
         state = value;
       }
     });
-    // return state;
-
-    for (dynamic device in target!.keys) {
-      if (device == deviceName) {
-        for (dynamic part in target[device].keys) {
-          // actuator and userSensor
-          for (dynamic att in target[device][part].keys) {
-            // attribute of actuator and userSensor
-            if (att == "sensorStatus") {
-              for (dynamic sensor in target[device][part][att].keys) {
-                if (target[device][part][att][sensor] == false) {
-                  whereErr.add(sensor);
-                }
-              }
-            }
-            if (att == "state") {
-              for (dynamic act in target[device][part][att].keys) {
-                if (target[device][part][att][act] != "normal" ||
-                    target[device][part][att][act] == false) {
-                  whereErr.add(act);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return whereErr;
+    return state;
   }
 
   DataPayload decode(DataPayload payload) {
@@ -428,14 +398,10 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
       var userDevices = userInfo?.entries
           .firstWhere((element) => element.key == "userDevice")
           .value;
-      var widgetList = userInfo?.entries
-          .firstWhere((element) => element.key == "widgetList")
-          .value;
       final encryption = userInfo?.entries
           .firstWhere((element) => element.key == "encryption")
           .value;
       userDevices = Map<String, dynamic>.from(userDevices);
-      widgetList = Map<String, dynamic>.from(widgetList);
       // assign value to empty model;
       data = DataPayload(
         userId: userId,

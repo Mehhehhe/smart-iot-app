@@ -5,11 +5,16 @@ import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
 
 class Home_Page extends StatefulWidget {
-  Home_Page({Key? key, required this.user, required this.userId})
+  Home_Page(
+      {Key? key,
+      required this.user,
+      required this.userId,
+      required this.liveData})
       : super(key: key);
 
   final MQTTClientWrapper user;
   final String userId;
+  final Stream<String> liveData;
 
   @override
   State<Home_Page> createState() => _Home_PageState();
@@ -17,6 +22,7 @@ class Home_Page extends StatefulWidget {
 
 class _Home_PageState extends State<Home_Page> {
   late MQTTClientWrapper cli;
+  late Stream<String> liveData;
   // data model for reporting
   late DataPayload dataModel;
   late String description;
@@ -45,10 +51,14 @@ class _Home_PageState extends State<Home_Page> {
     setState(() {
       cli = widget.user;
     });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      liveData = widget.liveData;
+    });
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(),
@@ -90,15 +100,6 @@ class _Home_PageState extends State<Home_Page> {
                 crossAxisSpacing: 10,
                 children: [
                   _showForm(),
-                  /*
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),
-                  cardPreset(),*/
                 ],
               ),
             ),
@@ -123,7 +124,8 @@ class _Home_PageState extends State<Home_Page> {
             } else if (snapshot.connectionState == ConnectionState.waiting &&
                 snapshot.hasData == null) {
               return const CircularProgressIndicator();
-            } else if (snapshot.connectionState == ConnectionState.done) {
+            } else if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData) {
               final Map? dataMap = snapshot.data as Map?;
               if (kDebugMode) {
                 print(dataMap.toString());
@@ -148,6 +150,7 @@ class _Home_PageState extends State<Home_Page> {
   }
 
   Widget cardPreset(int index) {
+    print("Display ${dataModel.toJson()}");
     return Card(
       //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       shadowColor: Colors.black,
@@ -171,9 +174,12 @@ class _Home_PageState extends State<Home_Page> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => Manage_Page(
-                            device: dataModel.userDevice!.keys.elementAt(index),
+                            device: dataModel.userDevice!.keys
+                                .elementAt(index)
+                                .toString(),
                             user: widget.user,
                             userId: widget.userId,
+                            liveData: liveData,
                           ),
                         ));
                   },
@@ -186,7 +192,8 @@ class _Home_PageState extends State<Home_Page> {
             children: <Widget>[
               Container(
                 margin: EdgeInsets.only(bottom: 5),
-                child: Text('Cat feeding machine'),
+                child: Text(
+                    dataModel.userDevice!.keys.elementAt(index).toString()),
               ),
             ],
           )
