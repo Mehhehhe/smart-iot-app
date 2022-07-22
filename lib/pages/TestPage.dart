@@ -219,7 +219,7 @@ class _TestPageState extends State<TestPage> {
                                     builder: (context) => Manage_Page(
                                       userId: widget.userId,
                                       device: "device1",
-                                      user: Stream<String>.empty(),
+                                      user: MQTTClientWrapper(),
                                     ),
                                   ));
                             },

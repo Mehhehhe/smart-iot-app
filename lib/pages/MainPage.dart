@@ -95,6 +95,13 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       userId = widget.userId;
       cli = widget.user;
+      screens = [
+        Home_Page(
+          user: cli,
+          userId: userId,
+        ),
+        const History_Page()
+      ];
     });
     cli.prepareMqttClient();
     print("Prepare completed");
@@ -213,13 +220,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   int index = 0;
-  List<StatefulWidget> screens = [
-    Home_Page(
-      user: syncDataResponse ?? Stream<String>.empty(),
-      userId: userId,
-    ),
-    const History_Page()
-  ];
+  late List<StatefulWidget> screens;
 
   @override
   Widget build(BuildContext context) {

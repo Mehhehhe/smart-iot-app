@@ -25,7 +25,7 @@ class Manage_Page extends StatefulWidget {
       : super(key: key);
 
   final String device;
-  final Stream<String> user;
+  final MQTTClientWrapper user;
   final String userId;
 
   @override
@@ -48,7 +48,7 @@ class _Manage_PageState extends State<Manage_Page> {
   Timer? timer;
   late List<_ChartData> chartData;
   ChartSeriesController? _chartSeriesController;
-  MQTTClientWrapper newClient = MQTTClientWrapper();
+  static late MQTTClientWrapper newClient;
 
   final scaffKey = GlobalKey<ScaffoldState>();
   final TextEditingController _controller = TextEditingController();
@@ -68,7 +68,9 @@ class _Manage_PageState extends State<Manage_Page> {
       _ChartData(DateTime.now(), 0.0),
     ];
     print(chartData.toString());
-    newClient.prepareMqttClient();
+    setState(() {
+      newClient = widget.user;
+    });
     super.initState();
   }
 

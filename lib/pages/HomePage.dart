@@ -8,7 +8,7 @@ class Home_Page extends StatefulWidget {
   Home_Page({Key? key, required this.user, required this.userId})
       : super(key: key);
 
-  final Stream<String> user;
+  final MQTTClientWrapper user;
   final String userId;
 
   @override
@@ -16,7 +16,7 @@ class Home_Page extends StatefulWidget {
 }
 
 class _Home_PageState extends State<Home_Page> {
-  late Stream<String> cli;
+  late MQTTClientWrapper cli;
   // data model for reporting
   late DataPayload dataModel;
   late String description;
