@@ -1,13 +1,13 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
-extension MapTrySet<K,V> on Map<K,V>{
-
-  Map transformAndLocalize([Map<dynamic, dynamic>? json,String nestedKey=""]){
-    final Map<dynamic,dynamic> translations = {};
-    if (json!=null){
+extension MapTrySet<K, V> on Map<K, V> {
+  Map transformAndLocalize(
+      [Map<dynamic, dynamic>? json, String nestedKey = ""]) {
+    final Map<dynamic, dynamic> translations = {};
+    if (json != null) {
       json.forEach((dynamic key, dynamic value) {
-        if(value is Map){
+        if (value is Map) {
           translations.addAll(transformAndLocalize(value, "$nestedKey$key."));
         } else {
           translations["$nestedKey${key.toString()}"] = value;
@@ -15,7 +15,7 @@ extension MapTrySet<K,V> on Map<K,V>{
       });
     } else {
       forEach((dynamic key, dynamic value) {
-        if(value is Map){
+        if (value is Map) {
           translations.addAll(transformAndLocalize(value, "$nestedKey$key."));
         } else {
           translations["$nestedKey${key.toString()}"] = value;
@@ -27,26 +27,29 @@ extension MapTrySet<K,V> on Map<K,V>{
 
   // A function to set a value in a nested map
   // return a map that has localized path as a key and its value
-  Map localizedTrySet( String target,[ V? valueToSet,Map<dynamic,dynamic>? json,String nestedKey='']){
+  Map localizedTrySet(String target,
+      [V? valueToSet, Map<dynamic, dynamic>? json, String nestedKey = '']) {
     final Map<dynamic, dynamic> translations = {};
-    if(json!=null){
+    if (json != null) {
       json.forEach((dynamic key, dynamic value) {
-        if("$nestedKey$key"==target){
+        if ("$nestedKey$key" == target) {
           json[key] = valueToSet;
           translations["$nestedKey$key"] = valueToSet;
         }
-        if(value is Map){
-          translations.addAll(localizedTrySet(target,valueToSet,value,"$nestedKey$key."));
+        if (value is Map) {
+          translations.addAll(
+              localizedTrySet(target, valueToSet, value, "$nestedKey$key."));
         }
       });
     } else {
       forEach((dynamic key, dynamic value) {
-        if("$nestedKey$key"==target){
+        if ("$nestedKey$key" == target) {
           this[key] = valueToSet as V;
           translations["$nestedKey$key"] = valueToSet;
         }
-        if(value is Map){
-          translations.addAll(localizedTrySet(target, valueToSet,value, "$nestedKey$key."));
+        if (value is Map) {
+          translations.addAll(
+              localizedTrySet(target, valueToSet, value, "$nestedKey$key."));
         }
       });
     }
@@ -54,30 +57,33 @@ extension MapTrySet<K,V> on Map<K,V>{
     return translations;
   }
 
-  Map localizedTrySetFromMap(Map<dynamic, dynamic> pathAndValueMap,[Map<dynamic, dynamic>? json, String prefix=""]){
+  Map localizedTrySetFromMap(Map<dynamic, dynamic> pathAndValueMap,
+      [Map<dynamic, dynamic>? json, String prefix = ""]) {
     final Map<dynamic, dynamic> translations = {};
-    if(json!=null){
+    if (json != null) {
       json.forEach((dynamic key, dynamic value) {
         print("In json: \t$key $prefix$key ${pathAndValueMap["$prefix$key"]}");
-        if(pathAndValueMap.containsKey("$prefix$key") == true){
+        if (pathAndValueMap.containsKey("$prefix$key") == true) {
           print("Json with key: ${json[key]}");
           json[key] = pathAndValueMap["$prefix$key"];
           translations["$prefix$key"] = pathAndValueMap["$prefix$key"];
         }
-        if(value is Map){
-          translations.addAll(localizedTrySetFromMap(pathAndValueMap, value, "$prefix$key."));
+        if (value is Map) {
+          translations.addAll(
+              localizedTrySetFromMap(pathAndValueMap, value, "$prefix$key."));
         }
       });
     } else {
       forEach((dynamic key, dynamic value) {
         print("$key $prefix$key");
-        if(pathAndValueMap.containsKey("$prefix$key") == true){
+        if (pathAndValueMap.containsKey("$prefix$key") == true) {
           print("This with key: ${this[key]}");
           this[key] = pathAndValueMap["$prefix$key"];
           translations["$prefix$key"] = pathAndValueMap["$prefix$key"];
         }
-        if(value is Map){
-          translations.addAll(localizedTrySetFromMap(pathAndValueMap, value, "$prefix$key."));
+        if (value is Map) {
+          translations.addAll(
+              localizedTrySetFromMap(pathAndValueMap, value, "$prefix$key."));
         }
       });
     }
@@ -86,7 +92,7 @@ extension MapTrySet<K,V> on Map<K,V>{
   }
 }
 
-abstract class SmIOTDatabaseMethod{
+abstract class SmIOTDatabaseMethod {
   Future<Map<String, dynamic>> getData(String userId);
   Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
   Future<void> testSendData(String? userId, Map<String, dynamic> data);
@@ -101,10 +107,10 @@ class DataPayload {
 
   DataPayload(
       {required this.userId,
-        required this.role,
-        required this.approved,
-        this.userDevice,
-        required this.encryption});
+      required this.role,
+      required this.approved,
+      this.userDevice,
+      required this.encryption});
 
   DataPayload.createEmpty() {
     userId = "";
@@ -138,66 +144,58 @@ class DataPayload {
     return targetDevice;
   }
 
-  List<dynamic> checkDeviceStatus(String deviceName){
-    final Map<String, dynamic>? target = loadUserDevices();
-    List<dynamic> whereErr = [];
+  // Reduction here!
+  // Must change to Node-RED
+  String checkDeviceStatus(String deviceName, [Map? source]) {
+    // Get MQTT client and subscribe to "flag_checker"
+    // require: accessId in localized map from Node-RED
+    // accessId := device.sensor_name
+    //
 
-    for(dynamic device in target!.keys){
-      if(device == deviceName){
-        for(dynamic part in target[device].keys){
-          // actuator and userSensor
-          for(dynamic att in target[device][part].keys){
-            // attribute of actuator and userSensor
-            if(att == "sensorStatus"){
-              for(dynamic sensor in target[device][part][att].keys){
-                if(target[device][part][att][sensor] == false){
-                  whereErr.add(sensor);
-                }
-              }
-            }
-            if(att == "state"){
-              for(dynamic act in target[device][part][att].keys){
-                if(target[device][part][att][act] != "normal" || target[device][part][att][act] == false){
-                  whereErr.add(act);
-                }
-              }
-            }
-          }
-        }
+    var localizedSource =
+        Map<String, dynamic>.from(source!).transformAndLocalize();
+    bool isMatched = false;
+    String state = "";
+    localizedSource.forEach((key, value) {
+      if (key.toString().endsWith("id")) {
+        isMatched = (deviceName == value);
       }
-    }
-    return whereErr;
+      if (key.toString().endsWith("state") && isMatched) {
+        state = value;
+      }
+    });
+    return state;
   }
 
   DataPayload decode(DataPayload payload) {
     switch (payload.encryption) {
       case "base64":
         payload.userDevice?.forEach(
-              (key, value) {
+          (key, value) {
             if (payload.userDevice?[key]["userSensor"] != null) {
               List? sensorList =
-              payload.userDevice?[key]["userSensor"]["sensorName"];
+                  payload.userDevice?[key]["userSensor"]["sensorName"];
               for (int i = 0; i < sensorList!.length; i++) {
                 for (dynamic name in payload
                     .userDevice?[key]["userSensor"]["sensorValue"]
-                [sensorList[i]]
+                        [sensorList[i]]
                     .keys) {
                   for (dynamic att in payload
                       .userDevice?[key]["userSensor"]["sensorValue"]
-                  [sensorList[i]][name]
+                          [sensorList[i]][name]
                       .keys) {
                     payload.userDevice?[key]["userSensor"]["sensorValue"]
-                    [sensorList[i]][name][att] =
+                            [sensorList[i]][name][att] =
                         utf8.decode(base64.decode(payload.userDevice?[key]
-                        ["userSensor"]["sensorValue"]
-                        [sensorList[i]][name][att]));
+                                ["userSensor"]["sensorValue"][sensorList[i]]
+                            [name][att]));
                   }
                 }
               }
             }
             if (payload.userDevice?[key]["actuator"] != null) {
               Map? actuatorValue =
-              payload.userDevice?[key]["actuator"]["value"];
+                  payload.userDevice?[key]["actuator"]["value"];
               for (dynamic i in actuatorValue!.keys) {
                 actuatorValue[i] = utf8.decode(base64.decode(actuatorValue[i]));
               }
@@ -212,33 +210,37 @@ class DataPayload {
   }
 
   Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'role': role,
-    'approved': approved,
-    'userDevice': userDevice,
-    'encryption': encryption,
-  };
+        'userId': userId,
+        'role': role,
+        'approved': approved,
+        'userDevice': userDevice,
+        'encryption': encryption,
+      };
 
-  Map<String, dynamic> toJsonForSending() => {
-    'userDevice' : userDevice
-  };
+  Map<String, dynamic> toJsonForSending() => {'userDevice': userDevice};
 
   factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
-    final List<String> keyList = ["userId","role","approved","userDevice","encryption"];
+    final List<String> keyList = [
+      "userId",
+      "role",
+      "approved",
+      "userDevice",
+      "encryption"
+    ];
     int count = 0;
-    for(String key in keyList){
-      if(!json.containsKey(key)){
-        if(key == "userId" || key == "role" || key == "encryption") {
+    for (String key in keyList) {
+      if (!json.containsKey(key)) {
+        if (key == "userId" || key == "role" || key == "encryption") {
           json[key] = "Unknown";
-        } else if(key == "userDevice") {
-          json[key] = {"mapID":json["userDeviceMapId"]??""};
-        } else if(key == "approved"){
+        } else if (key == "userDevice") {
+          json[key] = {"mapID": json["userDeviceMapId"] ?? ""};
+        } else if (key == "approved") {
           json[key] = false;
         }
-        count+=1;
+        count += 1;
       }
     }
-    if(count == 6){
+    if (count == 6) {
       count = 0;
       return DataPayload.createEmpty();
     }
@@ -252,146 +254,126 @@ class DataPayload {
 }
 
 class DeviceBlock {
-  SensorDataBlock? userSensor;
+  SensorDataBlock? sensor;
   ActuatorDataBlock? actuator;
 
-  DeviceBlock(this.userSensor, this.actuator);
+  DeviceBlock(this.sensor, this.actuator);
 
   DeviceBlock.createEncryptedModel(SensorDataBlock us, ActuatorDataBlock act) {
     print("\n..Filling sensor and actuator into block..\n");
-    userSensor = SensorDataBlock.createEncryptedModel(us);
+    sensor = SensorDataBlock.createEncryptedModel(us);
     actuator = ActuatorDataBlock.createEncryptedModel(act);
     print(
         "[Process{DeviceModel}] \tCreated device block with size ${this.toJson().length} B");
   }
 
   // Require user to manually encrypted data
-  DeviceBlock.createPartialEncryptedModel(SensorDataBlock sen, ActuatorDataBlock act){
-    userSensor = sen;
+  DeviceBlock.createPartialEncryptedModel(
+      SensorDataBlock sen, ActuatorDataBlock act) {
+    sensor = sen;
     actuator = act;
   }
 
   Map<String, dynamic> toJson() =>
-      {'userSensor': userSensor?.toJson(), 'actuator': actuator?.toJson()};
-
+      {'userSensor': sensor?.toJson(), 'actuator': actuator?.toJson()};
+  /*
   Map<String, dynamic> toJsonForSending() => {
-    'userSensor':userSensor?.toJsonForSending(), 'actuator': actuator?.toJsonWithOnlyValue()
-  };
-
+        'userSensor': sensor?.toJsonForSending(),
+        'actuator': actuator?.toJsonWithOnlyValue()
+      };
+  */
   factory DeviceBlock.fromJson(Map<dynamic, dynamic> json) {
     return DeviceBlock(json["userSensor"], json["actuator"]);
   }
 }
 
 class SensorDataBlock {
-  dynamic sensorName;
-  Map<String, String>? sensorType;
-  Map<String, bool>? sensorStatus;
-  Map<String, dynamic>? sensorValue;
-  Map<String, dynamic>? sensorThresh;
-  Map<String, dynamic>? sensorTiming;
-  Map<String, dynamic>? calibrateValue;
+  dynamic id;
+  Map<String, String>? type;
+  Map<String, dynamic>? threshold;
+  Map<String, dynamic>? timing;
+  Map<String, dynamic>? calibrate;
 
-  SensorDataBlock(this.sensorName, this.sensorType, this.sensorStatus,
-      this.sensorValue, this.sensorThresh, this.sensorTiming, this.calibrateValue);
+  SensorDataBlock(
+      this.id, this.type, this.threshold, this.timing, this.calibrate);
 
   // For using in report, not for sending data in normal process.
   SensorDataBlock.createEncryptedModel(SensorDataBlock? sensor) {
-    sensorName = sensor?.sensorName;
-    sensorType = sensor?.sensorType;
-    sensorStatus = sensor?.sensorStatus;
-    sensorValue = sensor?.sensorValue;
-    sensorThresh = sensor?.sensorThresh;
-    sensorTiming = sensor?.sensorTiming;
-    calibrateValue = sensor?.calibrateValue;
-
-    for (int i = 0; i < sensorName?.length; i++) {
-      for (dynamic name in sensorValue![sensorName[i.toString()]].keys) {
+    id = sensor?.id;
+    type = sensor?.type;
+    threshold = sensor?.threshold;
+    timing = sensor?.timing;
+    calibrate = sensor?.calibrate;
+    /*
+    for (int i = 0; i < id?.length; i++) {
+      for (dynamic name in sensorValue![id[i.toString()]].keys) {
         for (dynamic att in sensorValue![sensorName[i.toString()]][name].keys) {
           sensorValue![sensorName[i.toString()]][name][att] = base64.encode(
               utf8.encode(sensorValue![sensorName[i.toString()]][name][att]
                   .toString()));
         }
       }
-    }
-    SensorDataBlock(sensorName, sensorType, sensorStatus, sensorValue,
-        sensorThresh, sensorTiming, calibrateValue);
+    }*/
+    SensorDataBlock(id, type, threshold, timing, calibrate);
     print(
         "[Process{SensorModel}] \tCreated sensor block with size ${this.toJson().length} B");
   }
 
-  SensorDataBlock.createForSending(this.sensorStatus, this.sensorTiming, this.calibrateValue, this.sensorThresh);
+  //SensorDataBlock.createForSending(this.sensorStatus, this.sensorTiming,
+  //    this.calibrateValue, this.sensorThresh);
   Map<String, dynamic> toJson() => {
-    'sensorName': sensorName,
-    'sensorType': sensorType,
-    'sensorStatus': sensorStatus,
-    'sensorValue': sensorValue,
-    'sensorThresh': sensorThresh,
-    'sensorTiming': sensorTiming,
-    'calibrateValue':calibrateValue
-  };
-
+        'id': id,
+        'type': type,
+        'threshold': threshold,
+        'timing': timing,
+        'calibrate': calibrate
+      };
+  /*
   Map<String, dynamic> toJsonForSending() => {
-    'sensorStatus': sensorStatus,
-    'sensorThresh': sensorThresh,
-    'sensorTiming': sensorTiming,
-    'calibrateValue': calibrateValue
-  };
-
-  factory SensorDataBlock.fromJson(Map<dynamic, dynamic> json){
-    return SensorDataBlock(
-        json['sensorName'],
-        json['sensorType'],
-        json['sensorStatus'],
-        json['sensorValue'],
-        json['sensorThresh'],
-        json['sensorTiming'],
-        json['calibrateValue']
-    );
+        'sensorStatus': sensorStatus,
+        'sensorThresh': sensorThresh,
+        'sensorTiming': sensorTiming,
+        'calibrateValue': calibrateValue
+      };
+  */
+  factory SensorDataBlock.fromJson(Map<dynamic, dynamic> json) {
+    return SensorDataBlock(json['id'], json['type'], json['threshold'],
+        json['timing'], json['calibrate']);
   }
 }
 
 class ActuatorDataBlock {
   Map<String, String>? actuatorId;
   Map<String, String>? type;
-  Map<String, dynamic>? state;
-  Map<String, dynamic>? value;
 
-  ActuatorDataBlock(this.actuatorId, this.type, this.state, this.value);
-
-  ActuatorDataBlock.createForSending(this.value);
+  ActuatorDataBlock(this.actuatorId, this.type);
 
   ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock? act) {
     actuatorId = act?.actuatorId;
     type = act?.type;
-    state = act?.state;
-    value = act?.value;
-
+/*
     for (dynamic type in value!.keys) {
       value![type.toString()] =
           base64.encode(utf8.encode(value![type.toString()].toString()));
-    }
+    }*/
 
-    ActuatorDataBlock(actuatorId, type, state, value);
+    ActuatorDataBlock(actuatorId, type);
     print(
         "[Process{ActuatorModel}] \tCreated actuator block with size ${this.toJson().length} B");
   }
-
-  ActuatorDataBlock.createEncryptedModelWithOnlyValue(ActuatorDataBlock? act){
+/*
+  ActuatorDataBlock.createEncryptedModelWithOnlyValue(ActuatorDataBlock? act) {
     value = act?.value;
     for (dynamic type in value!.keys) {
       value![type.toString()] =
           base64.encode(utf8.encode(value![type.toString()].toString()));
     }
-  }
+  }*/
 
-  Map<String, dynamic> toJson() =>
-      {'actuatorId': actuatorId, 'type': type, 'state': state, 'value': value};
-
-  Map<String, dynamic> toJsonWithOnlyValue() => {'value':value};
+  Map<String, dynamic> toJson() => {'actuatorId': actuatorId, 'type': type};
 
   factory ActuatorDataBlock.fromJson(Map<dynamic, dynamic> json) {
-    return ActuatorDataBlock(json["actuatorId"],json["type"],json["state"],json["value"]);
+    return ActuatorDataBlock(json["actuatorId"], json["type"]);
   }
 }
 
@@ -407,20 +389,26 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     if (snapshot.exists) {
       final Map? userInfo = event.snapshot.value as Map?;
       // get user's data from snapshot
-      final role = userInfo?.entries.firstWhere((element) => element.key == "role").value;
-      final approved = userInfo?.entries.firstWhere((element) => element.key == "approved").value;
-      var userDevices = userInfo?.entries.firstWhere((element) => element.key == "userDevice").value;
-      var widgetList = userInfo?.entries.firstWhere((element) => element.key == "widgetList").value;
-      final encryption  = userInfo?.entries.firstWhere((element) => element.key == "encryption").value;
+      final role = userInfo?.entries
+          .firstWhere((element) => element.key == "role")
+          .value;
+      final approved = userInfo?.entries
+          .firstWhere((element) => element.key == "approved")
+          .value;
+      var userDevices = userInfo?.entries
+          .firstWhere((element) => element.key == "userDevice")
+          .value;
+      final encryption = userInfo?.entries
+          .firstWhere((element) => element.key == "encryption")
+          .value;
       userDevices = Map<String, dynamic>.from(userDevices);
-      widgetList = Map<String,dynamic>.from(widgetList);
       // assign value to empty model;
       data = DataPayload(
-          userId: userId,
-          role: role,
-          approved: approved,
-          encryption: encryption,
-          userDevice: userDevices,
+        userId: userId,
+        role: role,
+        approved: approved,
+        encryption: encryption,
+        userDevice: userDevices,
       );
       final jsons = jsonEncode(data.toJson());
       Map<String, dynamic> jsonDecoded = jsonDecode(jsons);
@@ -433,19 +421,17 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
 
   @override
   Future<void> sendData(String? userId, Map<String, dynamic> data) async {
-
-    TransactionResult result = await ref.child('$userId').runTransaction(
-            (Object? object) {
-          if(object == null){
-            return Transaction.abort();
-          }
-          Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
-          print("Data : $data");
-          _obj.localizedTrySetFromMap(data);
-          //print("Sent! $_obj");
-          return Transaction.success(_obj);
-        }, applyLocally: true
-    );
+    TransactionResult result =
+        await ref.child('$userId').runTransaction((Object? object) {
+      if (object == null) {
+        return Transaction.abort();
+      }
+      Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
+      print("Data : $data");
+      _obj.localizedTrySetFromMap(data);
+      //print("Sent! $_obj");
+      return Transaction.success(_obj);
+    }, applyLocally: true);
   }
 
   @override
