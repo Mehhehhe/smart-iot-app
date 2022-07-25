@@ -247,6 +247,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  fpdart:
+    dependency: "direct main"
+    description:
+      name: fpdart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -457,13 +464,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.0"
-  rxdart:
-    dependency: "direct main"
-    description:
-      name: rxdart
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.27.5"
   shared_preferences:
     dependency: "direct main"
     description:
