@@ -38,7 +38,7 @@ class _TestPageState extends State<TestPage> {
     );
     print(response.statusCode);
     if (response.statusCode == 200) {
-      return DataPayload.fromJson(json.decode(response.body));
+      return DataPayload.createModelFromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to create data payload');
     }
@@ -51,7 +51,7 @@ class _TestPageState extends State<TestPage> {
     print(response.statusCode);
     if (response.statusCode == 200) {
       print("GET: ${json.decode(response.body)}");
-      return DataPayload.fromJson(json.decode(response.body));
+      return DataPayload.createModelFromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to load data');
     }
@@ -99,7 +99,7 @@ class _TestPageState extends State<TestPage> {
             return CircularProgressIndicator();
           } else if (snapshot.connectionState == ConnectionState.done) {
             final Map? dataMapped = snapshot.data as Map?;
-            dataPayload = DataPayload.fromJson(dataMapped ?? {});
+            dataPayload = DataPayload.createModelFromJson(dataMapped ?? {});
             return ListView.builder(
                 shrinkWrap: true,
                 itemCount: 1,
@@ -257,7 +257,13 @@ class _TestPageState extends State<TestPage> {
                             prepareMQTT();
                           },
                           child: Text("Prepare MQTT"),
-                        )
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              DataPayload test =
+                                  DataPayload.createModelFromJson({});
+                            },
+                            child: Text("Testing model in monad-style"))
                       ],
                     ),
                   );

@@ -363,7 +363,8 @@ class _Manage_PageState extends State<Manage_Page> {
                     return const CircularProgressIndicator();
                   } else if (snapshot.connectionState == ConnectionState.done) {
                     final Map? dataMapped = snapshot.data as Map?;
-                    dataPayload = DataPayload.fromJson(dataMapped ?? {});
+                    dataPayload =
+                        DataPayload.createModelFromJson(dataMapped ?? {});
                     //dataPayload = dataPayload.decode(dataPayload);
                     Map device = dataPayload.toJson();
                     device.removeWhere((key, value) => key != "userDevice");

@@ -127,12 +127,17 @@ class _Home_PageState extends State<Home_Page> {
             } else if (snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData) {
               final Map? dataMap = snapshot.data as Map?;
-              if (kDebugMode) {
-                print(dataMap.toString());
-              }
-              dataModel = DataPayload.fromJson(dataMap ?? {});
-              setCardCount(dataModel.loadUserDevices()!.length);
-              setBoolSwitches(dataModel.loadUserDevices()!.length);
+              dataModel = DataPayload.createModelFromJson(dataMap ?? {});
+              setCardCount(dataModel
+                  .loadDevices()
+                  .getRight()
+                  .getOrElse(() => {})
+                  .length);
+              setBoolSwitches(dataModel
+                  .loadDevices()
+                  .getRight()
+                  .getOrElse(() => {})
+                  .length);
               return ListView.builder(
                 shrinkWrap: true,
                 itemCount: _addCard,
@@ -150,7 +155,6 @@ class _Home_PageState extends State<Home_Page> {
   }
 
   Widget cardPreset(int index) {
-    print("Display ${dataModel.toJson()}");
     return Card(
       //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       shadowColor: Colors.black,

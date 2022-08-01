@@ -113,14 +113,14 @@ class MQTTClientWrapper {
 
   void _setupMqttClient() {
     client = MqttServerClient.withPort(
-        '79de4ca025cd4477b9cb4823aca4b3a5.s2.eu.hivemq.cloud', "Pakin", 8883);
-    // the next 2 lines are necessary to connect with tls, which is used by HiveMQ Cloud
-    client.secure = true;
-    client.securityContext = SecurityContext.defaultContext;
-    client.keepAlivePeriod = 2;
-    client.onDisconnected = _onDisconnected;
-    client.onConnected = _onConnected;
-    client.onSubscribed = _onSubscribed;
+        '79de4ca025cd4477b9cb4823aca4b3a5.s2.eu.hivemq.cloud', "Pakin", 8883)
+      // the next 2 lines are necessary to connect with tls, which is used by HiveMQ Cloud
+      ..secure = true
+      ..securityContext = SecurityContext.defaultContext
+      ..keepAlivePeriod = 2
+      ..onDisconnected = _onDisconnected
+      ..onConnected = _onConnected
+      ..onSubscribed = _onSubscribed;
   }
 
   void _subscribeToTopic(String topicName) {

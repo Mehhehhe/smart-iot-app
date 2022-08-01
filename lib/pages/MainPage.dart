@@ -99,7 +99,7 @@ class _MainPageState extends State<MainPage> {
       screens = [
         Home_Page(
             user: cli, userId: userId, liveData: const Stream<String>.empty()),
-        const History_Page()
+        const History_Page(liveData: Stream<String>.empty())
       ];
     });
     cli.prepareMqttClient();
@@ -192,7 +192,9 @@ class _MainPageState extends State<MainPage> {
       });
       screens = [
         Home_Page(user: cli, userId: userId, liveData: syncDataResponse!),
-        const History_Page()
+        History_Page(
+          liveData: syncDataResponse!,
+        )
       ];
     });
   }

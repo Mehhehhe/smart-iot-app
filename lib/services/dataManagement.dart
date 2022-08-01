@@ -1,6 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
+import 'package:fpdart/fpdart.dart';
+
 extension MapTrySet<K, V> on Map<K, V> {
   Map transformAndLocalize(
       [Map<dynamic, dynamic>? json, String nestedKey = ""]) {
@@ -124,47 +126,38 @@ class DataPayload {
     userDevice = dev;
   }
 
-  Map<String, dynamic>? loadUserDevices() {
-    if (userDevice == null) {
-      throw "[ERROR] Devices are not loaded. There were no devices";
-    }
-
-    return userDevice;
+  Either<String, Map<String, dynamic>> loadDevices() {
+    return userDevice!.isNotEmpty
+        ? Right(userDevice!)
+        : const Left("No devices");
   }
 
-  MapEntry<String, dynamic> displayDevice(String deviceName) {
-    final devices = loadUserDevices();
-    final MapEntry<String, dynamic> targetDevice;
-    try {
-      targetDevice =
-          devices!.entries.firstWhere((element) => element.key == deviceName);
-    } catch (e) {
-      throw "[ERROR] Searched and found 0 device";
-    }
+  Option<Map<String, dynamic>> getDeviceInfo(String deviceName) {
+    final devices = loadDevices();
+    late Option<Map<String, dynamic>> targetDevice;
+    devices.match((err) => IOEither.of(unit), (deviceMap) {
+      return IOEither.tryCatch(() {
+        targetDevice = devices.getRight();
+      }, (error, stackTrace) {
+        return 'An error occurred: $error';
+      });
+    });
     return targetDevice;
   }
 
   // Reduction here!
   // Must change to Node-RED
-  String checkDeviceStatus(String deviceName, [Map? source]) {
+  checkDeviceStatus(String deviceName, [Map? source]) {
     // Get MQTT client and subscribe to "flag_checker"
     // require: accessId in localized map from Node-RED
     // accessId := device.sensor_name
     //
-
-    var localizedSource =
-        Map<String, dynamic>.from(source!).transformAndLocalize();
-    bool isMatched = false;
-    String state = "";
-    localizedSource.forEach((key, value) {
-      if (key.toString().endsWith("id")) {
-        isMatched = (deviceName == value);
-      }
-      if (key.toString().endsWith("state") && isMatched) {
-        state = value;
-      }
-    });
-    return state;
+    Option<Map> mapOpts = Option.of(source!);
+    var filter = mapOpts.match((t) {
+      return t.filterWithKey((key, value) =>
+          key.toString().contains(deviceName).toString().endsWith("state"));
+    }, () => IOEither.of(unit));
+    return filter;
   }
 
   DataPayload decode(DataPayload payload) {
@@ -219,7 +212,7 @@ class DataPayload {
 
   Map<String, dynamic> toJsonForSending() => {'userDevice': userDevice};
 
-  factory DataPayload.fromJson(Map<dynamic, dynamic> json) {
+  factory DataPayload.createModelFromJson(Map<dynamic, dynamic> json) {
     final List<String> keyList = [
       "userId",
       "role",
@@ -227,29 +220,30 @@ class DataPayload {
       "userDevice",
       "encryption"
     ];
-    int count = 0;
     for (String key in keyList) {
-      if (!json.containsKey(key)) {
-        if (key == "userId" || key == "role" || key == "encryption") {
-          json[key] = "Unknown";
-        } else if (key == "userDevice") {
-          json[key] = {"mapID": json["userDeviceMapId"] ?? ""};
-        } else if (key == "approved") {
-          json[key] = false;
-        }
-        count += 1;
-      }
-    }
-    if (count == 6) {
-      count = 0;
-      return DataPayload.createEmpty();
+      json[key] = json.lookupWithKey(key).getOrElse(() {
+        var genAtt = Option.of(key).match((t) {
+          return t.contains("userDevice")
+              ? {"mapID": json["userDeviceMapId"] ?? ""}
+              : t.contains("approved")
+                  ? false
+                  : "Unknown";
+        }, () => "Unexpected key");
+        return Tuple2(key, genAtt);
+      }).second;
     }
     return DataPayload(
         userId: json['userId'],
         role: json['role'],
         approved: json['approved'],
-        userDevice: json['userDevice'],
+        userDevice: json['userDevice'].runtimeType != Map
+            ? Map<String, dynamic>.from(json["userDevice"])
+            : json["userDevice"],
         encryption: json['encryption']);
+  }
+
+  DataPayload bind(Function(IO) fn) {
+    return fn.call(IO.of(fn));
   }
 }
 
@@ -386,51 +380,28 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     final event = await ref.child(userId).once(DatabaseEventType.value);
     // create empty model of DataPayload;
     DataPayload data = DataPayload.createEmpty();
-    if (snapshot.exists) {
+    return Option.of(snapshot).match((t) {
       final Map? userInfo = event.snapshot.value as Map?;
-      // get user's data from snapshot
-      final role = userInfo?.entries
-          .firstWhere((element) => element.key == "role")
-          .value;
-      final approved = userInfo?.entries
-          .firstWhere((element) => element.key == "approved")
-          .value;
-      var userDevices = userInfo?.entries
-          .firstWhere((element) => element.key == "userDevice")
-          .value;
-      final encryption = userInfo?.entries
-          .firstWhere((element) => element.key == "encryption")
-          .value;
-      userDevices = Map<String, dynamic>.from(userDevices);
-      // assign value to empty model;
-      data = DataPayload(
-        userId: userId,
-        role: role,
-        approved: approved,
-        encryption: encryption,
-        userDevice: userDevices,
-      );
-      final jsons = jsonEncode(data.toJson());
-      Map<String, dynamic> jsonDecoded = jsonDecode(jsons);
-      return jsonDecoded;
-    } else {
-      data = DataPayload.createEmpty();
+      return Option.of(userInfo).match((t) {
+        data = DataPayload.createModelFromJson(Map.from(t!));
+        return data.toJson();
+      }, () => DataPayload.createModelFromJson({}).toJson());
+    }, () {
       return data.toJson();
-    }
+    });
   }
 
   @override
   Future<void> sendData(String? userId, Map<String, dynamic> data) async {
     TransactionResult result =
         await ref.child('$userId').runTransaction((Object? object) {
-      if (object == null) {
+      return Option.of(object).match((t) {
+        Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
+        _obj.localizedTrySetFromMap(data);
+        return Transaction.success(_obj);
+      }, () {
         return Transaction.abort();
-      }
-      Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
-      print("Data : $data");
-      _obj.localizedTrySetFromMap(data);
-      //print("Sent! $_obj");
-      return Transaction.success(_obj);
+      });
     }, applyLocally: true);
   }
 
