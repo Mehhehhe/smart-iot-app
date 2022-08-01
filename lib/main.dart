@@ -12,9 +12,11 @@ import 'package:smart_iot_app/pages/root.dart';
 
 
 class Mytheme with ChangeNotifier {
+
   bool _isDark = false ;
 
   ThemeMode currentTheme() {
+
     return _isDark ? ThemeMode.dark : ThemeMode.light ;
   }
 
@@ -48,7 +50,7 @@ void main() async {
   ));
 }
 
-
+const primaryColor = Color(0xFF151026);
 
 class SmartIOTApp extends StatelessWidget{
   const SmartIOTApp({Key? key}) : super(key: key);
@@ -61,18 +63,37 @@ class SmartIOTApp extends StatelessWidget{
     return MaterialApp(
           title: 'Smart IOT',
           debugShowCheckedModeBanner: false,
+
+
           theme: ThemeData.light().copyWith(
-            scaffoldBackgroundColor: Colors.white,
+            primaryColor: primaryColor,
+            scaffoldBackgroundColor: Color.fromRGBO(255, 255, 255, 0.8),
             colorScheme: ColorScheme.light(),
             dividerColor: Colors.black,
+            textTheme:
+            TextTheme(
+              //headline1: TextStyle(color: Colors.black),
+              //headline2: TextStyle(color: Colors.red),
+              bodyText2: TextStyle(color: Colors.black),
+              //subtitle1: TextStyle(color: Colors.deepPurpleAccent),
+            ),
+        iconTheme: IconThemeData(color: Colors.black),
+              //bottomNavigationBarTheme: Colors.black
 
           ),
+
+
           darkTheme: ThemeData.dark().copyWith(
             scaffoldBackgroundColor: Colors.grey.shade900,
             colorScheme: ColorScheme.dark(),
             dividerColor: Colors.white,
+
           ),
+
+
           themeMode: context.watch<Mytheme>().currentTheme(),
+
+
           home: RootPage(auth: Auth()),
     );
   }

@@ -45,7 +45,6 @@ class _History_PageState extends State<History_Page>{
             children: <Widget>[
               sortHistory(),
               history_cardPreset(),
-              testTheme()
             ],
           ),
       ),
@@ -126,15 +125,5 @@ class _History_PageState extends State<History_Page>{
     );
   }
 
-  Widget testTheme() {
-    return Container(
-      child: CupertinoSwitch(
-        value: context.read<Mytheme>().currentTheme() == ThemeData.dark,
-        onChanged: (value){
-          context.read<Mytheme>().switchTheme();
-        },
-      ),
-    );
-  }
 }
 

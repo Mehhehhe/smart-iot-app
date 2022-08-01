@@ -312,7 +312,7 @@ Widget showProfile(){
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
       child: Container(
-        width: 20,
+        //width: z,
         height: 50,
         decoration: BoxDecoration(
             gradient: const LinearGradient(

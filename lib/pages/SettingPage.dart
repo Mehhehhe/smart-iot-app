@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_iot_app/main.dart';
 
-import '../main.dart';
 
 class Setting_Page extends StatefulWidget {
   const Setting_Page({Key? key}) : super(key: key);
@@ -20,6 +20,7 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
   bool changeThemestate = false;
 
   late final AnimationController _controller;
+
 
   @override
   void initstate() {
@@ -46,14 +47,15 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
       ),
       body: Container(
 
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image : AssetImage('assets/images/bg_setting.jpg'),
-                fit: BoxFit.cover
+          //decoration: BoxDecoration(
+            //image: DecorationImage(
+              //image: changeThemestate == false ? AssetImage('assets/images/bg_profile.jpg') : AssetImage('assets/images/bg_setting.jpg'),
+                //fit: BoxFit.cover
+                //,
+            //),
 
-            ),
 
-          ),
+          //),
         child: ListView(
           children: [
             _showForm(),
@@ -73,20 +75,20 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-              Text('Display', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: Colors.white),),
+              Text('Display', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
               const SizedBox(height: 13,),
               Divider(color: Colors.white70,),
               const SizedBox(height: 10,),
               displaySettingButton(),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Text('Notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: Colors.white),),
+                padding: const EdgeInsets.symmetric(vertical: 15,horizontal: 10),
+                child: Text('Notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
               ),
-              Divider(color: Colors.white70,),
+              //Divider(color: Colors.white70,),
               const SizedBox(height: 5,),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Allow all notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),),
+                  Text('Allow all notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
                   Switch(value: notiButton_1, onChanged: (value) {
                     setState(() {
                       notiButton_1 = value;
@@ -98,14 +100,14 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
               ),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Select topics', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),),
+                  Text('Select topics', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
                   DropdownButtonHideUnderline(
                     child: DropdownButton2(
                       hint: Text(
                         'Select Item',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Color.fromRGBO(155, 155, 155, 1.0),
+                          //color: Color.fromRGBO(155, 155, 155, 1.0),
                         ),
                       ),
                       items: topics
@@ -138,7 +140,7 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
               ),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('None Select', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),),
+                  Text('None Select', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
                   Switch(value: notiButton_2, onChanged: (value) {
                     setState(() {
                       notiButton_2 = value;
@@ -150,7 +152,7 @@ class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMix
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15,horizontal: 10),
-                child: Text('Theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: Colors.white),),
+                child: Text('Theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
               ),
 
               const SizedBox(height: 5,),
