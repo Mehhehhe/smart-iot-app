@@ -190,6 +190,7 @@ class _MainPageState extends State<MainPage> {
           return MapEntry(key, value);
         });
       });
+      //print("[TestList] ${syncDataResponse!.runtimeType}");
       screens = [
         Home_Page(user: cli, userId: userId, liveData: syncDataResponse!),
         History_Page(
