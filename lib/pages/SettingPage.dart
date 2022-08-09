@@ -1,19 +1,29 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_iot_app/main.dart';
+
+import '../main.dart';
 
 class Setting_Page extends StatefulWidget {
   const Setting_Page({Key? key}) : super(key: key);
-
   @override
   State<Setting_Page> createState() => _Setting_PageState();
 }
-
-class _Setting_PageState extends State<Setting_Page> {
+class _Setting_PageState extends State<Setting_Page> with TickerProviderStateMixin{
   bool notiButton_1 = true;
   bool notiButton_2 = false;
-  bool themeButton_1 = true;
-  bool themeButton_2 = false;
+  bool changeThemestate = false;
 
+  late final AnimationController _controller;
+
+
+  @override
+  void initstate() {
+    super.initState();
+    _controller = new AnimationController(vsync: this);
+  }
   final List<String> topics = [
     'Item1',
     'Item2',
@@ -21,7 +31,6 @@ class _Setting_PageState extends State<Setting_Page> {
     'Item4',
   ];
   String? selectedValue;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,11 +39,18 @@ class _Setting_PageState extends State<Setting_Page> {
         elevation: 0.0,
       ),
       body: Container(
+
         decoration: BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/images/bg_setting.jpg'),
-              fit: BoxFit.cover),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
+        //),
         child: ListView(
           children: [
             _showForm(),
@@ -44,232 +60,112 @@ class _Setting_PageState extends State<Setting_Page> {
       extendBodyBehindAppBar: true,
     );
   }
-
   Widget _showForm() {
     return Container(
       padding: const EdgeInsets.all(15.0),
       child: Form(
         //key: _formKey,
         child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              Text(
-                'Display',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                    color: Colors.white),
-              ),
-              const SizedBox(
-                height: 13,
-              ),
-              Divider(
-                color: Colors.white70,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              displaySettingButton(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Text(
-                  'Notification',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: Colors.white),
-                ),
-              ),
-              Divider(
-                color: Colors.white70,
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Allow all notification',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white),
-                  ),
-                  Switch(
-                    value: notiButton_1,
-                    onChanged: (value) {
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: ListView(
+              shrinkWrap: true,
+              children: <Widget>[
+
+                  Text('Display', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
+
+
+                displaySettingButton(),
+
+                 Text('Notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
+
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Allow all notification', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
+                    Switch(value: notiButton_1, onChanged: (value) {
                       setState(() {
                         notiButton_1 = value;
-                        notiButton_1 == true
-                            ? notiButton_2 = false
-                            : notiButton_2 = true;
+                        notiButton_1 == true ? notiButton_2 = false : notiButton_2 = true ;
                       });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
-                  )
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Select topics',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white),
-                  ),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton2(
-                      hint: Text(
-                        'Select Item',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color.fromRGBO(155, 155, 155, 1.0),
+                    },activeTrackColor: Colors.lightGreenAccent,
+                      activeColor: Colors.green,)
+                  ],
+                ),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Select topics', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2(
+                        hint: Text(
+                          'Select Item',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Color.fromRGBO(155, 155, 155, 1.0),
+                            //color: Color.fromRGBO(155, 155, 155, 1.0),
+                          ),
                         ),
-                      ),
-                      items: topics
-                          .map((item) => DropdownMenuItem<String>(
-                                value: item,
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Color.fromRGBO(155, 155, 155, 1.0),
-                                  ),
+                        items: topics
+                            .map((item) =>
+                            DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: const TextStyle(
+                                  fontSize: 15,color:
+                                Color.fromRGBO(155, 155, 155, 1.0),
                                 ),
-                              ))
-                          .toList(),
-                      value: selectedValue,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedValue = value as String;
-                        });
-                      },
-                      buttonHeight: 40,
-                      buttonWidth: 100,
-                      itemHeight: 40,
+                              ),
+                            ))
+                            .toList(),
+                        value: selectedValue,
+                        onChanged: (value) {
+                          setState(() {
+                            selectedValue = value as String;
+                          });
+                        },
+                        buttonHeight: 40,
+                        buttonWidth: 100,
+                        itemHeight: 40,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'None Select',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white),
-                  ),
-                  Switch(
-                    value: notiButton_2,
-                    onChanged: (value) {
+
+                  ],
+                ),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('None Select', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,),),
+                    Switch(value: notiButton_2, onChanged: (value) {
                       setState(() {
                         notiButton_2 = value;
-                        notiButton_2 == true
-                            ? notiButton_1 = false
-                            : notiButton_1 = true;
+                        notiButton_2 == true ? notiButton_1 = false : notiButton_1 = true ;
                       });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Text(
-                  'Theme',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: Colors.white),
+                    },activeTrackColor: Colors.lightGreenAccent,
+                      activeColor: Colors.green,)
+                  ],
                 ),
-              ),
-              Divider(
-                color: Colors.white70,
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Light theme',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white),
-                  ),
-                  Switch(
-                    value: themeButton_1,
-                    onChanged: (value) {
-                      setState(() {
-                        themeButton_1 = value;
-                        themeButton_1 == true
-                            ? themeButton_2 = false
-                            : themeButton_2 = true;
-                        //theme.setLightMode();
-                      });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
-                  )
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Dark theme',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white),
-                  ),
-                  Switch(
-                    value: themeButton_2,
-                    onChanged: (value) {
-                      setState(() {
-                        themeButton_2 = value;
-                        themeButton_2 == true
-                            ? themeButton_1 = false
-                            : themeButton_1 = true;
-                        //theme.setDarkMode();
-                      });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
-                  )
-                ],
-              ),
-              Divider(
-                color: Colors.white70,
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              submitButton(),
-            ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15,horizontal: 10),
+                  child: Text('Theme', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,),),
+                ),
+
+                const SizedBox(height: 5,),
+                themeChange(),
+                const SizedBox(height: 5,),
+                submitButton(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
-  Widget displaySettingButton() {
+  Widget displaySettingButton(){
     return Row(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 7,vertical: 15),
           child: Container(
-            width: 105,
+            width: 100,
             height: 45,
             decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -285,7 +181,7 @@ class _Setting_PageState extends State<Setting_Page> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 4,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -316,7 +212,7 @@ class _Setting_PageState extends State<Setting_Page> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 7),
           child: Container(
-            width: 105,
+            width: 100,
             height: 45,
             decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -332,7 +228,7 @@ class _Setting_PageState extends State<Setting_Page> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 4,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -363,7 +259,7 @@ class _Setting_PageState extends State<Setting_Page> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 7),
           child: Container(
-            width: 105,
+            width: 100,
             height: 45,
             decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -379,7 +275,7 @@ class _Setting_PageState extends State<Setting_Page> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 4,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -410,10 +306,9 @@ class _Setting_PageState extends State<Setting_Page> {
       ],
     );
   }
-
-  Widget submitButton() {
+  Widget submitButton(){
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+      padding: const EdgeInsets.symmetric(vertical: 50,horizontal: 30),
       child: Container(
         //width: 50,
         height: 50,
@@ -431,7 +326,7 @@ class _Setting_PageState extends State<Setting_Page> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.pink.withOpacity(0.2),
+                color: Colors.black.withOpacity(0.2),
                 spreadRadius: 4,
                 blurRadius: 10,
                 offset: const Offset(0, 3),
@@ -440,7 +335,8 @@ class _Setting_PageState extends State<Setting_Page> {
         child: OutlinedButton(
           style: ButtonStyle(
             shape: MaterialStateProperty.all(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0)),
             ),
           ),
           onPressed: () {},
@@ -457,6 +353,127 @@ class _Setting_PageState extends State<Setting_Page> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget themeChange(){
+    return Row(mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: 150,
+            height: 45,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: changeThemestate
+                      ? [
+                    const Color.fromRGBO(203, 203, 203, 0.4),
+                    const Color.fromRGBO(175, 175, 175, 0.4),
+                  ]
+                      : [
+                    const Color.fromRGBO(255, 255, 255, 1.0),
+                    const Color.fromRGBO(217, 217, 217, 1.0),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(25.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 4,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ]),
+            child: OutlinedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  changeThemestate = !changeThemestate;
+                  context.read<Mytheme>().switchTheme();
+                });
+              },
+              child: const Text(
+                'Light',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: "Roboto Slab",
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: 0.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: 150,
+            height: 45,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: changeThemestate
+                      ? [
+                    const Color.fromRGBO(23, 23, 23, 1.0),
+                    const Color.fromRGBO(54, 54, 54, 1.0),
+                  ]
+                      : [
+                    const Color.fromRGBO(203, 203, 203, 0.2),
+                    const Color.fromRGBO(175, 175, 175, 0.2),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(25.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 4,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ]),
+            child: OutlinedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  changeThemestate = !changeThemestate;
+                  context.read<Mytheme>().switchTheme();
+                });
+              },
+              child: const Text(
+                'Dark',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: "Roboto Slab",
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: 0.0,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

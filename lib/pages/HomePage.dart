@@ -61,13 +61,22 @@ class _Home_PageState extends State<Home_Page> {
     });
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Stack(
           children: [
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+              margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               decoration: BoxDecoration(
-                  color: Color.fromARGB(50, 133, 133, 133),
+                  color: Color.fromARGB(255, 255, 255, 255),
                   borderRadius: BorderRadius.all(Radius.circular(22))),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +92,7 @@ class _Home_PageState extends State<Home_Page> {
                           helperStyle: TextStyle(
                             color: Color.fromRGBO(241, 241, 241, 1.0),
                           ),
-                          icon: Icon(Icons.search, color: Colors.white),
+                          icon: Icon(Icons.search, color: Colors.grey),
                         ),
                       ),
                     ),
@@ -93,7 +102,7 @@ class _Home_PageState extends State<Home_Page> {
             ),
             Container(
               padding: EdgeInsets.all(20),
-              margin: EdgeInsets.only(top: 60),
+              margin: EdgeInsets.only(top: 40),
               child: GridView.extent(
                 maxCrossAxisExtent: 200,
                 mainAxisSpacing: 10,
@@ -160,7 +169,7 @@ class _Home_PageState extends State<Home_Page> {
       shadowColor: Colors.black,
       elevation: 15,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         children: [
@@ -169,7 +178,7 @@ class _Home_PageState extends State<Home_Page> {
               Ink.image(
                 image: const NetworkImage(
                     'https://static.onecms.io/wp-content/uploads/sites/20/2021/04/30/petlibro-automatic-cat-feeder-timed-tout.jpg'),
-                height: 115,
+                height: 95,
                 fit: BoxFit.cover,
                 child: InkWell(
                   onTap: () {

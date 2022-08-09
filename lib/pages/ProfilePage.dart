@@ -70,14 +70,24 @@ class _Profile_PageState extends State<Profile_Page> {
           elevation: 0.0,
         ),
         body: Container(
-
           decoration: BoxDecoration(
-            image: DecorationImage(
-              image : AssetImage('assets/images/bg_profile.jpg'),
-              fit: BoxFit.cover
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
+          ),
+          //decoration: BoxDecoration(
+            //image: DecorationImage(
+              //image : AssetImage('assets/images/bg_profile.jpg'),
+             //fit: BoxFit.cover
+            //),
+        //),
 
-          ),child: ListView(
+        child: ListView(
           children: [
             showProfile(),
             _showForm(),
@@ -312,7 +322,7 @@ Widget showProfile(){
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 50),
       child: Container(
-        width: 20,
+        //width: z,
         height: 50,
         decoration: BoxDecoration(
             gradient: const LinearGradient(
