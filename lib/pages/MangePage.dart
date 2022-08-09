@@ -706,7 +706,7 @@ class _Manage_PageState extends State<Manage_Page> {
                                         "threshold": _threshController.text
                                       };
                                       payload["id"] =
-                                          "${widget.device.toString()}.${dataPayload.userDevice![widget.device]["userSensor"]["sensorName"][index]}";
+                                          "${widget.device.toString()}.${dataPayload.userDevice![widget.device]["sensor"]["id"][index]}";
 
                                       String pubStateCheck = await newClient
                                           .publishSettings(payload);

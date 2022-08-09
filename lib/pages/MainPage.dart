@@ -78,6 +78,8 @@ class _MainPageState extends State<MainPage> {
 
   late Map<String, dynamic>? log = {};
 
+  NotifyUser notifyUser = NotifyUser();
+
   signOut() async {
     try {
       await widget.auth.signOut();
@@ -197,7 +199,6 @@ class _MainPageState extends State<MainPage> {
                           : "Error occured!"
                   : value["message"];
           if (value["flag"] != "flag{normal}") {
-            NotifyUser notifyUser = NotifyUser();
             bool flagTypeCheck = value["flag"] == "flag{warning}";
             notifyUser.initialize();
             notifyUser.pushNotification(
@@ -253,13 +254,13 @@ class _MainPageState extends State<MainPage> {
         child: Scaffold(
           //extendBodyBehindAppBar: true,
           appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: Colors.amber,
             elevation: 0,
             title: Text(
                 //displayName,
                 'Smart IOT App',
                 style: GoogleFonts.kanit(
-                  textStyle: Theme.of(context).textTheme.headline1,
+                  textStyle: Theme.of(context).textTheme.headline5,
                 )),
             titleSpacing: 47,
             leadingWidth: 80,
@@ -277,7 +278,7 @@ class _MainPageState extends State<MainPage> {
                     fontSize: 14, fontWeight: FontWeight.w500))),
             child: NavigationBar(
               height: 60,
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+              backgroundColor: Colors.amberAccent,
               labelBehavior:
                   NavigationDestinationLabelBehavior.onlyShowSelected,
               selectedIndex: index,
@@ -303,11 +304,11 @@ class _MainPageState extends State<MainPage> {
                     UserAccountsDrawerHeader(
                         accountName: Text(
                           "  $displayName",
-                          style: Theme.of(context).textTheme.headline2,
+                          style: Theme.of(context).textTheme.headline5,
                         ),
                         accountEmail: Text(
                           "  $login",
-                          style: Theme.of(context).textTheme.headline2,
+                          style: Theme.of(context).textTheme.headline6,
                         ),
                         currentAccountPicture: GestureDetector(
                           child: CircleAvatar(

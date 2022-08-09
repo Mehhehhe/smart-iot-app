@@ -28,6 +28,7 @@ class _History_PageState extends State<History_Page> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -150,6 +151,13 @@ class _History_PageState extends State<History_Page> {
   Widget history_cardPreset(Map log) {
     return Card(
       //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      color: log.entries.first.value["flag"] == "flag{normal}"
+          ? Colors.lightGreen
+          : log.entries.first.value["flag"] == "flag{warning}"
+              ? Colors.orangeAccent
+              : log.entries.first.value["flag"] == "flag{error}"
+                  ? Colors.redAccent
+                  : Colors.blueGrey,
       shadowColor: Colors.black,
       elevation: 15,
       shape: RoundedRectangleBorder(
@@ -166,8 +174,16 @@ class _History_PageState extends State<History_Page> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    log!["id"] != null
-                        ? log!["id"].toString().split(".").join(" ")
+                    log.entries
+                            .where((element) => element.value["id"] != null)
+                            .isNotEmpty
+                        ? log.entries
+                            .where((element) => element.value["id"] != null)
+                            .first
+                            .value["id"]
+                            .toString()
+                            .split(".")
+                            .join(" ")
                         : 'Device ',
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold),
