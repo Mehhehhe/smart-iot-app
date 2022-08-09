@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:smart_iot_app/services/dataManagement.dart';
-import 'package:smart_iot_app/main.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:fpdart/fpdart.dart' as fp;
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class History_Page extends StatefulWidget {
   const History_Page({Key? key, required this.liveData}) : super(key: key);
@@ -27,18 +29,18 @@ class _History_PageState extends State<History_Page> {
 
   late Map<String, dynamic>? historyLog = {};
 
+  final ScrollController _scrollController = new ScrollController();
+
   @override
   void initState() {
     setState(() {
       liveData = widget.liveData;
-      print(widget.liveData.length);
     });
     super.initState();
   }
 
   @override
   void dispose() {
-    _saveHistory();
     timer?.cancel();
     super.dispose();
   }
@@ -66,19 +68,17 @@ class _History_PageState extends State<History_Page> {
                           ? "Warning. Device at risk."
                           : "Error occured!"
                   : value["message"];
-          //log!.addAll({key: value});
-          //print("before return: $value");
           log!.addAll(Map<String, dynamic>.from({key: value}));
+          writeHistory(
+              "${json.encode(Map<String, dynamic>.from({key: value}))}\n");
+          //print("wrote!");
           return MapEntry(key, value);
         });
       });
-      print("tracked .. ");
-      print(log);
-      print(log!.length);
-      _saveHistory();
     });
   }
 
+  /*
   Future<Map<String, dynamic>> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -95,8 +95,47 @@ class _History_PageState extends State<History_Page> {
     });
     return log!;
   }
+  */
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
 
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    //print("path => $path");
+    return File("$path/history.txt");
+  }
+
+  Future<File> writeHistory(String content) async {
+    final file = await _localFile;
+    bool fileCheck = await file.exists();
+    //print("File exists? $fileCheck");
+    //print("Write $content, type: ${content.runtimeType}");
+
+    return file.writeAsString(content, mode: FileMode.append);
+  }
+
+  Future<String> readHistory() async {
+    final file = await _localFile;
+    var contents = await file.readAsString();
+    return contents;
+  }
+
+  void clearHistory() async {
+    final file = await _localFile;
+    file.delete();
+  }
+
+  _scrollToTop() {
+    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+  }
+
+  /*
   Future<void> _saveHistory() async {
+    //write to file
+
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       prefs.reload();
@@ -105,7 +144,7 @@ class _History_PageState extends State<History_Page> {
       print("saved history ${prefs}");
     });
   }
-
+  */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,30 +168,58 @@ class _History_PageState extends State<History_Page> {
         //key: _formKey,
         child: ListView(
           shrinkWrap: true,
-          children: <Widget>[sortHistory(), _buildHistoryCard()],
+          children: <Widget>[
+            sortHistory(),
+            clearHistoryButton(),
+            SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: _buildHistoryCard()),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildHistoryCard() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTop());
     return FutureBuilder(
-      future: _loadHistory(),
+      future: readHistory(),
       builder: (context, snapshot) {
-        print(snapshot.data);
-        Map? cardData = fp.Option.of(snapshot)
-            .filterMap((t) => fp.Option.of(t)
-                .filter((t) => t.connectionState == ConnectionState.done)
-                .filter((t) => t.hasData))
-            .flatMap((t) => fp.Option.of(t.data))
-            .toJson((p0) => p0) as Map?;
-        //print(cardData);
+        print("type: ${snapshot.data.runtimeType}, GET DATA: ${snapshot.data}");
+        //var temp = snapshot.data as String;
+        //Map data = json.decode(temp);
+        //print("Mapped: $data");
 
+        if (snapshot.data == null) {
+          return Container();
+        }
+
+        var data = snapshot.data as String;
+        List<dynamic> dataList = data.split("\n");
+        List<Map<dynamic, dynamic>> newDataList = [];
+        print("data len: ${dataList.length}");
+        for (var element in dataList) {
+          if (element == "" || element == " ") {
+            dataList.remove(dataList.last);
+            break;
+          }
+          //element = Map.from(json.decode(element.trim()));
+          newDataList.add(Map<dynamic, dynamic>.from(
+              json.decode(element) as Map<dynamic, dynamic>));
+        }
+        //print("Conclude data : ${newDataList[0]}, ${newDataList.runtimeType}");
+        //print(cardData);
+        //newDataList = newDataList.reversed.toList();
         return ListView.builder(
-          itemCount: log?.length ?? 0,
+          itemCount: newDataList.length ?? 0,
           shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          reverse: true,
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-            return history_cardPreset(log!);
+            return history_cardPreset(
+                json.decode(json.encode(newDataList[index])));
           },
         );
       },
@@ -169,18 +236,32 @@ class _History_PageState extends State<History_Page> {
       ),
       //color : Color.fromRGBO(255, 255, 255, 0.75),
       child: Container(
-        padding: EdgeInsets.all(15),
+        padding: const EdgeInsets.all(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              log!["id"] != null
-                  ? log!["id"].toString().split(".").join(" ")
-                  : 'Device ',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    log!["id"] != null
+                        ? log!["id"].toString().split(".").join(" ")
+                        : 'Device ',
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    log!.entries.isNotEmpty
+                        ? log!.entries.first.key.split(".")[0]
+                        : "Unknown time",
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
             ),
             Container(
-              margin: EdgeInsets.only(top: 10),
+              margin: const EdgeInsets.only(top: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -201,13 +282,7 @@ class _History_PageState extends State<History_Page> {
                             .first
                             .value
                         : "No message",
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  Text(
-                    log!.entries.isNotEmpty
-                        ? log!.entries.first.key.split(".")[0]
-                        : "Unknown time",
-                    style: TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),
@@ -224,9 +299,9 @@ class _History_PageState extends State<History_Page> {
       child: Container(
         width: 400,
         height: 50,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Color.fromRGBO(255, 255, 255, 0.8),
-          borderRadius: const BorderRadius.all(
+          borderRadius: BorderRadius.all(
             Radius.circular(25.0),
           ),
         ),
@@ -254,5 +329,13 @@ class _History_PageState extends State<History_Page> {
         ),
       ),
     );
+  }
+
+  Widget clearHistoryButton() {
+    return TextButton(
+        onPressed: () {
+          clearHistory();
+        },
+        child: const Text("Clear History"));
   }
 }

@@ -54,8 +54,9 @@ dependencies:
 
   provider: ^6.0.3
   animated_theme_switcher: "^2.0.5"
-  shared_preferences: ^2.0.15
+  path_provider: ^2.0.11
   fpdart: ^0.2.0
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,7 @@ flutter:
     - assets/images/bg_profile.jpg
     - assets/images/bg_setting.jpg
     - assets/images/bg_contact.jpg
+    - assets/saves/history.txt
     # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
