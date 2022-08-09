@@ -8,13 +8,12 @@ import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/root.dart';
 
-
-
+import 'Theme/ThemeManager.dart';
 
 void main() async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
-  try{
+  try {
     // Check if firebase already running in app. Instance: DEFAULT
     Firebase.app('[DEFAULT]');
   } catch (e) {
@@ -25,30 +24,16 @@ void main() async {
           apiKey: "AIzaSyCB3LceCnDLpShGwKRSZ9NhW2Kg9txwv5U",
           appId: "1:774636778498:android:cab8029c00fecc576f231b",
           messagingSenderId: "774636778498",
-          projectId: "smartiotapp-8b124"
-      ),
+          projectId: "smartiotapp-8b124"),
     );
   }
-  runApp(const SmartIOTApp());
-  runApp(ChangeNotifierProvider(
-    create: (context) => Mytheme(),
+  return runApp(ChangeNotifierProvider(
+    create: (_) => ThemeNotifier(),
     child: SmartIOTApp(),
   ));
 }
 
-class Mytheme with ChangeNotifier {
-  bool _isDark = false ;
-
-  ThemeMode currentTheme() {
-    return _isDark ? ThemeMode.dark : ThemeMode.light ;
-  }
-
-  void switchTheme(){
-    _isDark = !_isDark;
-    notifyListeners();
-  }
-}
-const primaryColor = Color(0xFF151026);
+bool themeState = false;
 
 ThemeData lightTheme = ThemeData(
   scaffoldBackgroundColor: Colors.white,
@@ -62,83 +47,21 @@ ThemeData DarkTheme = ThemeData(
   dividerColor: Colors.white,
 );
 
-class SmartIOTApp extends StatelessWidget{
-  const SmartIOTApp({Key? key}) : super(key: key);
+class SmartIOTApp extends StatelessWidget {
+  SmartIOTApp({Key? key}) : super(key: key);
 
-
+  //MQTTClientWrapper userClient = MQTTClientWrapper();
 
   @override
-  Widget build(BuildContext context)  {
-
-    return MaterialApp(
-
-      theme: ThemeData.light().copyWith(
-        primaryColor: primaryColor,
-        colorScheme: ColorScheme.light(
-          primary: Color.fromRGBO(255, 164, 60, 1.0),
-          secondary: Color.fromRGBO(255, 177, 113,1),
-        ),
-        dividerColor: Colors.black,
-        textTheme:
-        TextTheme(
-          headline1: TextStyle(color: Colors.black ,fontSize: 22, fontWeight: FontWeight.bold ),
-          headline2: TextStyle(color: Colors.black,fontSize: 15),
-          bodyText2: TextStyle(color: Colors.black),
-          subtitle1: TextStyle(color: Colors.deepPurpleAccent),
-
-        ),
-        iconTheme: IconThemeData(color: Colors.black),
-        //bottomNavigationBarTheme: Colors.black
-        highlightColor: Colors.red,
-
-        listTileTheme: ListTileThemeData(
-          textColor: Colors.black,
-        ),
-appBarTheme: AppBarTheme(
-          iconTheme: IconThemeData(
-            color: Colors.white,
-          )
-      ),
-
-      ),
-
-
-      darkTheme: ThemeData.dark().copyWith(
-
-        scaffoldBackgroundColor: Colors.grey.shade900,
-        colorScheme: ColorScheme.dark(
-          primary: Color.fromRGBO(0, 0, 0, 1.0),
-          secondary: Color.fromRGBO(51, 51, 51, 1.0),
-        ),
-        dividerColor: Colors.white,
-          textTheme:
-          TextTheme(
-            headline1: TextStyle(color: Colors.white ,fontSize: 25, fontWeight: FontWeight.bold,fontFamily:'Kanit', ),
-            headline2: TextStyle(color: Colors.white,fontSize: 15),
-            bodyText2: TextStyle(color: Colors.white),
-            subtitle1: TextStyle(color: Colors.deepPurpleAccent),
-
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-        highlightColor: Colors.red,
-        listTileTheme: ListTileThemeData(
-          textColor: Colors.white,
-        ),
-        appBarTheme: AppBarTheme(
-            iconTheme: IconThemeData(
-              color: Colors.white,
-            )
-        ),
-
-
-
-      ),
-
-          title: 'Smart IOT',
-          debugShowCheckedModeBanner: false,
-      themeMode: context.watch<Mytheme>().currentTheme(),
-      home: RootPage(auth: Auth(), client: MQTTClientWrapper()),
-    );
+  Widget build(BuildContext context) {
+    //print(userClient);
+    return Consumer<ThemeNotifier>(
+        builder: (context, theme, _) => MaterialApp(
+              title: 'Smart IOT',
+              debugShowCheckedModeBanner: false,
+              theme: theme.getTheme(),
+              //theme: themeState ? DarkTheme: lightTheme,
+              home: RootPage(auth: Auth(), client: MQTTClientWrapper()),
+            ));
   }
 }
-

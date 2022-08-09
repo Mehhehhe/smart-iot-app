@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:smart_iot_app/pages/ContactPage.dart';
 import 'package:smart_iot_app/pages/HistoryPage.dart';
 import 'package:smart_iot_app/pages/HomePage.dart';
@@ -209,32 +208,35 @@ class _MainPageState extends State<MainPage> {
     return DefaultTabController(
         length: 2,
         child: Scaffold(
-          //extendBodyBehindAppBar: true,
           appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            elevation: 0,
-            title: Text(
-              //displayName,
-              'Smart IOT App',
-              style: GoogleFonts.kanit(textStyle: Theme.of(context).textTheme.headline1,)
-
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [
+                Color.fromRGBO(78, 92, 252, 1.0),
+                Color.fromRGBO(168, 30, 255, 1.0),
+              ], begin: Alignment.bottomRight, end: Alignment.topLeft)),
             ),
-            titleSpacing: 47,
-            leadingWidth: 80,
-            toolbarHeight: 80,
+            elevation: 10,
+            title: Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 15,
+              ),
+            ),
+            titleSpacing: 0,
             leading: const Icon(
-              (Icons.logo_dev_sharp),size: 80,
+              (Icons.account_circle),
             ),
           ),
           body: screens[index],
           bottomNavigationBar: NavigationBarTheme(
             data: NavigationBarThemeData(
-                indicatorColor: Colors.white,
+                indicatorColor: Colors.blue.shade100,
                 labelTextStyle: MaterialStateProperty.all(const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w500))),
             child: NavigationBar(
               height: 60,
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+              backgroundColor: const Color(0xffe1e1e1),
               labelBehavior:
                   NavigationDestinationLabelBehavior.onlyShowSelected,
               selectedIndex: index,
@@ -253,32 +255,22 @@ class _MainPageState extends State<MainPage> {
           ),
           endDrawer: Drawer(
             child: Material(
+              color: Colors.blue,
               child: Padding(
-                padding: const EdgeInsets.all(0),
+                padding: const EdgeInsets.all(15.0),
                 child: ListView(
                   children: <Widget>[
-                    UserAccountsDrawerHeader(
-                        accountName: Text("  $displayName",style: Theme.of(context).textTheme.headline2,),
-                        accountEmail: Text("  $login",style: Theme.of(context).textTheme.headline2,),
-                    currentAccountPicture: GestureDetector(
-                      child: CircleAvatar(
-                        backgroundImage:  NetworkImage("https://e7.pngegg.com/pngimages/507/702/png-clipart-profile-icon-simple-user-icon-icons-logos-emojis-users.png"),
-                      ),
+                    const SizedBox(
+                      height: 48,
                     ),
-                    decoration: BoxDecoration(
-                  image: DecorationImage(
-                    fit: BoxFit.fill,
-                    image: NetworkImage("https://wallpapercave.com/wp/wp4464900.png"),
-                  )
-              )
-                    ),
-
                     ListTile(
                       leading: const Icon(
-                        Icons.account_circle
+                        Icons.account_circle,
+                        color: Colors.white,
                       ),
                       title: const Text(
                         'Profile',
+                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () async {
@@ -293,9 +285,11 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.settings,
+                        color: Colors.white,
                       ),
                       title: const Text(
                         'Setting',
+                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () {
@@ -308,9 +302,11 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.phone,
+                        color: Colors.white,
                       ),
                       title: const Text(
                         'Contact',
+                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () {
@@ -320,13 +316,23 @@ class _MainPageState extends State<MainPage> {
                                 builder: (context) => const Contact_page()));
                       },
                     ),
-
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    const Divider(
+                      color: Colors.white70,
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
                     ListTile(
                       leading: const Icon(
                         Icons.logout,
+                        color: Colors.white,
                       ),
                       title: const Text(
                         'Signout',
+                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: signOut,
@@ -334,9 +340,11 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.abc_sharp,
+                        color: Colors.white,
                       ),
                       title: const Text(
                         'test backend',
+                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () async {
@@ -355,6 +363,4 @@ class _MainPageState extends State<MainPage> {
           ),
         ));
   }
-
-
 }
