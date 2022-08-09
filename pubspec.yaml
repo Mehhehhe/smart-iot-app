@@ -56,7 +56,6 @@ dependencies:
   animated_theme_switcher: "^2.0.5"
   path_provider: ^2.0.11
   fpdart: ^0.2.0
-  google_fonts: ^3.0.1
   shared_preferences: ^2.0.15
 
 dev_dependencies:
@@ -112,12 +111,6 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  fonts:
-    - family: Kanit
-      fonts:
-        - asset: fonts/Kanit-ExtraBoldItalic.ttf
-
-
-
+  #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

@@ -11,9 +11,6 @@ import 'package:fpdart/fpdart.dart' as fp;
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:flutter/cupertino.dart';
-import 'package:smart_iot_app/main.dart';
-
 class History_Page extends StatefulWidget {
   const History_Page({Key? key, required this.liveData}) : super(key: key);
   final Stream<String> liveData;
@@ -152,65 +149,12 @@ class _History_PageState extends State<History_Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(241, 241, 241, 1.0),
         ),
         child: Stack(
           children: [
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-              height: 35,
-              decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  borderRadius: BorderRadius.all(Radius.circular(22))),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    flex: 1,
-                    child: OutlinedButton(
-                      style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(22.0)),
-                        ),
-                      ),
-                      onPressed: () {},
-                      child: const Text(
-                        'Sort History',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontFamily: "Roboto Slab",
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          letterSpacing: 0.0,
-                          color: Color.fromRGBO(70, 70, 70, 0.80196078431372547),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(20),
-              margin: EdgeInsets.only(top: 40),
-              child: GridView.extent(
-                maxCrossAxisExtent: 200,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                children: [
-                  //  _showForm(),
-                ],
-              ),
-            ),
+            _showForm(),
           ],
         ),
       ),
@@ -355,9 +299,9 @@ class _History_PageState extends State<History_Page> {
       child: Container(
         width: 400,
         height: 50,
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(255, 255, 255, 1),
-          borderRadius: const BorderRadius.all(
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(255, 255, 255, 0.8),
+          borderRadius: BorderRadius.all(
             Radius.circular(25.0),
           ),
         ),

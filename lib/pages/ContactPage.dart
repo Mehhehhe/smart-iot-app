@@ -30,24 +30,14 @@ class _Contact_pageState extends State<Contact_page> {
         elevation: 0.0,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        //decoration: BoxDecoration(
-          //image: DecorationImage(
-              //image : AssetImage('assets/images/bg_contact.jpg'),
-              //fit: BoxFit.cover
-          //),
 
-        //),
-      child: ListView(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image : AssetImage('assets/images/bg_contact.jpg'),
+              fit: BoxFit.cover
+          ),
+
+        ),child: ListView(
         children: [
           _showForm(),
         ],
@@ -66,24 +56,24 @@ class _Contact_pageState extends State<Contact_page> {
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-              Text('Name', style: TextStyle(fontSize: 18,),),
+              Text('Name', style: TextStyle(fontSize: 18,color: Colors.white),),
               nameInput(),
-              Text('Phome number', style: TextStyle(fontSize: 18),),
+              Text('Phome number', style: TextStyle(fontSize: 18,color: Colors.white),),
               phoneInput(),
-              Text('Email', style: TextStyle(fontSize: 18),),
+              Text('Email', style: TextStyle(fontSize: 18,color: Colors.white),),
               emailInput(),
 
 
               Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Topic', style: TextStyle(fontSize: 18),),
+                  Text('Topic', style: TextStyle(fontSize: 18,color: Colors.white),),
                   categoryDropdown(),
                 ],
               ),
               topicInput(),
 
 
-              Text('Detail', style: TextStyle(fontSize: 18),),
+              Text('Detail', style: TextStyle(fontSize: 18,color: Colors.white),),
               detailInput(),
 
               submitButton()
