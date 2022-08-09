@@ -1,14 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:path_provider/path_provider.dart';
+
 import 'package:smart_iot_app/pages/ContactPage.dart';
 import 'package:smart_iot_app/pages/HistoryPage.dart';
 import 'package:smart_iot_app/pages/HomePage.dart';
-import 'package:smart_iot_app/pages/MangePage.dart';
+
 import 'package:smart_iot_app/pages/ProfilePage.dart';
 import 'package:smart_iot_app/pages/TestPage.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
@@ -18,6 +24,8 @@ import 'package:smart_iot_app/services/notification.dart';
 
 import '../services/dataManagement.dart';
 import 'SettingPage.dart';
+
+import 'package:fpdart/fpdart.dart' as fp;
 
 class MainPage extends StatefulWidget {
   const MainPage(
@@ -43,12 +51,7 @@ class _MainPageState extends State<MainPage> {
   static Stream<String>? syncDataResponse;
   static String userId = "";
   _MainPageState() {
-    //print("[MainPage] ${widget.user}");
-    //cli = widget.user;
-    //userId = widget.userId;
     timer = Timer.periodic(const Duration(seconds: 10), syncData);
-    //syncDataResponse = const Stream<String>.empty();
-    //print(syncDataResponse);
   }
 
   // boolean for checking button in contact page
@@ -72,6 +75,8 @@ class _MainPageState extends State<MainPage> {
   var _addCard = 0;
   // Store boolean of sensor status state ("on"=true, "off"=false)
   late List<bool> switchToggles = <bool>[];
+
+  late Map<String, dynamic>? log = {};
 
   signOut() async {
     try {
@@ -175,8 +180,22 @@ class _MainPageState extends State<MainPage> {
         var sv = json.decode(element);
         Map jsonSv = Map<String, dynamic>.from(sv);
         jsonSv.map((key, value) {
-          key = DateTime.parse(key);
+          key = DateTime.parse(key).toLocal();
           value = Map<String, dynamic>.from(value);
+          // Set initial message (depend on flag value)
+          value["message"] = fp.Option.of(value)
+              .filter((t) => t["flag"] == "flag{normal}")
+              .andThen(() => fp.Option.of("This device is working normally."))
+              .getOrElse(() => "Something went wrong ...");
+          // Checking again if flag is not normal, do chain function
+          value["message"] =
+              value["message"] != "This device is working normally."
+                  ? value["flag"] == "flag{threshNotSet}"
+                      ? "Threshold is not set yet. Please set a threshold"
+                      : value["flag"] == "flag{warning}"
+                          ? "Warning. Device at risk."
+                          : "Error occured!"
+                  : value["message"];
           if (value["flag"] != "flag{normal}") {
             NotifyUser notifyUser = NotifyUser();
             bool flagTypeCheck = value["flag"] == "flag{warning}";
@@ -187,6 +206,10 @@ class _MainPageState extends State<MainPage> {
                 flagTypeCheck ? "Warning" : "Error/Unknown",
                 value["message"]);
           }
+          log!.addAll(Map<String, dynamic>.from({key.toString(): value}));
+          writeHistory("${json.encode(Map<String, dynamic>.from({
+                key.toString(): value
+              }))}\n");
           return MapEntry(key, value);
         });
       });
@@ -200,6 +223,26 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    //print("path => $path");
+    return File("$path/history.txt");
+  }
+
+  Future<File> writeHistory(String content) async {
+    final file = await _localFile;
+    bool fileCheck = await file.exists();
+    //print("File exists? $fileCheck");
+    //print("Write $content, type: ${content.runtimeType}");
+
+    return file.writeAsString(content, mode: FileMode.append);
+  }
+
   int index = 0;
   late List<StatefulWidget> screens;
 
@@ -208,35 +251,33 @@ class _MainPageState extends State<MainPage> {
     return DefaultTabController(
         length: 2,
         child: Scaffold(
+          //extendBodyBehindAppBar: true,
           appBar: AppBar(
-            flexibleSpace: Container(
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                Color.fromRGBO(78, 92, 252, 1.0),
-                Color.fromRGBO(168, 30, 255, 1.0),
-              ], begin: Alignment.bottomRight, end: Alignment.topLeft)),
-            ),
-            elevation: 10,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            elevation: 0,
             title: Text(
-              displayName,
-              style: const TextStyle(
-                fontSize: 15,
-              ),
-            ),
-            titleSpacing: 0,
+                //displayName,
+                'Smart IOT App',
+                style: GoogleFonts.kanit(
+                  textStyle: Theme.of(context).textTheme.headline1,
+                )),
+            titleSpacing: 47,
+            leadingWidth: 80,
+            toolbarHeight: 80,
             leading: const Icon(
-              (Icons.account_circle),
+              (Icons.logo_dev_sharp),
+              size: 80,
             ),
           ),
           body: screens[index],
           bottomNavigationBar: NavigationBarTheme(
             data: NavigationBarThemeData(
-                indicatorColor: Colors.blue.shade100,
+                indicatorColor: Colors.white,
                 labelTextStyle: MaterialStateProperty.all(const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w500))),
             child: NavigationBar(
               height: 60,
-              backgroundColor: const Color(0xffe1e1e1),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               labelBehavior:
                   NavigationDestinationLabelBehavior.onlyShowSelected,
               selectedIndex: index,
@@ -255,22 +296,35 @@ class _MainPageState extends State<MainPage> {
           ),
           endDrawer: Drawer(
             child: Material(
-              color: Colors.blue,
               child: Padding(
-                padding: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(0),
                 child: ListView(
                   children: <Widget>[
-                    const SizedBox(
-                      height: 48,
-                    ),
+                    UserAccountsDrawerHeader(
+                        accountName: Text(
+                          "  $displayName",
+                          style: Theme.of(context).textTheme.headline2,
+                        ),
+                        accountEmail: Text(
+                          "  $login",
+                          style: Theme.of(context).textTheme.headline2,
+                        ),
+                        currentAccountPicture: GestureDetector(
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                "https://e7.pngegg.com/pngimages/507/702/png-clipart-profile-icon-simple-user-icon-icons-logos-emojis-users.png"),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: NetworkImage(
+                              "https://wallpapercave.com/wp/wp4464900.png"),
+                        ))),
                     ListTile(
-                      leading: const Icon(
-                        Icons.account_circle,
-                        color: Colors.white,
-                      ),
+                      leading: const Icon(Icons.account_circle),
                       title: const Text(
                         'Profile',
-                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () async {
@@ -285,11 +339,9 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.settings,
-                        color: Colors.white,
                       ),
                       title: const Text(
                         'Setting',
-                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () {
@@ -302,11 +354,9 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.phone,
-                        color: Colors.white,
                       ),
                       title: const Text(
                         'Contact',
-                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () {
@@ -316,23 +366,12 @@ class _MainPageState extends State<MainPage> {
                                 builder: (context) => const Contact_page()));
                       },
                     ),
-                    const SizedBox(
-                      height: 24,
-                    ),
-                    const Divider(
-                      color: Colors.white70,
-                    ),
-                    const SizedBox(
-                      height: 24,
-                    ),
                     ListTile(
                       leading: const Icon(
                         Icons.logout,
-                        color: Colors.white,
                       ),
                       title: const Text(
                         'Signout',
-                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: signOut,
@@ -340,11 +379,9 @@ class _MainPageState extends State<MainPage> {
                     ListTile(
                       leading: const Icon(
                         Icons.abc_sharp,
-                        color: Colors.white,
                       ),
                       title: const Text(
                         'test backend',
-                        style: TextStyle(color: Colors.white),
                       ),
                       hoverColor: Colors.white70,
                       onTap: () async {

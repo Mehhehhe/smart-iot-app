@@ -26,8 +26,8 @@ class MQTTClientWrapper {
   void prepareMqttClient() async {
     _setupMqttClient();
     await _connectClient();
-    _subscribeToTopic('Dart/Mqtt_client/testtopic');
-    _publishMessage('Hello');
+    //_subscribeToTopic('Dart/Mqtt_client/testtopic');
+    //_publishMessage('Hello');
   }
 
   Future<Stream<String>> subscribeToResponse() async {

@@ -57,6 +57,7 @@ dependencies:
   path_provider: ^2.0.11
   fpdart: ^0.2.0
   shared_preferences: ^2.0.15
+  google_fonts: ^3.0.1
 
 dev_dependencies:
   flutter_test:

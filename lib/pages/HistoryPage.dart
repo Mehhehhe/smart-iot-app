@@ -19,83 +19,18 @@ class History_Page extends StatefulWidget {
 }
 
 class _History_PageState extends State<History_Page> {
-  _History_PageState() {
-    timer = Timer.periodic(const Duration(seconds: 10), trackData);
-  }
-
-  late Stream<String> liveData;
-  late Map<String, dynamic>? log = {};
-  Timer? timer;
-
-  late Map<String, dynamic>? historyLog = {};
-
   final ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
-    setState(() {
-      liveData = widget.liveData;
-    });
     super.initState();
   }
 
   @override
   void dispose() {
-    timer?.cancel();
     super.dispose();
   }
 
-  void trackData(Timer timer) async {
-    setState(() {
-      liveData.forEach((element) {
-        var sv = json.decode(element);
-        Map jsonSv = Map<String, dynamic>.from(sv);
-        jsonSv.map((key, value) {
-          key = DateTime.parse(key).toLocal().toString();
-          value = Map<String, dynamic>.from(value);
-
-          // Set initial message (depend on flag value)
-          value["message"] = fp.Option.of(value)
-              .filter((t) => t["flag"] == "flag{normal}")
-              .andThen(() => fp.Option.of("This device is working normally."))
-              .getOrElse(() => "Something went wrong ...");
-          // Checking again if flag is not normal, do chain function
-          value["message"] =
-              value["message"] != "This device is working normally."
-                  ? value["flag"] == "flag{threshNotSet}"
-                      ? "Threshold is not set yet. Please set a threshold"
-                      : value["flag"] == "flag{warning}"
-                          ? "Warning. Device at risk."
-                          : "Error occured!"
-                  : value["message"];
-          log!.addAll(Map<String, dynamic>.from({key: value}));
-          writeHistory(
-              "${json.encode(Map<String, dynamic>.from({key: value}))}\n");
-          //print("wrote!");
-          return MapEntry(key, value);
-        });
-      });
-    });
-  }
-
-  /*
-  Future<Map<String, dynamic>> _loadHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.reload();
-      prefs.containsKey(DateFormat.yMMMM().format(DateTime.now()).toString());
-      prefs
-          .getStringList(DateFormat.yMMMM().format(DateTime.now()).toString())
-          ?.asMap()
-          .forEach((key, value) {
-        print("$key $value");
-        Map valueDecoded = json.decode(value);
-        historyLog = Map<String, dynamic>.from(valueDecoded);
-      });
-    });
-    return log!;
-  }
-  */
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
@@ -110,8 +45,6 @@ class _History_PageState extends State<History_Page> {
   Future<File> writeHistory(String content) async {
     final file = await _localFile;
     bool fileCheck = await file.exists();
-    //print("File exists? $fileCheck");
-    //print("Write $content, type: ${content.runtimeType}");
 
     return file.writeAsString(content, mode: FileMode.append);
   }
@@ -129,22 +62,10 @@ class _History_PageState extends State<History_Page> {
 
   _scrollToTop() {
     _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn);
   }
 
-  /*
-  Future<void> _saveHistory() async {
-    //write to file
-
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.reload();
-      prefs.setStringList(DateFormat.yMMMM().format(DateTime.now()).toString(),
-          log!.entries.map((e) => "{${e.key}:${e.value}}").toList());
-      print("saved history ${prefs}");
-    });
-  }
-  */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
