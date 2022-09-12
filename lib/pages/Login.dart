@@ -1,14 +1,36 @@
+import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/pages/ResetPassWordPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/RegisterPage.dart';
 
-class LogIn extends StatefulWidget {
-  const LogIn({Key? key, required this.auth, required this.loginCallback}) : super(key: key);
+// Amplify Flutter Packages
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
-  final BaseAuth auth;
-  final VoidCallback loginCallback;
+// Generated in previous step
+import '../amplifyconfiguration.dart';
+
+// Initialize AWS Auth in authentication page instead.
+Future<void> _configureAmplify() async {
+  // Add AWS plugin
+  final authPlugin = AmplifyAuthCognito();
+  await Amplify.addPlugin(authPlugin);
+  try {
+    await Amplify.configure(amplifyconfig);
+  } on AmplifyAlreadyConfiguredException {
+    print("Tried to re-configure; Android app was restarted");
+  }
+}
+
+class LogIn extends StatefulWidget {
+  //const LogIn({Key? key, required this.auth, required this.loginCallback})
+  //    : super(key: key);
+  const LogIn({Key? key}) : super(key: key);
+
+  //final BaseAuth auth;
+  //final VoidCallback loginCallback;
 
   @override
   State<LogIn> createState() => _LogIn();
@@ -41,10 +63,10 @@ class _LogIn extends State<LogIn> {
       _isLoginForm = true;
     });
     if (validateAndSave()) {
-      String? userId = "";
+      String userId = "";
       try {
         if (_isLoginForm) {
-          userId = await widget.auth.signIn(_email, _password);
+          //userId = await widget.auth.signIn(_email, _password);
         } else {
           if (kDebugMode) {
             print("Please signing in");
@@ -53,8 +75,8 @@ class _LogIn extends State<LogIn> {
         setState(() {
           _isLoading = false;
         });
-        if (userId!.isNotEmpty && _isLoginForm) {
-          widget.loginCallback();
+        if (userId.isNotEmpty && _isLoginForm) {
+          //widget.loginCallback();
         }
       } catch (e) {
         setState(() {
@@ -72,6 +94,7 @@ class _LogIn extends State<LogIn> {
     _errorMsg = "";
     _isLoading = false;
     _isLoginForm = false;
+    _configureAmplify();
     super.initState();
   }
 
@@ -96,7 +119,8 @@ class _LogIn extends State<LogIn> {
   Widget build(BuildContext context) {
     return Scaffold(
       //backgroundColor: Color.fromRGBO(146, 252, 232, 1.0),
-      body: Container(
+      body: _awsAuth(),
+      /*body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -114,13 +138,25 @@ class _LogIn extends State<LogIn> {
         ),
         child: Stack(
           children: [
-          loginFrame(),
+            loginFrame(),
             _showForm(),
             _showCircularProgress(),
           ],
         ),
-      ),
+      ),*/
     );
+  }
+
+  Widget _awsAuth() {
+    return Authenticator(
+        child: MaterialApp(
+      builder: Authenticator.builder(),
+      home: const Scaffold(
+        body: Center(
+          child: Text("Logged in!"),
+        ),
+      ),
+    ));
   }
 
   Widget _showCircularProgress() {
@@ -137,7 +173,6 @@ class _LogIn extends State<LogIn> {
 
   Widget _showForm() {
     return Container(
-
       child: Container(
         padding: const EdgeInsets.all(15.0),
         child: Form(
@@ -183,21 +218,24 @@ class _LogIn extends State<LogIn> {
     }
   }
 
-  Widget Emailtext(){
+  Widget Emailtext() {
     return Container(
-      margin: EdgeInsets.only(left: 30,bottom: 15),
+      margin: EdgeInsets.only(left: 30, bottom: 15),
       alignment: Alignment.bottomLeft,
       child: Text(
-          "Email address",
-          textAlign: TextAlign.left,
-        style: TextStyle(color: Colors.white,fontSize: 17,
+        "Email address",
+        textAlign: TextAlign.left,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 17,
           shadows: <Shadow>[
             Shadow(
               offset: Offset(0.0, 2.0),
               blurRadius: 12,
               color: Color.fromARGB(255, 0, 0, 0),
             ),
-          ],),
+          ],
+        ),
       ),
     );
   }
@@ -222,28 +260,32 @@ class _LogIn extends State<LogIn> {
             ),
             hintText: 'Username',
           ),
-          validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
+          validator: (value) =>
+              value!.isEmpty ? 'Please enter your email' : null,
           onSaved: (value) => _email = value!.trim(),
         ),
       ),
     );
   }
 
-  Widget Passwordtext(){
+  Widget Passwordtext() {
     return Container(
-      margin: EdgeInsets.only(left: 30,bottom: 15),
+      margin: EdgeInsets.only(left: 30, bottom: 15),
       alignment: Alignment.bottomLeft,
       child: Text(
         "Password",
         textAlign: TextAlign.left,
-        style: TextStyle(color: Colors.white,fontSize: 17,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 17,
           shadows: <Shadow>[
             Shadow(
               offset: Offset(0.0, 2.0),
               blurRadius: 12,
               color: Color.fromARGB(255, 0, 0, 0),
             ),
-          ],),
+          ],
+        ),
       ),
     );
   }
@@ -253,13 +295,11 @@ class _LogIn extends State<LogIn> {
       margin: EdgeInsets.symmetric(horizontal: 20),
       child: SizedBox(
         width: 300,
-
         child: TextFormField(
           obscureText: _isObscure,
           //obscureText: true,
           maxLines: 1,
           decoration: InputDecoration(
-
             filled: true,
             fillColor: const Color.fromRGBO(255, 255, 255, 0.8),
             suffixIcon: IconButton(
@@ -285,7 +325,7 @@ class _LogIn extends State<LogIn> {
 
   Widget showLoginButton() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10,horizontal: 60),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
       width: 200,
       height: 50,
       decoration: BoxDecoration(
@@ -362,14 +402,14 @@ class _LogIn extends State<LogIn> {
           ),
         ),
         onPressed: () {
-          Navigator.push(
+          /*Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => Register(
                       auth: widget.auth,
                       loginCallback: widget.loginCallback,
                     )),
-          );
+          );*/
         },
         child: const Text(
           'Create new account',
@@ -386,29 +426,30 @@ class _LogIn extends State<LogIn> {
     );
   }
 
-
   Widget showLogo() {
     return Container(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 85),
-        width: 150,
-        height: 190,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(154.5),
-            topRight: Radius.circular(154.5),
-            bottomLeft: Radius.circular(154.5),
-            bottomRight: Radius.circular(154.5),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.pink.withOpacity(0.2),
-              spreadRadius: 4,
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            )
-          ],
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 85),
+      width: 150,
+      height: 190,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(154.5),
+          topRight: Radius.circular(154.5),
+          bottomLeft: Radius.circular(154.5),
+          bottomRight: Radius.circular(154.5),
         ),
-      child: Image.network('https://bursakerja.jatengprov.go.id/assets/default-logo.png',fit: BoxFit.fitWidth),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.pink.withOpacity(0.2),
+            spreadRadius: 4,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
+      child: Image.network(
+          'https://bursakerja.jatengprov.go.id/assets/default-logo.png',
+          fit: BoxFit.fitWidth),
     );
   }
 
@@ -430,10 +471,10 @@ class _LogIn extends State<LogIn> {
             icon: Image.asset('assets/images/google_icon.png'),
             iconSize: 60,
             onPressed: () async {
-              String? userId = await widget.auth.signInWithGoogle();
+              /*String? userId = await widget.auth.signInWithGoogle();
               if (userId!.isNotEmpty) {
                 widget.loginCallback();
-              }
+              }*/
             },
           ),
         ),
@@ -446,48 +487,53 @@ class _LogIn extends State<LogIn> {
       children: [
         Container(
           margin: EdgeInsets.only(left: 30),
-          height: 15,width: 15,
-          decoration: BoxDecoration(
-          color: Colors.white
-          ),
+          height: 15,
+          width: 15,
+          decoration: BoxDecoration(color: Colors.white),
         ),
         Container(
           margin: EdgeInsets.only(left: 10),
           //alignment: Alignment.bottomLeft,
           child: Text(
-              "Keep me signin",
-              //textAlign: TextAlign.right,
-              style: TextStyle(color: Colors.white,
-                shadows: <Shadow>[
-                  Shadow(
-                    offset: Offset(0.0, 2.0),
-                    blurRadius: 12,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                  ),
-                ],),
+            "Keep me signin",
+            //textAlign: TextAlign.right,
+            style: TextStyle(
+              color: Colors.white,
+              shadows: <Shadow>[
+                Shadow(
+                  offset: Offset(0.0, 2.0),
+                  blurRadius: 12,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
+              ],
+            ),
           ),
         ),
         Container(
-          margin: EdgeInsets.only(left:70),
+          margin: EdgeInsets.only(left: 70),
           //alignment: Alignment.bottomRight,
           child: TextButton(
             child: const Text(
               "Forgot Password",
               //textAlign: TextAlign.right,
-              style: TextStyle(color: Colors.white,
+              style: TextStyle(
+                color: Colors.white,
                 shadows: <Shadow>[
                   Shadow(
                     offset: Offset(0.0, 2.0),
                     blurRadius: 12,
                     color: Color.fromARGB(255, 0, 0, 0),
                   ),
-                ],),
+                ],
+              ),
             ),
-            onPressed: () async{
-              Navigator.push(
+            onPressed: () async {
+              /*Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>  ResetPassWord_Page(auth: widget.auth)),
-              );
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ResetPassWord_Page(auth: widget.auth)),
+              );*/
             },
           ),
         ),
@@ -495,19 +541,18 @@ class _LogIn extends State<LogIn> {
     );
   }
 
-  Widget loginFrame(){
+  Widget loginFrame() {
     return Container(
-        height: 615,margin: EdgeInsets.only(top: 150,left: 20,right: 20),
+        height: 615,
+        margin: EdgeInsets.only(top: 150, left: 20, right: 20),
         decoration: BoxDecoration(
-          borderRadius : BorderRadius.only(
+          borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
             bottomLeft: Radius.circular(16),
             bottomRight: Radius.circular(16),
           ),
-          color : Color.fromRGBO(255, 255, 255, 0.3),
-        )
-    );
+          color: Color.fromRGBO(255, 255, 255, 0.3),
+        ));
   }
 }
-

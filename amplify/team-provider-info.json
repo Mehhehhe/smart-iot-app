@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-smartiotapp-dev-101737-authRole",
+      "UnauthRoleArn": "arn:aws:iam::468943849035:role/amplify-smartiotapp-dev-101737-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::468943849035:role/amplify-smartiotapp-dev-101737-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-smartiotapp-dev-101737-deployment",
+      "UnauthRoleName": "amplify-smartiotapp-dev-101737-unauthRole",
+      "StackName": "amplify-smartiotapp-dev-101737",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:468943849035:stack/amplify-smartiotapp-dev-101737/f6cc0eb0-2b36-11ed-9ac5-021ceb982872",
+      "AmplifyAppId": "d208bp11ydz3qz"
+    },
+    "categories": {
+      "auth": {
+        "smartiotapp7a9a85fe": {}
+      }
+    }
+  }
+}

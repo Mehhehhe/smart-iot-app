@@ -46,8 +46,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  static late MQTTClientWrapper cli;
-  Timer? timer;
+  static MQTTClientWrapper? cli;
+  late Timer timer;
   static Stream<String>? syncDataResponse;
   static String userId = "";
   _MainPageState() {
@@ -62,21 +62,21 @@ class _MainPageState extends State<MainPage> {
   int check = 0;
 
   // using for checking state when press submit
-  late bool _isLoading;
+  bool _isLoading;
   bool _isFeedbackForm = true;
 
   // using to check state and save value
   final _formKey = GlobalKey<FormState>();
 
   // data model for reporting
-  late DataPayload dataModel;
-  late String description;
+  DataPayload dataModel;
+  String description;
   // number to generate a card for each user's sensor
   var _addCard = 0;
   // Store boolean of sensor status state ("on"=true, "off"=false)
-  late List<bool> switchToggles = <bool>[];
+  List<bool> switchToggles = <bool>[];
 
-  late Map<String, dynamic>? log = {};
+  Map<String, dynamic> log = {};
 
   NotifyUser notifyUser = NotifyUser();
 
@@ -122,9 +122,9 @@ class _MainPageState extends State<MainPage> {
   String login = '....';
 
   Future<void> showEmail() async {
-    String? email = await widget.auth.getUserEmail();
+    String email = await widget.auth.getUserEmail();
     setState(() {
-      login = email!;
+      login = email;
     });
   }
 
@@ -133,7 +133,7 @@ class _MainPageState extends State<MainPage> {
   Future<void> findDisplayName() async {
     await widget.auth.getCurrentUser().then((value) {
       setState(() {
-        displayName = value!.displayName!;
+        displayName = value.displayName;
       });
     });
   }
@@ -167,7 +167,7 @@ class _MainPageState extends State<MainPage> {
 
   bool validateAndSave() {
     final form = _formKey.currentState;
-    if (form!.validate()) {
+    if (form.validate()) {
       form.save();
       return true;
     }
@@ -178,7 +178,7 @@ class _MainPageState extends State<MainPage> {
     //print(cli.connectionState);
     syncDataResponse = await cli.subscribeToResponse();
     setState(() {
-      syncDataResponse!.forEach((element) {
+      syncDataResponse.forEach((element) {
         var sv = json.decode(element);
         Map jsonSv = Map<String, dynamic>.from(sv);
         jsonSv.map((key, value) {
@@ -207,7 +207,7 @@ class _MainPageState extends State<MainPage> {
                 flagTypeCheck ? "Warning" : "Error/Unknown",
                 value["message"]);
           }
-          log!.addAll(Map<String, dynamic>.from({key.toString(): value}));
+          log.addAll(Map<String, dynamic>.from({key.toString(): value}));
           writeHistory("${json.encode(Map<String, dynamic>.from({
                 key.toString(): value
               }))}\n");
@@ -218,7 +218,7 @@ class _MainPageState extends State<MainPage> {
       screens = [
         Home_Page(user: cli, userId: userId, liveData: syncDataResponse!),
         History_Page(
-          liveData: syncDataResponse!,
+          liveData: syncDataResponse,
         )
       ];
     });

@@ -5,7 +5,7 @@ import 'package:fpdart/fpdart.dart';
 
 extension MapTrySet<K, V> on Map<K, V> {
   Map transformAndLocalize(
-      [Map<dynamic, dynamic>? json, String nestedKey = ""]) {
+      [Map<dynamic, dynamic> json, String nestedKey = ""]) {
     final Map<dynamic, dynamic> translations = {};
     if (json != null) {
       json.forEach((dynamic key, dynamic value) {
@@ -30,7 +30,7 @@ extension MapTrySet<K, V> on Map<K, V> {
   // A function to set a value in a nested map
   // return a map that has localized path as a key and its value
   Map localizedTrySet(String target,
-      [V? valueToSet, Map<dynamic, dynamic>? json, String nestedKey = '']) {
+      [V valueToSet, Map<dynamic, dynamic> json, String nestedKey = '']) {
     final Map<dynamic, dynamic> translations = {};
     if (json != null) {
       json.forEach((dynamic key, dynamic value) {
@@ -60,7 +60,7 @@ extension MapTrySet<K, V> on Map<K, V> {
   }
 
   Map localizedTrySetFromMap(Map<dynamic, dynamic> pathAndValueMap,
-      [Map<dynamic, dynamic>? json, String prefix = ""]) {
+      [Map<dynamic, dynamic> json, String prefix = ""]) {
     final Map<dynamic, dynamic> translations = {};
     if (json != null) {
       json.forEach((dynamic key, dynamic value) {
@@ -96,23 +96,23 @@ extension MapTrySet<K, V> on Map<K, V> {
 
 abstract class SmIOTDatabaseMethod {
   Future<Map<String, dynamic>> getData(String userId);
-  Future<void> sendData(String? userId, Map<String, dynamic> sensorStatus);
-  Future<void> testSendData(String? userId, Map<String, dynamic> data);
+  Future<void> sendData(String userId, Map<String, dynamic> sensorStatus);
+  Future<void> testSendData(String userId, Map<String, dynamic> data);
 }
 
 class DataPayload {
-  late String userId;
-  late String role;
-  late bool approved;
-  Map<String, dynamic>? userDevice;
-  late String encryption;
+  String userId;
+  String role;
+  bool approved;
+  Map<String, dynamic> userDevice;
+  String encryption;
 
   DataPayload(
-      {required this.userId,
-      required this.role,
-      required this.approved,
+      {this.userId,
+      this.role,
+      this.approved,
       this.userDevice,
-      required this.encryption});
+      this.encryption});
 
   DataPayload.createEmpty() {
     userId = "";
@@ -127,14 +127,12 @@ class DataPayload {
   }
 
   Either<String, Map<String, dynamic>> loadDevices() {
-    return userDevice!.isNotEmpty
-        ? Right(userDevice!)
-        : const Left("No devices");
+    return userDevice.isNotEmpty ? Right(userDevice) : const Left("No devices");
   }
 
   Option<Map<String, dynamic>> getDeviceInfo(String deviceName) {
     final devices = loadDevices();
-    late Option<Map<String, dynamic>> targetDevice;
+    Option<Map<String, dynamic>> targetDevice;
     devices.match((err) => IOEither.of(unit), (deviceMap) {
       return IOEither.tryCatch(() {
         targetDevice = devices.getRight();
@@ -147,12 +145,12 @@ class DataPayload {
 
   // Reduction here!
   // Must change to Node-RED
-  checkDeviceStatus(String deviceName, [Map? source]) {
+  checkDeviceStatus(String deviceName, [Map source]) {
     // Get MQTT client and subscribe to "flag_checker"
     // require: accessId in localized map from Node-RED
     // accessId := device.sensor_name
     //
-    Option<Map> mapOpts = Option.of(source!);
+    Option<Map> mapOpts = Option.of(source);
     var filter = mapOpts.match((t) {
       return t.filterWithKey((key, value) =>
           key.toString().contains(deviceName).toString().endsWith("state"));
@@ -165,31 +163,29 @@ class DataPayload {
       case "base64":
         payload.userDevice?.forEach(
           (key, value) {
-            if (payload.userDevice?[key]["userSensor"] != null) {
-              List? sensorList =
-                  payload.userDevice?[key]["userSensor"]["sensorName"];
-              for (int i = 0; i < sensorList!.length; i++) {
+            if (payload.userDevice[key]["userSensor"] != null) {
+              List sensorList =
+                  payload.userDevice[key]["userSensor"]["sensorName"];
+              for (int i = 0; i < sensorList.length; i++) {
                 for (dynamic name in payload
-                    .userDevice?[key]["userSensor"]["sensorValue"]
-                        [sensorList[i]]
+                    .userDevice[key]["userSensor"]["sensorValue"][sensorList[i]]
                     .keys) {
                   for (dynamic att in payload
-                      .userDevice?[key]["userSensor"]["sensorValue"]
+                      .userDevice[key]["userSensor"]["sensorValue"]
                           [sensorList[i]][name]
                       .keys) {
-                    payload.userDevice?[key]["userSensor"]["sensorValue"]
+                    payload.userDevice[key]["userSensor"]["sensorValue"]
                             [sensorList[i]][name][att] =
-                        utf8.decode(base64.decode(payload.userDevice?[key]
+                        utf8.decode(base64.decode(payload.userDevice[key]
                                 ["userSensor"]["sensorValue"][sensorList[i]]
                             [name][att]));
                   }
                 }
               }
             }
-            if (payload.userDevice?[key]["actuator"] != null) {
-              Map? actuatorValue =
-                  payload.userDevice?[key]["actuator"]["value"];
-              for (dynamic i in actuatorValue!.keys) {
+            if (payload.userDevice[key]["actuator"] != null) {
+              Map actuatorValue = payload.userDevice[key]["actuator"]["value"];
+              for (dynamic i in actuatorValue.keys) {
                 actuatorValue[i] = utf8.decode(base64.decode(actuatorValue[i]));
               }
             }
@@ -248,8 +244,8 @@ class DataPayload {
 }
 
 class DeviceBlock {
-  SensorDataBlock? sensor;
-  ActuatorDataBlock? actuator;
+  SensorDataBlock sensor;
+  ActuatorDataBlock actuator;
 
   DeviceBlock(this.sensor, this.actuator);
 
@@ -283,16 +279,16 @@ class DeviceBlock {
 
 class SensorDataBlock {
   dynamic id;
-  Map<String, String>? type;
-  Map<String, dynamic>? threshold;
-  Map<String, dynamic>? timing;
-  Map<String, dynamic>? calibrate;
+  Map<String, String> type;
+  Map<String, dynamic> threshold;
+  Map<String, dynamic> timing;
+  Map<String, dynamic> calibrate;
 
   SensorDataBlock(
       this.id, this.type, this.threshold, this.timing, this.calibrate);
 
   // For using in report, not for sending data in normal process.
-  SensorDataBlock.createEncryptedModel(SensorDataBlock? sensor) {
+  SensorDataBlock.createEncryptedModel(SensorDataBlock sensor) {
     id = sensor?.id;
     type = sensor?.type;
     threshold = sensor?.threshold;
@@ -337,12 +333,12 @@ class SensorDataBlock {
 }
 
 class ActuatorDataBlock {
-  Map<String, String>? actuatorId;
-  Map<String, String>? type;
+  Map<String, String> actuatorId;
+  Map<String, String> type;
 
   ActuatorDataBlock(this.actuatorId, this.type);
 
-  ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock? act) {
+  ActuatorDataBlock.createEncryptedModel(ActuatorDataBlock act) {
     actuatorId = act?.actuatorId;
     type = act?.type;
 /*
@@ -381,9 +377,9 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
     // create empty model of DataPayload;
     DataPayload data = DataPayload.createEmpty();
     return Option.of(snapshot).match((t) {
-      final Map? userInfo = event.snapshot.value as Map?;
+      final Map userInfo = event.snapshot.value as Map;
       return Option.of(userInfo).match((t) {
-        data = DataPayload.createModelFromJson(Map.from(t!));
+        data = DataPayload.createModelFromJson(Map.from(t));
         return data.toJson();
       }, () => DataPayload.createModelFromJson({}).toJson());
     }, () {
@@ -392,9 +388,9 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   }
 
   @override
-  Future<void> sendData(String? userId, Map<String, dynamic> data) async {
+  Future<void> sendData(String userId, Map<String, dynamic> data) async {
     TransactionResult result =
-        await ref.child('$userId').runTransaction((Object? object) {
+        await ref.child('$userId').runTransaction((Object object) {
       return Option.of(object).match((t) {
         Map<String, dynamic> _obj = Map<String, dynamic>.from(object as Map);
         _obj.localizedTrySetFromMap(data);
@@ -406,7 +402,7 @@ class SmIOTDatabase implements SmIOTDatabaseMethod {
   }
 
   @override
-  Future<void> testSendData(String? userId, Map<String, dynamic> data) async {
+  Future<void> testSendData(String userId, Map<String, dynamic> data) async {
     await ref.child('$userId').update(data);
   }
 }

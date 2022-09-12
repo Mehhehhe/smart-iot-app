@@ -1,9 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotifyUser {
-  FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-  String? message;
+  String message;
   final String _channelId = "1000";
   final String _channelName = "SMART_IOT_APP_NOTIFICATION_CHANNEL";
   final String _channelDescription =
@@ -19,7 +19,7 @@ class NotifyUser {
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       //iOS: ,
     );
-    flutterLocalNotificationsPlugin!.initialize(
+    flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onSelectNotification: (payload) {
         message = payload;
@@ -29,13 +29,13 @@ class NotifyUser {
   }
 
   pushNotification(Importance im, Priority pr,
-      [String? title, String? message, String? details]) async {
+      [String title, String message, String details]) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         '10000', _channelName,
         channelDescription: details ?? "", importance: im, priority: pr);
     var platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin!.show(122, title ?? "Notification",
+    await flutterLocalNotificationsPlugin.show(122, title ?? "Notification",
         message ?? "Notification message", platformChannelSpecifics,
         payload: "userPressedNoti");
   }

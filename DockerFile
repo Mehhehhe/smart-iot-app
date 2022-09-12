@@ -1,0 +1,19 @@
+FROM dart:stable AS build
+
+WORKDIR /app
+
+ADD pubspec.* /app/
+RUN dart pub get
+
+RUN which dart
+
+ADD . /app
+RUN dart pub get --offline
+RUN dart compile exe lib/main.dart -o lib/main
+
+FROM scratch
+COPY --from=build /runtime/ /
+COPY --from=build /app/lib/main /app/lib
+
+CMD []
+ENTRYPOINT [ "/usr/lib/dart/bin/dart", "main.dart" ]

@@ -6,7 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 abstract class BaseAuth {
   Future<String?> signIn(String email, String password);
   Future<String?> register(String username, String email, String password);
-  Future<User?> getCurrentUser();
+  Future<User> getCurrentUser();
   Future<String?> getUserEmail();
   Future<void> signOut();
   Future<AuthStatus> resetPassword({required String email});
@@ -15,27 +15,26 @@ abstract class BaseAuth {
   Future<String?> getDisplayName();
 
   // Google methods
-  Future<String?> signInWithGoogle();
+  Future<String> signInWithGoogle();
   Future<void> signOutFromGoogle();
 }
 
-class Auth implements BaseAuth{
+class Auth implements BaseAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
-  Future<User?> getCurrentUser() async {
+  Future<User> getCurrentUser() async {
     User? user = _firebaseAuth.currentUser;
-    return user;
+    return user!;
   }
 
   @override
-  Future<String?> signIn(String email, String password) async {
+  Future<String> signIn(String email, String password) async {
     UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password);
+        email: email, password: password);
     User? user = result.user;
-    return user?.uid;
+    return user!.uid;
   }
 
   @override
@@ -44,14 +43,16 @@ class Auth implements BaseAuth{
   }
 
   @override
-  Future<String?> register(String username, String email, String password) async {
-    late UserCredential result;
-    late var _status;
-    try{
-      result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+  Future<String?> register(
+      String username, String email, String password) async {
+    UserCredential result;
+    var _status;
+    try {
+      result = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: email, password: password);
       result.user?.updateDisplayName(username);
       await result.user?.reload();
-    }on FirebaseAuthException catch(e){
+    } on FirebaseAuthException catch (e) {
       _status = AuthExceptionHandler.handleAuthException(e);
       return _status;
     }
@@ -66,19 +67,21 @@ class Auth implements BaseAuth{
   }
 
   @override
-  Future<String?> signInWithGoogle() async {
-    try{
-      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
+  Future<String> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount!.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
       await _firebaseAuth.signInWithCredential(credential);
 
-      User? user = await getCurrentUser();
-      return user?.uid;
-    } on FirebaseAuthException catch(e){
+      User user = await getCurrentUser();
+      return user.uid;
+    } on FirebaseAuthException catch (e) {
       var _status = AuthExceptionHandler.handleAuthException(e);
       return _status;
     }
@@ -91,7 +94,7 @@ class Auth implements BaseAuth{
   }
 
   @override
-  Future<void> editDisplayName(String displayName) async{
+  Future<void> editDisplayName(String displayName) async {
     User? user = _firebaseAuth.currentUser;
     user?.updateDisplayName(displayName);
     await user?.reload();
@@ -105,13 +108,13 @@ class Auth implements BaseAuth{
 
   @override
   Future<AuthStatus> resetPassword({required String email}) async {
-    late var _status;
+    var _status;
 
-    await _firebaseAuth.sendPasswordResetEmail(email: email).then(
-        (value) => _status = AuthStatus.successful).catchError(
+    await _firebaseAuth
+        .sendPasswordResetEmail(email: email)
+        .then((value) => _status = AuthStatus.successful)
+        .catchError(
             (e) => _status = AuthExceptionHandler.handleAuthException(e));
     return _status;
   }
-
-
 }

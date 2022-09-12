@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Contact_page extends StatefulWidget {
-  const Contact_page({Key? key}) : super(key: key);
+  const Contact_page({Key key}) : super(key: key);
 
   @override
   State<Contact_page> createState() => _Contact_pageState();
@@ -16,7 +16,7 @@ class _Contact_pageState extends State<Contact_page> {
     'Suggestion',
     'Other',
   ];
-  String? selectedValue;
+  String selectedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -24,24 +24,25 @@ class _Contact_pageState extends State<Contact_page> {
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.only(left: 75),
-          child: Text('Contact', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 28),),
+          child: Text(
+            'Contact',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0.0,
       ),
       body: Container(
-
         decoration: BoxDecoration(
           image: DecorationImage(
-              image : AssetImage('assets/images/bg_contact.jpg'),
-              fit: BoxFit.cover
-          ),
-
-        ),child: ListView(
-        children: [
-          _showForm(),
-        ],
-      ),
+              image: AssetImage('assets/images/bg_contact.jpg'),
+              fit: BoxFit.cover),
+        ),
+        child: ListView(
+          children: [
+            _showForm(),
+          ],
+        ),
       ),
       extendBodyBehindAppBar: true,
     );
@@ -56,26 +57,37 @@ class _Contact_pageState extends State<Contact_page> {
           child: ListView(
             shrinkWrap: true,
             children: <Widget>[
-              Text('Name', style: TextStyle(fontSize: 18,color: Colors.white),),
+              Text(
+                'Name',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
               nameInput(),
-              Text('Phome number', style: TextStyle(fontSize: 18,color: Colors.white),),
+              Text(
+                'Phome number',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
               phoneInput(),
-              Text('Email', style: TextStyle(fontSize: 18,color: Colors.white),),
+              Text(
+                'Email',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
               emailInput(),
-
-
-              Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Topic', style: TextStyle(fontSize: 18,color: Colors.white),),
+                  Text(
+                    'Topic',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                   categoryDropdown(),
                 ],
               ),
               topicInput(),
-
-
-              Text('Detail', style: TextStyle(fontSize: 18,color: Colors.white),),
+              Text(
+                'Detail',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
               detailInput(),
-
               submitButton()
             ],
           ),
@@ -83,6 +95,7 @@ class _Contact_pageState extends State<Contact_page> {
       ),
     );
   }
+
   Widget nameInput() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10),
@@ -122,7 +135,6 @@ class _Contact_pageState extends State<Contact_page> {
               borderSide: BorderSide.none,
               borderRadius: BorderRadius.circular(12),
             ),
-
           ),
         ),
       ),
@@ -187,19 +199,16 @@ class _Contact_pageState extends State<Contact_page> {
               color: Color.fromRGBO(215, 215, 215, 1.0),
             ),
           ),
-          items: CatagoryItems
-              .map((item) =>
-              DropdownMenuItem<String>(
+          items: CatagoryItems.map((item) => DropdownMenuItem<String>(
                 value: item,
                 child: Text(
                   item,
                   style: const TextStyle(
-                    fontSize: 15,color:
-                  Color.fromRGBO(155, 155, 155, 1.0),
+                    fontSize: 15,
+                    color: Color.fromRGBO(155, 155, 155, 1.0),
                   ),
                 ),
-              ))
-              .toList(),
+              )).toList(),
           value: selectedValue,
           onChanged: (value) {
             setState(() {
@@ -209,7 +218,6 @@ class _Contact_pageState extends State<Contact_page> {
           buttonHeight: 40,
           buttonWidth: 130,
           itemHeight: 40,
-
         ),
       ),
     );
@@ -238,9 +246,9 @@ class _Contact_pageState extends State<Contact_page> {
     );
   }
 
-  Widget submitButton(){
+  Widget submitButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20,horizontal: 30),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
       child: Container(
         //width: 50,
         height: 50,
@@ -267,8 +275,7 @@ class _Contact_pageState extends State<Contact_page> {
         child: OutlinedButton(
           style: ButtonStyle(
             shape: MaterialStateProperty.all(
-              RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
             ),
           ),
           onPressed: () {},

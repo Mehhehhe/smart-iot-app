@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class History_Page extends StatefulWidget {
-  const History_Page({Key? key, required this.liveData}) : super(key: key);
+  const History_Page({Key key, this.liveData}) : super(key: key);
   final Stream<String> liveData;
   @override
   State<History_Page> createState() => _History_PageState();
@@ -189,8 +189,8 @@ class _History_PageState extends State<History_Page> {
                         fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    log!.entries.isNotEmpty
-                        ? log!.entries.first.key.split(".")[0]
+                    log.entries.isNotEmpty
+                        ? log.entries.first.key.split(".")[0]
                         : "Unknown time",
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -203,7 +203,7 @@ class _History_PageState extends State<History_Page> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    log!
+                    log
                             .transformAndLocalize()
                             .entries
                             .filter((t) => t.key
@@ -211,7 +211,7 @@ class _History_PageState extends State<History_Page> {
                                 .endsWith("message")
                                 .match(() => false, () => t.value != null))
                             .isNotEmpty
-                        ? log!
+                        ? log
                             .transformAndLocalize()
                             .entries
                             .where((element) =>

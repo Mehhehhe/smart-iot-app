@@ -1,18 +1,46 @@
-// Use for initialize page aka setup for firebase
+import 'dart:convert';
+import 'dart:io';
 
-import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:smart_iot_app/services/MQTTClientHandler.dart';
-import 'package:smart_iot_app/services/authentication.dart';
-import 'package:smart_iot_app/pages/root.dart';
+import 'package:smart_iot_app/pages/Login.dart';
+
+// AWS
+import 'package:aws_lambda_dart_runtime/aws_lambda_dart_runtime.dart';
+import 'package:smart_iot_app/services/PostRequest.dart';
 
 import 'Theme/ThemeManager.dart';
 
 void main() async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ignore: prefer_function_declarations_over_variables
+  // Handler<AwsApiGatewayEvent> farmApiGateway = (context, event) async {
+  //   final resp = {
+  //     'message': 'Hello to ${context.requestId}',
+  //     'host': '${event.headers.host}',
+  //     'userAgent': '${event.headers.userAgent}',
+  //   };
+  //   final response = AwsApiGatewayResponse(
+  //     body: json.encode(resp),
+  //     isBase64Encoded: false,
+  //     statusCode: HttpStatus.ok,
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   );
+  //   return response;
+  // };
+
+  // Runtime()
+  //   ..registerHandler<AwsApiGatewayEvent>("main.farm", farmApiGateway)
+  //   ..registerHandler("main.postRequest", PostRequest().postApiGateway)
+  //   ..invoke();
+
+  // Initialize AWS
+  // Remove this part.
+/*
   try {
     // Check if firebase already running in app. Instance: DEFAULT
     Firebase.app('[DEFAULT]');
@@ -26,7 +54,7 @@ void main() async {
           messagingSenderId: "774636778498",
           projectId: "smartiotapp-8b124"),
     );
-  }
+  }*/
   return runApp(ChangeNotifierProvider(
     create: (_) => ThemeNotifier(),
     child: SmartIOTApp(),
@@ -61,7 +89,8 @@ class SmartIOTApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               theme: theme.getTheme(),
               //theme: themeState ? DarkTheme: lightTheme,
-              home: RootPage(auth: Auth(), client: MQTTClientWrapper()),
+              home:
+                  LogIn() /*RootPage(auth: Auth(), client: MQTTClientWrapper())*/,
             ));
   }
 }

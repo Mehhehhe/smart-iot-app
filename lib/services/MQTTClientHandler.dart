@@ -15,12 +15,12 @@ enum MqttCurrentConnectionState {
 enum MqttSubscriptionState { IDLE, SUBSCRIBED }
 
 class MQTTClientWrapper {
-  late MqttServerClient client;
+  MqttServerClient client;
 
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
 
-  late Stream<List<MqttReceivedMessage<MqttMessage>>> subscription;
+  Stream<List<MqttReceivedMessage<MqttMessage>>> subscription;
 
   // using async tasks, so the connection won't hinder the code flow
   void prepareMqttClient() async {
@@ -38,7 +38,7 @@ class MQTTClientWrapper {
     // response will be sent through topic "liveDataResponse" which was subscribed.
     _publishMessage("requestLiveData", "liveData");
     // Initialize for updates of data
-    subscription = client.updates!;
+    subscription = client.updates;
 
     var stmSubscription =
         subscription.listen((List<MqttReceivedMessage<MqttMessage>> c) {
@@ -138,12 +138,12 @@ class MQTTClientWrapper {
     });
   }
 
-  void _publishMessage(String message, [String? topic]) {
+  void _publishMessage(String message, [String topic]) {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
     topic = topic ?? 'Dart/Mqtt_client/testtopic';
     //print('Publishing message "$message" to topic $topic');
-    client.publishMessage(topic!, MqttQos.exactlyOnce, builder.payload!);
+    client.publishMessage(topic, MqttQos.exactlyOnce, builder.payload);
   }
 
   // callbacks for different events

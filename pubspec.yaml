@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.16.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -54,14 +54,18 @@ dependencies:
 
   provider: ^6.0.3
   animated_theme_switcher: "^2.0.5"
-  path_provider: ^2.0.11
-  fpdart: ^0.2.0
-  shared_preferences: ^2.0.15
-  google_fonts: ^3.0.1
+  path_provider: ^2.0.4
+  fpdart: ^0.0.14
+  shared_preferences: ^2.0.0
+  google_fonts: ^2.1.1
+
+  # AWS
+  amplify_flutter: ^0.5.0
+  amplify_auth_cognito: ^0.5.0
+  amplify_authenticator: ^0.1.0
+  aws_lambda_dart_runtime: ^1.1.0
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -69,6 +73,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.1
+  build_runner: ^2.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

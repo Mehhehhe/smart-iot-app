@@ -5,12 +5,7 @@ import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/dataManagement.dart';
 
 class Home_Page extends StatefulWidget {
-  Home_Page(
-      {Key? key,
-      required this.user,
-      required this.userId,
-      required this.liveData})
-      : super(key: key);
+  Home_Page({Key key, this.user, this.userId, this.liveData}) : super(key: key);
 
   final MQTTClientWrapper user;
   final String userId;
@@ -21,15 +16,15 @@ class Home_Page extends StatefulWidget {
 }
 
 class _Home_PageState extends State<Home_Page> {
-  late MQTTClientWrapper cli;
-  late Stream<String> liveData;
+  MQTTClientWrapper cli;
+  Stream<String> liveData;
   // data model for reporting
-  late DataPayload dataModel;
-  late String description;
+  DataPayload dataModel;
+  String description;
   // number to generate a card for each user's sensor
   var _addCard = 0;
   // Store boolean of sensor status state ("on"=true, "off"=false)
-  late List<bool> switchToggles = <bool>[];
+  List<bool> switchToggles = <bool>[];
 
   Future<Map<String, dynamic>> getFutureData() async {
     SmIOTDatabase db = SmIOTDatabase();
@@ -126,7 +121,7 @@ class _Home_PageState extends State<Home_Page> {
               return const CircularProgressIndicator();
             } else if (snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData) {
-              final Map? dataMap = snapshot.data as Map?;
+              final Map dataMap = snapshot.data as Map;
               dataModel = DataPayload.createModelFromJson(dataMap ?? {});
               setCardCount(dataModel
                   .loadDevices()
@@ -178,7 +173,7 @@ class _Home_PageState extends State<Home_Page> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => Manage_Page(
-                            device: dataModel.userDevice!.keys
+                            device: dataModel.userDevice.keys
                                 .elementAt(index)
                                 .toString(),
                             user: widget.user,
@@ -196,8 +191,8 @@ class _Home_PageState extends State<Home_Page> {
             children: <Widget>[
               Container(
                 margin: EdgeInsets.only(bottom: 5),
-                child: Text(
-                    dataModel.userDevice!.keys.elementAt(index).toString()),
+                child:
+                    Text(dataModel.userDevice.keys.elementAt(index).toString()),
               ),
             ],
           )
