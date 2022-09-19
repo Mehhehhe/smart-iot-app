@@ -1,6 +1,6 @@
 {
   "auth": {
-    "smartiotapp7a9a85fe": {
+    "smartiotapp213f93eb": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],

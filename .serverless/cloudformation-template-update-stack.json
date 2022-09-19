@@ -196,7 +196,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1662967927299-2022-09-12T07:32:07.299Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1663579088453-2022-09-19T09:18:08.453Z/smart-iot-app.zip"
         },
         "Handler": "handler.getFarmExample",
         "Runtime": "nodejs14.x",
@@ -297,7 +297,7 @@
         "GetFarmExampleLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1662967919517": {
+    "ApiGatewayDeployment1663579069842": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {

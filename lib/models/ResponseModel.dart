@@ -7,7 +7,7 @@ String responseModelToJson(ResponseModel data) => json.encode(data.toJson());
 
 class ResponseModel {
   ResponseModel({
-    this.message,
+    required this.message,
   });
 
   String message;

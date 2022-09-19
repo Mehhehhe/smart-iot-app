@@ -149,8 +149,75 @@ class _LogIn extends State<LogIn> {
 
   Widget _awsAuth() {
     return Authenticator(
+        // authenticatorBuilder: (p0, p1) {
+        //   const padding =
+        //       EdgeInsets.only(left: 16, right: 16, top: 48, bottom: 16);
+        //   switch (p1.currentStep) {
+        //     case AuthenticatorStep.loading:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.onboarding:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.signUp:
+        //       return Scaffold(
+        //         body: Padding(
+        //           padding: padding,
+        //           child: SingleChildScrollView(
+        //             child: Column(
+        //               children: [
+        //                 const Center(
+        //                   child: FlutterLogo(
+        //                     size: 100,
+        //                   ),
+        //                 ),
+        //                 SignUpForm.custom(fields: [
+        //                   SignUpFormField.username(),
+        //                   SignUpFormField.email(required: true),
+        //                   SignUpFormField.password(),
+        //                   SignUpFormField.passwordConfirmation(),
+        //                 ]),
+        //               ],
+        //             ),
+        //           ),
+        //         ),
+        //       );
+        //       break;
+        //     case AuthenticatorStep.signIn:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmSignUp:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmSignInCustomAuth:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmSignInMfa:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmSignInNewPassword:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.resetPassword:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmResetPassword:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.verifyUser:
+        //       // TODO: Handle this case.
+        //       break;
+        //     case AuthenticatorStep.confirmVerifyUser:
+        //       // TODO: Handle this case.
+        //       break;
+        //     default:
+        //       return null;
+        //   }
+        // },
+        //initialStep: AuthenticatorStep.signUp,
         child: MaterialApp(
       builder: Authenticator.builder(),
+      debugShowCheckedModeBanner: false,
       home: const Scaffold(
         body: Center(
           child: Text("Logged in!"),

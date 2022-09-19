@@ -7,7 +7,7 @@ String postRequestModelToJson(PostRequestModel data) =>
     json.encode(data.toJson());
 
 class PostRequestModel {
-  PostRequestModel({this.name});
+  PostRequestModel({required this.name});
 
   String name;
 
