@@ -77,6 +77,36 @@
         "LogGroupName": "/aws/lambda/smart-iot-app-dev-getFarmExample"
       }
     },
+    "GetFarmListLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-getFarmList"
+      }
+    },
+    "GetFarmByIDLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-getFarmByID"
+      }
+    },
+    "CreateFarmLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-createFarm"
+      }
+    },
+    "CreateUserLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-createUser"
+      }
+    },
+    "GetUserListLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-getUserList"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -168,6 +198,35 @@
                       ]
                     ]
                   }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "FarmDynamoDbTable",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "FarmUserDynamoDbTable",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "FarmDevicesDynamoDbTable",
+                        "Arn"
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -196,13 +255,26 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1663579088453-2022-09-19T09:18:08.453Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
         },
         "Handler": "handler.getFarmExample",
         "Runtime": "nodejs14.x",
         "FunctionName": "smart-iot-app-dev-getFarmExample",
         "MemorySize": 1024,
         "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -214,14 +286,264 @@
         "GetFarmExampleLogGroup"
       ]
     },
-    "GetFarmExampleLambdaVersiontSosQg1zvmXfXC7JQz5OxfUSEnLli7yJTLAbx9ez4": {
+    "GetFarmListLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.getFarmList",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-getFarmList",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "List all farms",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetFarmListLogGroup"
+      ]
+    },
+    "GetFarmByIDLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.getFarmByID",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-getFarmByID",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "Get a farm data by farm's ID",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetFarmByIDLogGroup"
+      ]
+    },
+    "CreateFarmLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.createFarm",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-createFarm",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "Send a farm information",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateFarmLogGroup"
+      ]
+    },
+    "CreateUserLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.createUser",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-createUser",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "Send a user information with username and list of farms",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateUserLogGroup"
+      ]
+    },
+    "GetUserListLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1663992270093-2022-09-24T04:04:30.093Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.getUserList",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-getUserList",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "Return a list of users with id",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetUserListLogGroup"
+      ]
+    },
+    "GetFarmExampleLambdaVersionfhaTcYYBIbARi2ac4GnoqWPCzSxcQDPFUA1V0nvhJJ4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetFarmExampleLambdaFunction"
         },
-        "CodeSha256": "4jkDiTM8wKYmFCpozomW2TU4d7X2JqpUM3l8vTd9Ebk="
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM="
+      }
+    },
+    "GetFarmListLambdaVersion2wpmIfMK1oCUnRjpAnSrAlBVP0CErWyFLzfW54d98Vo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetFarmListLambdaFunction"
+        },
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM=",
+        "Description": "List all farms"
+      }
+    },
+    "GetFarmByIDLambdaVersionxrj1alJg98HKXVObRUNkcjjJ0AoJ8pJJe4o5I6v7ey8": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetFarmByIDLambdaFunction"
+        },
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM=",
+        "Description": "Get a farm data by farm's ID"
+      }
+    },
+    "CreateFarmLambdaVersionI8vg0shCdMqRnbnwWi6bFzlsB5y5gw3F8IYXmIELHU": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateFarmLambdaFunction"
+        },
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM=",
+        "Description": "Send a farm information"
+      }
+    },
+    "CreateUserLambdaVersion6oW8s4aE4Zhze8zuWXhfpm2RL4yhLFGd3QSGNs3bk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateUserLambdaFunction"
+        },
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM=",
+        "Description": "Send a user information with username and list of farms"
+      }
+    },
+    "GetUserListLambdaVersionA1gs8xijkX0mhW9MplFCcwiQZAeZoxtObNu9jrvA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetUserListLambdaFunction"
+        },
+        "CodeSha256": "T/Ka/O8t88tJXC8T1kolHj22iyOOnveLIs8pl3PzQeM=",
+        "Description": "Return a list of users with id"
       }
     },
     "ApiGatewayRestApi": {
@@ -251,13 +573,136 @@
         }
       }
     },
-    "ApiGatewayMethodFarmGet": {
+    "ApiGatewayResourceFarmGet": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarm"
+        },
+        "PathPart": "get",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceFarmGetExample": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarmGet"
+        },
+        "PathPart": "example",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceFarmGetIdVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarmGet"
+        },
+        "PathPart": "{ID}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceFarmList": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarm"
+        },
+        "PathPart": "list",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceFarmListAll": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarmList"
+        },
+        "PathPart": "all",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceFarmCreate": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceFarm"
+        },
+        "PathPart": "create",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceUser": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "user",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceUserCreate": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceUser"
+        },
+        "PathPart": "create",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceUserList": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceUser"
+        },
+        "PathPart": "list",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceUserListAll": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceUserList"
+        },
+        "PathPart": "all",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodFarmGetExampleGet": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
         "HttpMethod": "GET",
         "RequestParameters": {},
         "ResourceId": {
-          "Ref": "ApiGatewayResourceFarm"
+          "Ref": "ApiGatewayResourceFarmGetExample"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -297,7 +742,237 @@
         "GetFarmExampleLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1663579069842": {
+    "ApiGatewayMethodFarmListAllGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceFarmListAll"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetFarmListLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetFarmListLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodFarmGetIdVarGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceFarmGetIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetFarmByIDLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetFarmByIDLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodFarmCreatePost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceFarmCreate"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateFarmLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateFarmLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodUserCreatePost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceUserCreate"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateUserLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateUserLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodUserListAllGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceUserListAll"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetUserListLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetUserListLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1663992263685": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -306,7 +981,12 @@
         "StageName": "dev"
       },
       "DependsOn": [
-        "ApiGatewayMethodFarmGet"
+        "ApiGatewayMethodFarmGetExampleGet",
+        "ApiGatewayMethodFarmListAllGet",
+        "ApiGatewayMethodFarmGetIdVarGet",
+        "ApiGatewayMethodFarmCreatePost",
+        "ApiGatewayMethodUserCreatePost",
+        "ApiGatewayMethodUserListAllGet"
       ]
     },
     "GetFarmExampleLambdaPermissionApiGateway": {
@@ -345,6 +1025,260 @@
           ]
         }
       }
+    },
+    "GetFarmListLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetFarmListLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "GetFarmByIDLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetFarmByIDLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateFarmLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateFarmLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateUserLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateUserLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "GetUserListLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetUserListLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "FarmDynamoDbTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "ID",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "ID",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "FarmDynamoDbTable"
+      }
+    },
+    "FarmUserDynamoDbTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "ID",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "ID",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "FarmUserDynamoDbTable"
+      }
+    },
+    "FarmDevicesDynamoDbTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "ID",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "ID",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "FarmDevicesDynamoDbTable"
+      }
     }
   },
   "Outputs": {
@@ -359,10 +1293,55 @@
     "GetFarmExampleLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetFarmExampleLambdaVersiontSosQg1zvmXfXC7JQz5OxfUSEnLli7yJTLAbx9ez4"
+        "Ref": "GetFarmExampleLambdaVersionfhaTcYYBIbARi2ac4GnoqWPCzSxcQDPFUA1V0nvhJJ4"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetFarmExampleLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetFarmListLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetFarmListLambdaVersion2wpmIfMK1oCUnRjpAnSrAlBVP0CErWyFLzfW54d98Vo"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-GetFarmListLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetFarmByIDLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetFarmByIDLambdaVersionxrj1alJg98HKXVObRUNkcjjJ0AoJ8pJJe4o5I6v7ey8"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-GetFarmByIDLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateFarmLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateFarmLambdaVersionI8vg0shCdMqRnbnwWi6bFzlsB5y5gw3F8IYXmIELHU"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-CreateFarmLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateUserLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateUserLambdaVersion6oW8s4aE4Zhze8zuWXhfpm2RL4yhLFGd3QSGNs3bk"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-CreateUserLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetUserListLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetUserListLambdaVersionA1gs8xijkX0mhW9MplFCcwiQZAeZoxtObNu9jrvA"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-GetUserListLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
