@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-const _farmApi = "https://d62mrahbok.execute-api.ap-southeast-1.amazonaws.com";
+const _farmApi = "d62mrahbok.execute-api.ap-southeast-1.amazonaws.com";
 
 Map<String, dynamic> _urlMap = {
   "farm_list": Uri.https(_farmApi, '/dev/farm/list/all'),
@@ -27,7 +27,8 @@ Map<String, dynamic> _urlMap = {
 /// }
 /// ```
 fetchFarmList() async {
-  var response = await http.get(Uri.parse(_urlMap["farm_list"]));
+  var response = await http.get(_urlMap["farm_list"]);
+  print(response.body);
   return response.statusCode == 200
       ? jsonDecode(response.body)
       : Exception('Failed to fetch farm list');
@@ -38,7 +39,7 @@ fetchFarmList() async {
 /// Return a map of farm info with `id` if status code is 200.
 /// `id` may get from `fetchFarmList`
 getFarmById(String id) async {
-  var response = await http.get(Uri.parse(_urlMap["get_farm_by_id"] + id));
+  var response = await http.get(_urlMap["get_farm_by_id"] + id);
   return response.statusCode == 200
       ? jsonDecode(response.body)
       : Exception('Failed to load target id');

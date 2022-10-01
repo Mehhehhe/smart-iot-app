@@ -112,6 +112,13 @@ functions:
       - http:
           path: /user/create
           method: POST
+  createUserToTable:
+    handler: handler.createUserToTable
+    description: Use by lambda trigger only.
+    events:
+      - http:
+          path: /trigger/createUser
+          method: POST
   getUserList:
     handler: handler.getUserList
     description: Return a list of users with id

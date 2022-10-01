@@ -38,63 +38,11 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogIn extends State<LogIn> {
-  bool _isObscure = true;
-  final _formKey = GlobalKey<FormState>();
-
-  late String _email;
-  late String _password;
-  late String _errorMsg;
-
-  bool _isLoginForm = true;
-  late bool _isLoading;
-
-  bool validateAndSave() {
-    final form = _formKey.currentState;
-    if (form!.validate()) {
-      form.save();
-      return true;
-    }
-    return false;
-  }
-
-  Future<void> validateAndSubmit() async {
-    setState(() {
-      _errorMsg = "";
-      _isLoading = true;
-      _isLoginForm = true;
-    });
-    if (validateAndSave()) {
-      String userId = "";
-      try {
-        if (_isLoginForm) {
-          //userId = await widget.auth.signIn(_email, _password);
-        } else {
-          if (kDebugMode) {
-            print("Please signing in");
-          }
-        }
-        setState(() {
-          _isLoading = false;
-        });
-        if (userId.isNotEmpty && _isLoginForm) {
-          //widget.loginCallback();
-        }
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-          _errorMsg = e.toString();
-          _formKey.currentState?.reset();
-        });
-      }
-    }
-  }
+  // User variables
+  Map<String, dynamic> account = {"name": "", "id": ""};
 
   @override
   void initState() {
-    //_controller = TextEditingController();
-    _errorMsg = "";
-    _isLoading = false;
-    _isLoginForm = false;
     _configureAmplify();
     super.initState();
   }
@@ -104,17 +52,7 @@ class _LogIn extends State<LogIn> {
     super.dispose();
   }
 
-  void resetForm() {
-    _formKey.currentState?.reset();
-    _errorMsg = "";
-  }
-
-  void toggleFormMode() {
-    resetForm();
-    setState(() {
-      _isLoginForm != _isLoginForm;
-    });
-  }
+  // User-related methods
 
   Future<void> signOutCurrentUser() async {
     try {
@@ -197,7 +135,7 @@ class _LogIn extends State<LogIn> {
               // TODO: Handle this case.
               break;
             default:
-              return null;
+              return const CircularProgressIndicator();
           }
         },
         // initialStep: AuthenticatorStep.signUp,
@@ -205,31 +143,24 @@ class _LogIn extends State<LogIn> {
           builder: Authenticator.builder(),
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            body: const Center(
+            body: Center(
               child: MainPage(),
-            ),
-            appBar: AppBar(
-              actions: [
-                IconButton(
-                    onPressed: () => signOutCurrentUser(),
-                    icon: const Icon(Icons.logout))
-              ],
             ),
           ),
         ));
   }
 
-  Widget _showCircularProgress() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-    return const SizedBox(
-      height: 0.0,
-      width: 0.0,
-    );
-  }
+  // Widget _showCircularProgress() {
+  //   if (_isLoading) {
+  //     return const Center(
+  //       child: CircularProgressIndicator(),
+  //     );
+  //   }
+  //   return const SizedBox(
+  //     height: 0.0,
+  //     width: 0.0,
+  //   );
+  // }
 
   Widget _signUpForm(EdgeInsets padding, AuthenticatorState state) {
     return Scaffold(

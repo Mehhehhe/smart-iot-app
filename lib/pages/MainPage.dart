@@ -1,15 +1,11 @@
-// import 'dart:convert';
-// import 'dart:io';
-
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/foundation.dart';
-
+// ignore: file_names
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
-
+  MainPage({Key? key}) : super(key: key);
+  // Map<String, dynamic>? account;
   @override
   State<StatefulWidget> createState() => _MainPageState();
 }
@@ -17,11 +13,65 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   // Screen variables
   int index = 0;
-  late List<StatefulWidget> _screen;
+  late List<Widget> _screen;
+  // User variables
+  Map<String, dynamic> account = {"name": "name", "id": "id"};
+  late String accountName;
+  late String accountEmail;
+  // Farm variables
+  Map<String, dynamic> farm = {
+    "farm": [
+      {"ID": "id_placeholder", "FarmName": "Farm_name"}
+    ]
+  };
+
+  // AWS Interaction methods
+
+  Future<void> signOutCurrentUser() async {
+    try {
+      await Amplify.Auth.signOut();
+    } on AuthException catch (e) {
+      print(e.message);
+    }
+  }
+
+  // Get user informations
+  // username and id which came from UserPool in the authentication part
+  // This section is separated from DynamoDB
+  // Note: Username in both db must be the same.
+  getUserInfo() async {
+    var res = await Amplify.Auth.getCurrentUser();
+    var userInf = {
+      "name": res.username.toString(),
+      "id": res.userId.toString()
+    };
+    setState(() {
+      account = userInf;
+    });
+    return userInf;
+  }
+
+  // Fetch all farms and set to global var
+  // Note: Must be used by admin or in debugging only.
+  setAllFarmsListToGlobal() async {
+    var farms = fetchFarmList();
+    setState(() {
+      farm = farms;
+    });
+  }
 
   @override
   void initState() {
+    // Test if farm table is interable
     fetchFarmList();
+    _screen = [Text("First"), Text("Second")];
+    // Fetch user's name & email
+    getUserInfo();
+    // ignore: todo
+    // TODO: fetch this user's farms and set to farm vars.
+    // use getUserList() first to get all users.
+    // select a user where name is matched then return id.
+    // using this id in parameter of `get_farm_by_id`
     super.initState();
   }
 
@@ -30,6 +80,19 @@ class _MainPageState extends State<MainPage> {
     return DefaultTabController(
         length: 2,
         child: Scaffold(
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                  onPressed: () => signOutCurrentUser(),
+                  icon: Icon(Icons.logout))
+            ],
+            backgroundColor: Colors.amber,
+            elevation: 0,
+            title: Text('Smart IOT App'),
+            titleSpacing: 47,
+            leadingWidth: 80,
+            toolbarHeight: 80,
+          ),
           body: _screen[index],
           bottomNavigationBar: NavigationBarTheme(
             data: NavigationBarThemeData(
@@ -53,6 +116,50 @@ class _MainPageState extends State<MainPage> {
                 NavigationDestination(
                     icon: Icon(Icons.history), label: 'History'),
               ],
+            ),
+          ),
+          drawer: Drawer(
+            child: Material(
+              child: Padding(
+                padding: EdgeInsets.all(0),
+                child: ListView(
+                  children: [
+                    Builder(
+                      builder: (context) {
+                        accountEmail = account["id"];
+                        accountName = account["name"];
+                        return UserAccountsDrawerHeader(
+                            accountName: Text(accountName,
+                                style: Theme.of(context).textTheme.headline5),
+                            accountEmail: Text(accountEmail));
+                      },
+                    ),
+                    // UserAccountsDrawerHeader(
+                    //     accountName: Text(accountName ?? "Name",
+                    //         style: Theme.of(context).textTheme.headline5),
+                    //     accountEmail: Text(accountEmail ?? "Email",
+                    //         style: Theme.of(context).textTheme.headline6)),
+                    ListTile(
+                      title: Text("Profile", style: TextStyle(fontSize: 22)),
+                      isThreeLine: true,
+                      subtitle: Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
+                      hoverColor: Colors.white70,
+                      onTap: () {},
+                    ),
+
+                    ListTile(
+                      title: Text(
+                        "Setting",
+                        style: TextStyle(fontSize: 22),
+                      ),
+                      isThreeLine: true,
+                      subtitle: Text("การตั้งค่าภายในแอพและอื่นๆ"),
+                      hoverColor: Colors.white70,
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ));

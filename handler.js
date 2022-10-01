@@ -154,11 +154,16 @@ function getFarm(){
 
 // For User Table
 module.exports.createUser = async (event, context, callback) => {
-  const User = event.user;  
-  var owned_farm = event.OwnedFarm;
+  // console.log(event);
+  const User = event.user;
+  const Email = event.email;
+  var owned_farm = event.OwnedFarm == null ? ["Wait for update"] : event.OwnedFarm;
 
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
     console.error("Validation failed");
+    // console.log(event.user);
+    console.log(User);
+    console.log(Email);
     callback(new Error("Couldn't create because of validation errors"));
   }
 
@@ -170,15 +175,18 @@ module.exports.createUser = async (event, context, callback) => {
   const UserID = crypto.createHmac('sha256', MY_NAMESPACE).update(User).digest('hex');
   
   // Generate farm ID
-  owned_farm.forEach(function(part, index) {
-    owned_farm[index] = crypto.createHmac('sha256', MY_NAMESPACE).update(owned_farm[index]).digest('hex')
-  });
+  if(owned_farm != ["Wait for update"]){
+    owned_farm.forEach(function(part, index) {
+      owned_farm[index] = crypto.createHmac('sha256', MY_NAMESPACE).update(owned_farm[index]).digest('hex')
+    });
+  }
 
   const userInfo = (User, UserID, owned_farm) => {
     const timestamp = new Date().getTime();
     return {
       ID: UserID,
       FarmUser: User,
+      Email: Email,
       OwnedFarm: owned_farm,
       CreateAt: timestamp
     };
@@ -201,6 +209,66 @@ module.exports.createUser = async (event, context, callback) => {
         userID: res.ID
       })
     })
+  }).catch(err => {
+    console.log(err);
+    callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Unable to create user"
+      })
+    });
+  });
+};
+
+module.exports.createUserToTable = async (event, context, callback) => {
+  const User = event.userName;
+  const Email = event.request.userAttributes.email;
+  var owned_farm = event.OwnedFarm == null ? ["Wait for update"] : event.OwnedFarm;
+
+  if(typeof User !== 'string' || !Array.isArray(owned_farm)){
+    console.error("Validation failed");
+    // console.log(event.user);
+    console.log(User);
+    console.log(Email);
+    callback(new Error("Couldn't create because of validation errors"));
+  }
+
+  if(owned_farm.every((value) => typeof value !== 'string')){
+    console.error("Validation failed");
+    callback(new Error("Couldn't create because validation errors occurred in the array"));
+  }
+
+  const UserID = crypto.createHmac('sha256', MY_NAMESPACE).update(User).digest('hex');
+  
+  // Generate farm ID
+  if(owned_farm != ["Wait for update"]){
+    owned_farm.forEach(function(part, index) {
+      owned_farm[index] = crypto.createHmac('sha256', MY_NAMESPACE).update(owned_farm[index]).digest('hex')
+    });
+  }
+
+  const userInfo = (User, UserID, owned_farm) => {
+    const timestamp = new Date().getTime();
+    return {
+      ID: UserID,
+      FarmUser: User,
+      Email: Email,
+      OwnedFarm: owned_farm,
+      CreateAt: timestamp
+    };
+  };
+
+  const submitUser = user => {
+    console.log("Submitting User Info");
+    const userInfo = {
+      TableName: process.env.FARM_USER_TABLE,
+      Item: user
+    };
+    return dynamoDb.put(userInfo).promise().then(res => user);
+  };
+
+  await submitUser(userInfo(User, UserID, owned_farm)).then(res => {
+    callback(null, event)
   }).catch(err => {
     console.log(err);
     callback(null, {
