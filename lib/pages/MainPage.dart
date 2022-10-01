@@ -5,8 +5,59 @@
 // import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
-import 'package:smart_iot_app/services/lambdaCaller.dart' as lc;
+import 'package:smart_iot_app/services/lambdaCaller.dart';
 
+class MainPage extends StatefulWidget {
+  const MainPage({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  // Screen variables
+  int index = 0;
+  late List<StatefulWidget> _screen;
+
+  @override
+  void initState() {
+    fetchFarmList();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          body: _screen[index],
+          bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+                indicatorColor: Colors.white,
+                labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w500))),
+            child: NavigationBar(
+              height: 60,
+              //               backgroundColor: Colors.amberAccent,
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.onlyShowSelected,
+              selectedIndex: index,
+              animationDuration: const Duration(milliseconds: 500),
+              onDestinationSelected: (index) =>
+                  setState(() => this.index = index),
+              destinations: const [
+                NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Home'),
+                NavigationDestination(
+                    icon: Icon(Icons.history), label: 'History'),
+              ],
+            ),
+          ),
+        ));
+  }
+}
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 // import 'package:google_fonts/google_fonts.dart';

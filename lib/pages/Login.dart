@@ -1,6 +1,7 @@
 import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/pages/MainPage.dart';
 import 'package:smart_iot_app/pages/ResetPassWordPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 import 'package:smart_iot_app/pages/RegisterPage.dart';
@@ -204,8 +205,8 @@ class _LogIn extends State<LogIn> {
           builder: Authenticator.builder(),
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            body: Center(
-              child: Text("Logged in!"),
+            body: const Center(
+              child: MainPage(),
             ),
             appBar: AppBar(
               actions: [
