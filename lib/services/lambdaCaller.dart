@@ -1,13 +1,17 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 const _farmApi = "d62mrahbok.execute-api.ap-southeast-1.amazonaws.com";
+const _myNamespace = '578c1580-f296-4fef-8ecf-dc5b1bc31586';
 
 Map<String, dynamic> _urlMap = {
   "farm_list": Uri.https(_farmApi, '/dev/farm/list/all'),
   "get_farm_by_id": Uri.https(_farmApi, '/dev/farm/get/'),
-  "create_farm": Uri.https(_farmApi, '/dev/farm/create')
+  "create_farm": Uri.https(_farmApi, '/dev/farm/create'),
+  "user_list": Uri.https(_farmApi, '/dev/user/list/all'),
+  "get_user_by_id": '/dev/user/get/',
 };
 
 /// ## `fetchFarmList()`
@@ -47,6 +51,22 @@ getFarmById(String id) async {
 
 createFarm(Map farmInfo) async {
   var response = await http.post(_urlMap["create_farm"], body: farmInfo);
+  return response.statusCode == 200
+      ? jsonDecode(response.body)
+      : Exception(response.body);
+}
+
+/// ## `getUserById(String id)`
+///
+/// Return a map of user info with `id` if status code is 200.
+getUserById(String id) async {
+  List<int> msgBytes = utf8.encode(id);
+  List<int> key = utf8.encode(_myNamespace);
+  Hmac hmac = Hmac(sha256, key);
+  Digest digest = hmac.convert(msgBytes);
+  // print(digest);
+  var response = await http
+      .get(Uri.https(_farmApi, _urlMap["get_user_by_id"] + digest.toString()));
   return response.statusCode == 200
       ? jsonDecode(response.body)
       : Exception(response.body);

@@ -302,3 +302,24 @@ module.exports.getUserList = (event, context, callback) => {
   };
   dynamoDb.scan(params, onScan).promise();
 };
+
+module.exports.getUserByID = (event, context, callback) => {
+  const params = {
+    TableName: FarmUserTable,
+    Key: {
+      ID: event.pathParameters.ID
+    }
+  };
+
+  dynamoDb.get(params).promise().then(
+    result => {
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify(result.Item)
+      };
+      callback(null, response);
+    }).catch(error => {
+      console.error(error);
+      callback(new Error("couldn't fetch user by given ID."));
+    });
+};

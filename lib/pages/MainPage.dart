@@ -15,9 +15,10 @@ class _MainPageState extends State<MainPage> {
   int index = 0;
   late List<Widget> _screen;
   // User variables
-  Map<String, dynamic> account = {"name": "name", "id": "id"};
+  Map<String, dynamic> account = {"name": "name", "email": "email"};
   late String accountName;
   late String accountEmail;
+  late var ownedFarm;
   // Farm variables
   Map<String, dynamic> farm = {
     "farm": [
@@ -41,12 +42,16 @@ class _MainPageState extends State<MainPage> {
   // Note: Username in both db must be the same.
   getUserInfo() async {
     var res = await Amplify.Auth.getCurrentUser();
+    var userData = await getUserById(res.username);
     var userInf = {
       "name": res.username.toString(),
-      "id": res.userId.toString()
+      "id": res.userId.toString(),
+      "ownedFarm": userData["OwnedFarm"],
     };
+
     setState(() {
       account = userInf;
+      ownedFarm = userInf["ownedFarm"];
     });
     return userInf;
   }
@@ -64,14 +69,15 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     // Test if farm table is interable
     fetchFarmList();
-    _screen = [Text("First"), Text("Second")];
-    // Fetch user's name & email
+
+    // Fetch user's name & email for drawer
     getUserInfo();
     // ignore: todo
     // TODO: fetch this user's farms and set to farm vars.
     // use getUserList() first to get all users.
     // select a user where name is matched then return id.
     // using this id in parameter of `get_farm_by_id`
+    _screen = [_displayFarmAsCards(), Text("Second")];
     super.initState();
   }
 
@@ -163,6 +169,47 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
         ));
+  }
+
+  Widget _displayFarmAsCards() {
+    return Container(
+      child: SingleChildScrollView(
+          child: Column(
+        children: [
+          FutureBuilder(
+            future: getUserInfo(),
+            builder: (context, snapshot) {
+              var connection = snapshot.connectionState;
+              switch (connection) {
+                case ConnectionState.waiting:
+                  return const CircularProgressIndicator();
+                case ConnectionState.active:
+                  Map map = snapshot.data as Map;
+                  return _farmCards(map);
+                case ConnectionState.done:
+                  Map map = snapshot.data as Map;
+                  return _farmCards(map);
+                default:
+                  return const CircularProgressIndicator();
+              }
+            },
+          )
+        ],
+      )),
+    );
+  }
+
+  Widget _farmCards(Map data) {
+    List farms = data["ownedFarm"];
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: farms.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(farms[index]),
+        );
+      },
+    );
   }
 }
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';

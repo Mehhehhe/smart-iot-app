@@ -126,6 +126,13 @@ functions:
       - http:
           path: /user/list/all
           method: GET
+  getUserByID:
+    handler: handler.getUserByID
+    description: Get a data of user by given ID
+    events:
+      - http:
+          path: /user/get/{ID}
+          method: GET
 
 resources:
   Resources:

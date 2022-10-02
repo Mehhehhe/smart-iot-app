@@ -54,14 +54,6 @@ class _LogIn extends State<LogIn> {
 
   // User-related methods
 
-  Future<void> signOutCurrentUser() async {
-    try {
-      await Amplify.Auth.signOut();
-    } on AuthException catch (e) {
-      print(e.message);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,21 +172,27 @@ class _LogIn extends State<LogIn> {
                 SignUpFormField.password(),
                 SignUpFormField.passwordConfirmation(),
               ]),
+              const Divider(color: Colors.black),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Already have an account? ",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  TextButton(
+                      onPressed: () =>
+                          state.changeStep(AuthenticatorStep.signIn),
+                      child: const Text(
+                        "Sign in",
+                        style: TextStyle(fontSize: 18),
+                      ))
+                ],
+              )
             ],
           ),
         ),
       ),
-      persistentFooterButtons: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Already have an account? "),
-            TextButton(
-                onPressed: () => state.changeStep(AuthenticatorStep.signIn),
-                child: const Text("Sign in"))
-          ],
-        )
-      ],
     );
   }
 
@@ -205,30 +203,48 @@ class _LogIn extends State<LogIn> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const Center(
-                child: FlutterLogo(
-                  size: 100,
+              Container(
+                height: 600,
+                color: Colors.amber,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Center(
+                      child: FlutterLogo(
+                        size: 100,
+                      ),
+                    ),
+                    SignInForm.custom(fields: [
+                      SignInFormField.username(),
+                      SignInFormField.password()
+                    ]),
+                    const Divider(
+                      color: Colors.black,
+                      height: 30,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account? ",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        TextButton(
+                            onPressed: () =>
+                                state.changeStep(AuthenticatorStep.signUp),
+                            child: const Text(
+                              "Sign up",
+                              style: TextStyle(fontSize: 18),
+                            ))
+                      ],
+                    )
+                  ],
                 ),
               ),
-              SignInForm.custom(fields: [
-                SignInFormField.username(),
-                SignInFormField.password()
-              ]),
             ],
           ),
         ),
       ),
-      persistentFooterButtons: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Don't have an account? "),
-            TextButton(
-                onPressed: () => state.changeStep(AuthenticatorStep.signUp),
-                child: const Text("Sign up"))
-          ],
-        )
-      ],
     );
   }
 
