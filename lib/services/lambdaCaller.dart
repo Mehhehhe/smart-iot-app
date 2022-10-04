@@ -38,6 +38,14 @@ fetchFarmList() async {
       : Exception('Failed to fetch farm list');
 }
 
+fetchUserList() async {
+  var response = await http.get(_urlMap["user_list"]);
+  print(response.body);
+  return response.statusCode == 200
+      ? jsonDecode(response.body)
+      : Exception('Failed to fetch user list');
+}
+
 /// ## `getFarmById(String idOfTargetFarm)`
 ///
 /// Return a map of farm info with `id` if status code is 200.
@@ -60,13 +68,19 @@ createFarm(Map farmInfo) async {
 ///
 /// Return a map of user info with `id` if status code is 200.
 getUserById(String id) async {
-  List<int> msgBytes = utf8.encode(id);
-  List<int> key = utf8.encode(_myNamespace);
-  Hmac hmac = Hmac(sha256, key);
-  Digest digest = hmac.convert(msgBytes);
+  String targetId = "";
+  Map usersList = await fetchUserList();
+  var users = usersList["users"];
+  for (var user in users) {
+    if (user["FarmUser"] == id) {
+      targetId = user["ID"];
+    }
+  }
+  if (targetId == "") return {};
+
   // print(digest);
-  var response = await http
-      .get(Uri.https(_farmApi, _urlMap["get_user_by_id"] + digest.toString()));
+  var response =
+      await http.get(Uri.https(_farmApi, _urlMap["get_user_by_id"] + targetId));
   return response.statusCode == 200
       ? jsonDecode(response.body)
       : Exception(response.body);

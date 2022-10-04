@@ -133,6 +133,13 @@ functions:
       - http:
           path: /user/get/{ID}
           method: GET
+  registerDevice:
+    handler: handler.registerDevice
+    description: Use for first time register of new device.
+    events:
+      - http:
+          path: /device/register
+          method: POST
 
 resources:
   Resources:

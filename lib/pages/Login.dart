@@ -136,7 +136,15 @@ class _LogIn extends State<LogIn> {
           debugShowCheckedModeBanner: false,
           home: Scaffold(
             body: Center(
-              child: MainPage(),
+              child: FutureBuilder<AuthSession>(
+                future: Amplify.Auth.fetchAuthSession(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data!.isSignedIn) return MainPage();
+                  }
+                  return const CircularProgressIndicator();
+                },
+              ),
             ),
           ),
         ));

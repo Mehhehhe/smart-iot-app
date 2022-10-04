@@ -10,8 +10,23 @@ const crypto = require('crypto');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
+const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
 const MY_NAMESPACE = "578c1580-f296-4fef-8ecf-dc5b1bc31586";
+
+// Encode Function
+function encode(msg){
+  const maximumLength = 8;
+  if(msg.length > maximumLength){
+    msg = msg.substr(0, maximumLength);
+  } else if(msg.length < maximumLength){
+    var diff = maximumLength - msg.length;
+    var padding = '';
+    for(var i = 0; i < diff; i++) padding += '0';
+    msg = padding + msg;
+  }
+  return Buffer.from(msg).toString('base64');
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module.exports.getFarmExample = (event, context, callback) => {
@@ -94,7 +109,7 @@ module.exports.createFarm = async (event, context, callback) => {
   const farmInfo = (FarmName, Owner, AllowedUsers, AvailableDevices) => {
     const timestamp = new Date().getTime();
     return {
-      ID: crypto.createHmac('sha256', MY_NAMESPACE).update(FarmName).digest('hex'),
+      ID: encode(FarmName),
       FarmName: FarmName,
       FarmOwner: Owner,
       AllowedUsersInFarm: AllowedUsers,
@@ -157,7 +172,7 @@ module.exports.createUser = async (event, context, callback) => {
   // console.log(event);
   const User = event.user;
   const Email = event.email;
-  var owned_farm = event.OwnedFarm == null ? ["Wait for update"] : event.OwnedFarm;
+  var owned_farm = event.OwnedFarm ?? ["Wait for update"];
 
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
     console.error("Validation failed");
@@ -172,12 +187,12 @@ module.exports.createUser = async (event, context, callback) => {
     callback(new Error("Couldn't create because validation errors occurred in the array"));
   }
 
-  const UserID = crypto.createHmac('sha256', MY_NAMESPACE).update(User).digest('hex');
+  const UserID = crypto.randomUUID();
   
   // Generate farm ID
-  if(owned_farm != ["Wait for update"]){
+  if(owned_farm !== ["Wait for update"] || owned_farm !== null){
     owned_farm.forEach(function(part, index) {
-      owned_farm[index] = crypto.createHmac('sha256', MY_NAMESPACE).update(owned_farm[index]).digest('hex')
+      owned_farm[index] = encode(owned_farm[index]);
     });
   }
 
@@ -223,7 +238,7 @@ module.exports.createUser = async (event, context, callback) => {
 module.exports.createUserToTable = async (event, context, callback) => {
   const User = event.userName;
   const Email = event.request.userAttributes.email;
-  var owned_farm = event.OwnedFarm == null ? ["Wait for update"] : event.OwnedFarm;
+  var owned_farm = event.OwnedFarm ?? ["Wait for update"];
 
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
     console.error("Validation failed");
@@ -238,12 +253,12 @@ module.exports.createUserToTable = async (event, context, callback) => {
     callback(new Error("Couldn't create because validation errors occurred in the array"));
   }
 
-  const UserID = crypto.createHmac('sha256', MY_NAMESPACE).update(User).digest('hex');
+  const UserID = crypto.randomUUID();
   
   // Generate farm ID
-  if(owned_farm != ["Wait for update"]){
+  if(owned_farm !== ["Wait for update"] || owned_farm !== null){
     owned_farm.forEach(function(part, index) {
-      owned_farm[index] = crypto.createHmac('sha256', MY_NAMESPACE).update(owned_farm[index]).digest('hex')
+      owned_farm[index] = encode(owned_farm[index]);
     });
   }
 
@@ -322,4 +337,54 @@ module.exports.getUserByID = (event, context, callback) => {
       console.error(error);
       callback(new Error("couldn't fetch user by given ID."));
     });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Device functions
+
+module.exports.registerDevice = async (event, context, callback) => {
+  const DeviceName = event.device;
+  const DeviceType = event.type;
+  const DeviceSerial = event.serialNumber;
+  
+  const FarmName = event.farmName;
+
+  if(typeof DeviceType !== 'string' || typeof FarmName !== 'string' || typeof DeviceName !== 'string' || typeof DeviceSerial !== 'string'){
+    console.error("Validation failed");
+    callback(new Error("Couldn't create because of validation errors"));
+  }
+
+  const deviceInfo = (DeviceSerial, DeviceName, DeviceType, FarmName) => {
+    const timestamp = new Date().getTime();
+    return {
+      ID: crypto.randomBytes(8).toString('hex'),
+      SerialNumber: DeviceSerial,
+      DeviceName: DeviceName,
+      Type: DeviceType,
+      Location: FarmName,
+      CreateAt: timestamp
+    };
+  };
+
+  const submitDevice = device => {
+    console.log("Submitting User Info");
+    const deviceInfo = {
+      TableName: FarmDeviceTable,
+      Item: device
+    };
+    return dynamoDb.put(deviceInfo).promise().then(res => device);
+  };
+
+  await submitDevice(deviceInfo(DeviceSerial, DeviceName, DeviceType, FarmName)).then(res => {
+    callback(null, event)
+  }).catch(err => {
+    console.log(err);
+    callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Unable to create device"
+      })
+    });
+  });
 };

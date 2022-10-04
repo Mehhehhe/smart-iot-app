@@ -1,4 +1,6 @@
 // ignore: file_names
+import 'dart:convert';
+
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -25,6 +27,7 @@ class _MainPageState extends State<MainPage> {
       {"ID": "id_placeholder", "FarmName": "Farm_name"}
     ]
   };
+  int farmInd = 0;
 
   // AWS Interaction methods
 
@@ -77,7 +80,7 @@ class _MainPageState extends State<MainPage> {
     // use getUserList() first to get all users.
     // select a user where name is matched then return id.
     // using this id in parameter of `get_farm_by_id`
-    _screen = [_displayFarmAsCards(), Text("Second")];
+    _screen = [_displayFarmAsCards(), const Text("Second")];
     super.initState();
   }
 
@@ -90,11 +93,11 @@ class _MainPageState extends State<MainPage> {
             actions: [
               IconButton(
                   onPressed: () => signOutCurrentUser(),
-                  icon: Icon(Icons.logout))
+                  icon: const Icon(Icons.logout))
             ],
             backgroundColor: Colors.amber,
             elevation: 0,
-            title: Text('Smart IOT App'),
+            title: const Text('Smart IOT App'),
             titleSpacing: 47,
             leadingWidth: 80,
             toolbarHeight: 80,
@@ -127,7 +130,7 @@ class _MainPageState extends State<MainPage> {
           drawer: Drawer(
             child: Material(
               child: Padding(
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 child: ListView(
                   children: [
                     Builder(
@@ -146,20 +149,21 @@ class _MainPageState extends State<MainPage> {
                     //     accountEmail: Text(accountEmail ?? "Email",
                     //         style: Theme.of(context).textTheme.headline6)),
                     ListTile(
-                      title: Text("Profile", style: TextStyle(fontSize: 22)),
+                      title:
+                          const Text("Profile", style: TextStyle(fontSize: 22)),
                       isThreeLine: true,
-                      subtitle: Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
+                      subtitle: const Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
                       hoverColor: Colors.white70,
                       onTap: () {},
                     ),
 
                     ListTile(
-                      title: Text(
+                      title: const Text(
                         "Setting",
                         style: TextStyle(fontSize: 22),
                       ),
                       isThreeLine: true,
-                      subtitle: Text("การตั้งค่าภายในแอพและอื่นๆ"),
+                      subtitle: const Text("การตั้งค่าภายในแอพและอื่นๆ"),
                       hoverColor: Colors.white70,
                       onTap: () {},
                     ),
@@ -201,14 +205,64 @@ class _MainPageState extends State<MainPage> {
 
   Widget _farmCards(Map data) {
     List farms = data["ownedFarm"];
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: farms.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(farms[index]),
-        );
-      },
+    var tempText = "";
+    if (utf8.decode(base64.decode(farms[farmInd])).contains("Wait for")) {
+      tempText = "Wait for update";
+    } else {
+      tempText = utf8.decode(base64.decode(farms[farmInd]));
+    }
+    return Card(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            tempText,
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          TextButton(
+              onPressed: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.edit),
+                  Text("Change to another farm")
+                ],
+              )),
+          Container(
+            color: Colors.grey,
+            margin: const EdgeInsets.all(10),
+            height: 300,
+            width: MediaQuery.of(context).size.width,
+            child: const Text("Graph"),
+          ),
+          const Divider(
+            indent: 20,
+            endIndent: 20,
+            thickness: 2,
+          ),
+          ListView.builder(
+            itemCount: 1,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                margin: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Device_test"),
+                    const Text("Online"),
+                    TextButton(
+                        onPressed: () {}, child: const Text("Configure >")),
+                    const Divider(),
+                  ],
+                ),
+              );
+            },
+          )
+        ],
+      ),
     );
   }
 }
