@@ -7,6 +7,8 @@ import 'package:smart_iot_app/pages/Login.dart';
 
 // AWS
 import 'package:aws_lambda_dart_runtime/aws_lambda_dart_runtime.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:smart_iot_app/services/PostRequest.dart';
 
 import 'Theme/ThemeManager.dart';

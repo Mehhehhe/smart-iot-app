@@ -86,92 +86,108 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            actions: [
-              IconButton(
-                  onPressed: () => signOutCurrentUser(),
-                  icon: const Icon(Icons.logout))
-            ],
-            backgroundColor: Colors.amber,
-            elevation: 0,
-            title: const Text('Smart IOT App'),
-            titleSpacing: 47,
-            leadingWidth: 80,
-            toolbarHeight: 80,
-          ),
-          body: _screen[index],
-          bottomNavigationBar: NavigationBarTheme(
-            data: NavigationBarThemeData(
-                indicatorColor: Colors.white,
-                labelTextStyle: MaterialStateProperty.all(const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w500))),
-            child: NavigationBar(
-              height: 60,
-              //               backgroundColor: Colors.amberAccent,
-              labelBehavior:
-                  NavigationDestinationLabelBehavior.onlyShowSelected,
-              selectedIndex: index,
-              animationDuration: const Duration(milliseconds: 500),
-              onDestinationSelected: (index) =>
-                  setState(() => this.index = index),
-              destinations: const [
-                NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: 'Home'),
-                NavigationDestination(
-                    icon: Icon(Icons.history), label: 'History'),
-              ],
-            ),
-          ),
-          drawer: Drawer(
-            child: Material(
-              child: Padding(
-                padding: const EdgeInsets.all(0),
-                child: ListView(
-                  children: [
-                    Builder(
-                      builder: (context) {
-                        accountEmail = account["id"];
-                        accountName = account["name"];
-                        return UserAccountsDrawerHeader(
-                            accountName: Text(accountName,
-                                style: Theme.of(context).textTheme.headline5),
-                            accountEmail: Text(accountEmail));
-                      },
-                    ),
-                    // UserAccountsDrawerHeader(
-                    //     accountName: Text(accountName ?? "Name",
-                    //         style: Theme.of(context).textTheme.headline5),
-                    //     accountEmail: Text(accountEmail ?? "Email",
-                    //         style: Theme.of(context).textTheme.headline6)),
-                    ListTile(
-                      title:
-                          const Text("Profile", style: TextStyle(fontSize: 22)),
-                      isThreeLine: true,
-                      subtitle: const Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
-                      hoverColor: Colors.white70,
-                      onTap: () {},
-                    ),
-
-                    ListTile(
-                      title: const Text(
-                        "Setting",
-                        style: TextStyle(fontSize: 22),
-                      ),
-                      isThreeLine: true,
-                      subtitle: const Text("การตั้งค่าภายในแอพและอื่นๆ"),
-                      hoverColor: Colors.white70,
-                      onTap: () {},
-                    ),
+    return DefaultTextStyle(
+        style: const TextStyle(decoration: TextDecoration.none),
+        child: Material(
+          color: Colors.black,
+          child: DefaultTabController(
+              length: 2,
+              child: Scaffold(
+                appBar: AppBar(
+                  actions: [
+                    IconButton(
+                        onPressed: () => signOutCurrentUser(),
+                        icon: const Icon(Icons.logout))
                   ],
+                  backgroundColor: Colors.amber,
+                  elevation: 0,
+                  title: const Text('Smart IOT App',
+                      style: TextStyle(color: Colors.black)),
+                  titleSpacing: 47,
+                  leadingWidth: 80,
+                  toolbarHeight: 80,
                 ),
-              ),
-            ),
-          ),
+                body: _screen[index],
+                bottomNavigationBar: NavigationBarTheme(
+                  data: NavigationBarThemeData(
+                      indicatorColor: Colors.white,
+                      labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w500))),
+                  child: NavigationBar(
+                    height: 60,
+                    //               backgroundColor: Colors.amberAccent,
+                    labelBehavior:
+                        NavigationDestinationLabelBehavior.onlyShowSelected,
+                    selectedIndex: index,
+                    animationDuration: const Duration(milliseconds: 500),
+                    onDestinationSelected: (index) =>
+                        setState(() => this.index = index),
+                    destinations: const [
+                      NavigationDestination(
+                          icon: Icon(Icons.home_outlined),
+                          selectedIcon: Icon(Icons.home),
+                          label: 'Home'),
+                      NavigationDestination(
+                          icon: Icon(Icons.history), label: 'History'),
+                    ],
+                  ),
+                ),
+                backgroundColor: Color.fromARGB(255, 79, 168, 108),
+                drawer: Drawer(
+                  elevation: 5.0,
+                  child: Material(
+                    child: Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: ListView(
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              accountEmail = account["id"];
+                              accountName = account["name"];
+                              return UserAccountsDrawerHeader(
+                                accountName: Text(accountName,
+                                    style:
+                                        Theme.of(context).textTheme.headline5),
+                                accountEmail: Text(
+                                  accountEmail,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                decoration: BoxDecoration(color: Colors.green),
+                              );
+                            },
+                          ),
+                          // UserAccountsDrawerHeader(
+                          //     accountName: Text(accountName ?? "Name",
+                          //         style: Theme.of(context).textTheme.headline5),
+                          //     accountEmail: Text(accountEmail ?? "Email",
+                          //         style: Theme.of(context).textTheme.headline6)),
+                          ListTile(
+                            title: const Text("Profile",
+                                style: TextStyle(fontSize: 22)),
+                            isThreeLine: true,
+                            subtitle: const Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
+                            hoverColor: Colors.white70,
+                            onTap: () {},
+                          ),
+
+                          ListTile(
+                            title: const Text(
+                              "Setting",
+                              style: TextStyle(fontSize: 22),
+                            ),
+                            isThreeLine: true,
+                            subtitle: const Text("การตั้งค่าภายในแอพและอื่นๆ"),
+                            hoverColor: Colors.white70,
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )),
         ));
   }
 
@@ -205,23 +221,23 @@ class _MainPageState extends State<MainPage> {
 
   Widget _farmCards(Map data) {
     List farms = data["ownedFarm"];
-    var tempText = "";
-    if (utf8.decode(base64.decode(farms[farmInd])).contains("Wait for")) {
-      tempText = "Wait for update";
-    } else {
-      tempText = utf8.decode(base64.decode(farms[farmInd]));
-    }
     return Card(
+      margin: EdgeInsets.all(20),
+      elevation: 5.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            tempText,
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            utf8.decode(base64.decode(farms[farmInd])).contains("Wait for")
+                ? "Wait for update"
+                : utf8.decode(base64.decode(farms[farmInd])),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           TextButton(
-              onPressed: () {},
+              onPressed: () {
+                _displayFarmEditor(context, farms);
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
@@ -241,6 +257,9 @@ class _MainPageState extends State<MainPage> {
             endIndent: 20,
             thickness: 2,
           ),
+          // Auto build device configure button
+          // Send farm name to get devices as a array
+          // Then display text and configure button. `Online` state may be added later.
           ListView.builder(
             itemCount: 1,
             shrinkWrap: true,
@@ -263,6 +282,106 @@ class _MainPageState extends State<MainPage> {
           )
         ],
       ),
+    );
+  }
+
+  _displayFarmEditor(BuildContext context, List farms) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SafeArea(
+            child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.white,
+          padding: const EdgeInsets.all(20),
+          child: Center(
+              child: Column(
+            children: [
+              Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                          child: const Text("Farm Editor",
+                              style: TextStyle(fontSize: 20))),
+                      TextButton(
+                          style: ButtonStyle(
+                              shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(60)))),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "X",
+                            style: TextStyle(fontSize: 20, color: Colors.black),
+                          )),
+                    ]),
+              ),
+              Container(
+                height: 300,
+                width: MediaQuery.of(context).size.width,
+                child: Builder(
+                  builder: (context) {
+                    if (utf8
+                        .decode(base64.decode(farms[farmInd]))
+                        .contains("Wait for")) {
+                      return TextButton(
+                          onPressed: () => Text("Wait for update"),
+                          child: Text("+ Add farms"));
+                    }
+                    return ListView.builder(
+                      itemCount: farms.length,
+                      itemBuilder: (context, index) {
+                        return TextButton(
+                            onPressed: () {
+                              setState(() {
+                                farmInd = index;
+                              });
+                            },
+                            child:
+                                Text(utf8.decode(base64.decode(farms[index]))));
+                      },
+                    );
+                  },
+                ),
+              ),
+              ElevatedButton(
+                  style: ButtonStyle(
+                      minimumSize: MaterialStateProperty.all(
+                          Size(MediaQuery.of(context).size.width - 20, 40)),
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      textStyle:
+                          MaterialStateProperty.all(TextStyle(fontSize: 16))),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "Confirm",
+                    style: TextStyle(color: Colors.black),
+                  )),
+              ElevatedButton(
+                  style: ButtonStyle(
+                      minimumSize: MaterialStateProperty.all(
+                          Size(MediaQuery.of(context).size.width - 20, 40)),
+                      textStyle:
+                          MaterialStateProperty.all(TextStyle(fontSize: 16))),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.black),
+                  ))
+            ],
+          )),
+        ));
+      },
     );
   }
 }

@@ -203,6 +203,8 @@ module.exports.createUser = async (event, context, callback) => {
       FarmUser: User,
       Email: Email,
       OwnedFarm: owned_farm,
+      Role: "user",
+      Permissions: ["WaitForFarmsDataConfirmation","WaitForRoleConfirmation"],
       CreateAt: timestamp
     };
   };
@@ -269,6 +271,8 @@ module.exports.createUserToTable = async (event, context, callback) => {
       FarmUser: User,
       Email: Email,
       OwnedFarm: owned_farm,
+      Role: "user",
+      Permissions: ["WaitForFarmsDataConfirmation","WaitForRoleConfirmation"],
       CreateAt: timestamp
     };
   };
@@ -388,3 +392,7 @@ module.exports.registerDevice = async (event, context, callback) => {
     });
   });
 };
+
+// module.exports.getDeviceByFarm = (event, context, callback) => {
+
+// };

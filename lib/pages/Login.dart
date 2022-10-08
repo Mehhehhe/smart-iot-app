@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -43,8 +45,8 @@ class _LogIn extends State<LogIn> {
 
   @override
   void initState() {
-    _configureAmplify();
     super.initState();
+    _configureAmplify();
   }
 
   @override
@@ -96,12 +98,13 @@ class _LogIn extends State<LogIn> {
               // TODO: Handle this case.
               break;
             case AuthenticatorStep.onboarding:
-              // TODO: Handle this case.
               break;
             case AuthenticatorStep.signUp:
               return _signUpForm(padding, p1);
+              break;
             case AuthenticatorStep.signIn:
               return _signInForm(padding, p1);
+              break;
             case AuthenticatorStep.confirmSignUp:
               // TODO: Handle this case.
               break;
@@ -126,8 +129,6 @@ class _LogIn extends State<LogIn> {
             case AuthenticatorStep.confirmVerifyUser:
               // TODO: Handle this case.
               break;
-            default:
-              return const CircularProgressIndicator();
           }
         },
         // initialStep: AuthenticatorStep.signUp,
@@ -135,17 +136,7 @@ class _LogIn extends State<LogIn> {
           builder: Authenticator.builder(),
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            body: Center(
-              child: FutureBuilder<AuthSession>(
-                future: Amplify.Auth.fetchAuthSession(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data!.isSignedIn) return MainPage();
-                  }
-                  return const CircularProgressIndicator();
-                },
-              ),
-            ),
+            body: MainPage(),
           ),
         ));
   }
