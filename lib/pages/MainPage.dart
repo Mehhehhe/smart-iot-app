@@ -3,6 +3,10 @@ import 'dart:convert';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
 class MainPage extends StatefulWidget {
@@ -80,7 +84,7 @@ class _MainPageState extends State<MainPage> {
     // use getUserList() first to get all users.
     // select a user where name is matched then return id.
     // using this id in parameter of `get_farm_by_id`
-    _screen = [_displayFarmAsCards(), const Text("Second")];
+    _screen = [const farmCard(), const Text("Second")];
     super.initState();
   }
 
@@ -203,12 +207,12 @@ class _MainPageState extends State<MainPage> {
               switch (connection) {
                 case ConnectionState.waiting:
                   return const CircularProgressIndicator();
-                case ConnectionState.active:
-                  Map map = snapshot.data as Map;
-                  return _farmCards(map);
-                case ConnectionState.done:
-                  Map map = snapshot.data as Map;
-                  return _farmCards(map);
+                // case ConnectionState.active:
+                //   Map map = snapshot.data as Map;
+                //   return _farmCards(map);
+                // case ConnectionState.done:
+                //   Map map = snapshot.data as Map;
+                //   return _farmCards(map);
                 default:
                   return const CircularProgressIndicator();
               }
@@ -219,71 +223,93 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _farmCards(Map data) {
-    List farms = data["ownedFarm"];
-    return Card(
-      margin: EdgeInsets.all(20),
-      elevation: 5.0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            utf8.decode(base64.decode(farms[farmInd])).contains("Wait for")
-                ? "Wait for update"
-                : utf8.decode(base64.decode(farms[farmInd])),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          TextButton(
-              onPressed: () {
-                _displayFarmEditor(context, farms);
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.edit),
-                  Text("Change to another farm")
-                ],
-              )),
-          Container(
-            color: Colors.grey,
-            margin: const EdgeInsets.all(10),
-            height: 300,
-            width: MediaQuery.of(context).size.width,
-            child: const Text("Graph"),
-          ),
-          const Divider(
-            indent: 20,
-            endIndent: 20,
-            thickness: 2,
-          ),
-          // Auto build device configure button
-          // Send farm name to get devices as a array
-          // Then display text and configure button. `Online` state may be added later.
-          ListView.builder(
-            itemCount: 1,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return Container(
-                width: MediaQuery.of(context).size.width,
-                margin: const EdgeInsets.all(20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Device_test"),
-                    const Text("Online"),
-                    TextButton(
-                        onPressed: () {}, child: const Text("Configure >")),
-                    const Divider(),
-                  ],
-                ),
-              );
-            },
-          )
-        ],
-      ),
-    );
-  }
+  // Widget _farmCards(Map data) {
+  //   List farms = data["ownedFarm"];
+  //   return Card(
+  //     margin: EdgeInsets.all(20),
+  //     elevation: 5.0,
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         BlocBuilder<FarmCardCubit, FarmCardInitial>(
+  //           builder: (context, state) {
+  //             return Text(
+  //               utf8
+  //                       .decode(base64.decode(farms[state.farmIndex]))
+  //                       .contains("Wait for")
+  //                   ? "Wait for update"
+  //                   : utf8.decode(base64.decode(farms[state.farmIndex])),
+  //               style:
+  //                   const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+  //             );
+  //           },
+  //         ),
+  //         // Text(
+  //         //   utf8.decode(base64.decode(farms[farmInd])).contains("Wait for")
+  //         //       ? "Wait for update"
+  //         //       : utf8.decode(base64.decode(farms[farmInd])),
+  //         //   style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+  //         // ),
+  //         TextButton(
+  //             onPressed: () {
+  //               _displayFarmEditor(context, farms);
+  //             },
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: const [
+  //                 Icon(Icons.edit),
+  //                 Text("Change to another farm")
+  //               ],
+  //             )),
+  //         Container(
+  //           color: Colors.grey,
+  //           margin: const EdgeInsets.all(10),
+  //           height: 300,
+  //           width: MediaQuery.of(context).size.width,
+  //           child: GestureDetector(
+  //             onHorizontalDragUpdate: (details) {
+  //               if (details.delta.dx > 0) {
+  //                 // Choose widget to show
+  //               } else if (details.delta.dx < 0) {
+  //                 // Setting of current widget
+  //               }
+  //             },
+  //           ),
+  //         ),
+
+  //         const Divider(
+  //           indent: 20,
+  //           endIndent: 20,
+  //           thickness: 2,
+  //         ),
+  //         // Auto build device configure button
+  //         // Send farm name to get devices as a array
+  //         // Then display text and configure button. `Online` state may be added later.
+  //         ListView.builder(
+  //           itemCount: 1,
+  //           shrinkWrap: true,
+  //           itemBuilder: (context, index) {
+  //             return Container(
+  //               width: MediaQuery.of(context).size.width,
+  //               margin: const EdgeInsets.all(20),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   const Text("Device_test"),
+  //                   const Text("Online"),
+  //                   TextButton(
+  //                       onPressed: () {}, child: const Text("Configure >")),
+  //                   const Divider(),
+  //                 ],
+  //               ),
+  //             );
+  //           },
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
 
   _displayFarmEditor(BuildContext context, List farms) {
     showGeneralDialog(
@@ -339,11 +365,9 @@ class _MainPageState extends State<MainPage> {
                       itemCount: farms.length,
                       itemBuilder: (context, index) {
                         return TextButton(
-                            onPressed: () {
-                              setState(() {
-                                farmInd = index;
-                              });
-                            },
+                            onPressed: () => context
+                                .read<FarmCardCubit>()
+                                .chooseIndex(index, farms),
                             child:
                                 Text(utf8.decode(base64.decode(farms[index]))));
                       },

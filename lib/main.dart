@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_iot_app/features/mainpage_widget_observer.dart';
 import 'package:smart_iot_app/pages/Login.dart';
 
 // AWS
@@ -16,7 +18,7 @@ import 'Theme/ThemeManager.dart';
 void main() async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
-
+  Bloc.observer = MainPageWidgetObserver();
   // ignore: prefer_function_declarations_over_variables
   // Handler<AwsApiGatewayEvent> farmApiGateway = (context, event) async {
   //   final resp = {

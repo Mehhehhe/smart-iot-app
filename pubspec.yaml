@@ -66,6 +66,11 @@ dependencies:
   amplify_authenticator: ^0.2.0
   aws_lambda_dart_runtime: ^1.1.0
 
+  # Bloc
+  flutter_bloc: 
+  bloc:
+  equatable: 
+
 dev_dependencies:
 
   # The "flutter_lints" package below contains a set of recommended lints to
