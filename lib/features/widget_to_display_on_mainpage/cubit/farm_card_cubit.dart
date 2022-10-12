@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -18,5 +20,25 @@ class FarmCardCubit extends Cubit<FarmCardInitial> {
     var data = await getUserById(res.username);
     //emit(data);
     return data;
+  }
+
+  decodeAndRemovePadding(String encodedFarmName) {
+    var dec = utf8.decode(base64.decode(encodedFarmName));
+    // Check empty farm
+    if (dec.contains("Wait for")) return "Wait for update";
+    // Check padding
+    int countZero = 0;
+    var temp = dec.split('');
+    for (int i = 0; i < temp.length; i++) {
+      if (temp[i].contains('0')) {
+        if (temp[i + 1].contains('0')) {
+          countZero = countZero + 1;
+        } else if (!temp[i + 1].contains('0')) {
+          countZero = countZero + 1;
+          break;
+        }
+      }
+    }
+    return dec.replaceRange(0, countZero, '');
   }
 }

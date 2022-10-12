@@ -1,6 +1,25 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+
+decodeAndRemovePadding(String encodedFarmName) {
+  var dec = utf8.decode(base64.decode(encodedFarmName));
+  // Check empty farm
+  if (dec.contains("Wait for")) return "Wait for update";
+  // Check padding
+  int countZero = 0;
+  var temp = dec.split('');
+  for (int i = 0; i < temp.length; i++) {
+    if (temp[i].contains('0')) {
+      if (temp[i + 1].contains('0')) {
+        countZero = countZero + 1;
+      } else if (!temp[i + 1].contains('0')) {
+        countZero = countZero + 1;
+        break;
+      }
+    }
+  }
+  return dec.replaceRange(0, countZero, '');
+}
 
 class FarmEditor extends StatelessWidget {
   List farm = [];
@@ -30,7 +49,7 @@ class FarmEditor extends StatelessWidget {
             itemCount: farm.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(utf8.decode(base64.decode(farm[index]))),
+                title: Text(decodeAndRemovePadding(farm[index])),
                 selected: true,
                 onTap: () => Navigator.pop(context, index),
               );
