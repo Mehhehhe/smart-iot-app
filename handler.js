@@ -393,6 +393,48 @@ module.exports.registerDevice = async (event, context, callback) => {
   });
 };
 
-// module.exports.getDeviceByFarm = (event, context, callback) => {
+module.exports.getDeviceByID = (event, context, callback) => {
+  const params = {
+    TableName: FarmDeviceTable,
+    Key: {
+      ID: event.pathParameters.ID
+    },
+    ProjectionExpression: "ID, DeviceName"
+  };
 
-// };
+  dynamoDb.get(params).promise().then(
+    result => {
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify(result.Item)
+      };
+      callback(null, response);
+    }).catch((err) => {
+      console.error(err);
+      callback(new Error("Couldn't fetch device"));
+    });
+};
+
+module.exports.getAllDevices = (event, context, callback) => {
+  var params = {
+    TableName: FarmDeviceTable,
+  };
+
+  console.log("Scanning 'DEVICE' table ... ");
+  const onScan = (err, data) => {
+    if(err){
+      console.log("Scan failed. Error: ", JSON.stringify(err, null, 2));
+      callback(err);
+    } else {
+      console.log("Scan success. ");
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({
+          farm: data.Items
+        })
+      });
+    }
+  };
+
+  dynamoDb.scan(params, onScan).promise();
+};

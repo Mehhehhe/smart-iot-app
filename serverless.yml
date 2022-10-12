@@ -140,6 +140,20 @@ functions:
       - http:
           path: /device/register
           method: POST
+  getDeviceByID:
+    handler: handler.getDeviceByID
+    description: Get device by given ID.
+    events:
+      - http:
+          path: /device/in/{ID}
+          method: GET
+  getAllDevices:
+    handler: handler.getAllDevices
+    description: Get all devices.
+    events: 
+      - http:
+          path: /device/all
+          method: GET
 
 resources:
   Resources:
