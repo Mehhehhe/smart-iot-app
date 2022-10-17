@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 int farmIndex = 0;
 
@@ -14,6 +15,8 @@ class farmCardView extends StatefulWidget {
 }
 
 class _farmCardViewState extends State<farmCardView> {
+  static late MQTTClientWrapper client;
+
   void onIndexSelection(dynamic index) {
     setState(() {
       farmIndex = index;
@@ -23,11 +26,17 @@ class _farmCardViewState extends State<farmCardView> {
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      client = MQTTClientWrapper();
+      client.prepareMqttClient();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
+    client.client.disconnect();
   }
 
   @override

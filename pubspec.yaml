@@ -65,6 +65,8 @@ dependencies:
   amplify_auth_cognito: ^0.6.0
   amplify_authenticator: ^0.2.0
   aws_lambda_dart_runtime: ^1.1.0
+  sigv4:
+  typed_data:
 
   # Bloc
   flutter_bloc: 
@@ -101,6 +103,7 @@ flutter:
     - assets/images/bg_setting.jpg
     - assets/images/bg_contact.jpg
     - assets/saves/history.txt
+    - assets/certificates/
     # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
