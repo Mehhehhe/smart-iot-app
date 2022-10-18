@@ -12,7 +12,9 @@ const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
-const MY_NAMESPACE = "578c1580-f296-4fef-8ecf-dc5b1bc31586";
+var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com'});
+
+// const MY_NAMESPACE = "578c1580-f296-4fef-8ecf-dc5b1bc31586";
 
 // Encode Function
 function encode(msg){
@@ -437,4 +439,63 @@ module.exports.getAllDevices = (event, context, callback) => {
   };
 
   dynamoDb.scan(params, onScan).promise();
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// MQTT: manage mqtt-related functions
+
+module.exports.liveDataHandler = (event, context, callback) => {
+  // Check if request is sent through json.
+  if(event.RequestConfirm == null || event.RequestConfirm == undefined || event.RequestConfirm == ""){
+    console.log("Suspicious request. Type: ", typeof event.Request);
+    return Error("Unexpected request.");
+  }
+
+  if(event.topic == null || event.topic == undefined || typeof event.topic !== 'string'){
+    console.log("Something went wrong with topic. ", event.topic);
+    return Error("Unexpected at topic");
+  }
+  
+  // Fetch data from topic
+
+  // Separate a topic to get farm name and device
+  let splitStr = event.topic.split("/");
+  var farmName = splitStr[0];
+  var targetDevice = splitStr[1];
+
+  // 1. Connect to dynamoDB 
+  // 2. Select columns from given device
+  var params = {
+    TableName: farmName,
+    Key: {
+      ID: targetDevice
+    },
+    ProjectionExpression: "Data"
+  };
+
+  var data = dynamoDb.get(params).promise().then(
+    result => {
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify(result.Item)
+      };
+      callback(null, response);
+    }).catch((err) => {
+      console.error(err);
+      callback(new Error("Couldn't fetch live data from given device"));
+    });
+
+  var paramsResponse = {
+    topic: farmName+'/'+targetDevice+'/'+'data/live',
+    payload: JSON.stringify(data),
+    qos: 1
+  };
+  
+  return iotdata.publish(paramsResponse, function(err, data){
+    if(err){
+      console.log("ERROR: "+JSON.stringify(err));
+    } else {
+      console.log("Success!");
+    }
+  }).promise();
 };

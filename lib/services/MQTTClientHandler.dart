@@ -1,5 +1,6 @@
 // import 'dart:async';
 // import 'dart:io';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
@@ -34,13 +35,12 @@ class MQTTClientWrapper {
     _publishMessage('Hello');
   }
 
-  Future<Stream<String>> subscribeToResponse() async {
+  Future<Stream<String>> subscribeToOneResponse(
+      String farmName, String deviceName) async {
     String msgToReturn = "";
-    // Subscribe to get response for once from data in Node-RED
-    client.subscribe("liveDataResponse", MqttQos.atLeastOnce);
-    // Send message to topic "liveData" for requesting data response.
-    // response will be sent through topic "liveDataResponse" which was subscribed.
-    _publishMessage("requestLiveData", "liveData");
+    client.subscribe("$farmName/$deviceName/data/live", MqttQos.atLeastOnce);
+    _publishMessage(
+        json.encode({"request": "true"}), "$farmName/$deviceName/data/request");
     // Initialize for updates of data
     subscription = client.updates!;
 

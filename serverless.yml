@@ -154,6 +154,13 @@ functions:
       - http:
           path: /device/all
           method: GET
+  liveDataHandler:
+    handler: handler.liveDataHandler
+    description: handle a request from topic and send back to application
+    events:
+      - http:
+          path: /liveData
+          method: POST
 
 resources:
   Resources:
