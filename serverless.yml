@@ -62,6 +62,7 @@ provider:
             - dynamodb:Scan
             - dynamodb:GetItem
             - dynamodb:PutItem
+            - dynamodb:CreateTable
           Resource: 
             - "Fn::GetAtt": [FarmDynamoDbTable, Arn]
             - "Fn::GetAtt": [FarmUserDynamoDbTable, Arn]
@@ -160,6 +161,20 @@ functions:
     events:
       - http:
           path: /liveData
+          method: POST
+  createFarmAsTable:
+    handler: handler.createFarmAsTable
+    description: (For web only!) Create a farm table which used for logging live data for each device.
+    events:
+      - http:
+          path: /farm/create_as_table
+          method: POST
+  writeDataFromIOT:
+    handler: handler.writeDataFromIOT
+    description: Handle write and update of value from iot device in the farm table
+    events:
+      - http:
+          path: /farm/write
           method: POST
 
 resources:

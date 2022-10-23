@@ -468,7 +468,7 @@ module.exports.liveDataHandler = (event, context, callback) => {
   var params = {
     TableName: farmName,
     Key: {
-      ID: targetDevice
+      DeviceID: targetDevice
     },
     ProjectionExpression: "Data"
   };
@@ -498,4 +498,139 @@ module.exports.liveDataHandler = (event, context, callback) => {
       console.log("Success!");
     }
   }).promise();
+};
+
+module.exports.createFarmAsTable = (event, context, callback) => {
+  const params = {
+    AttributeDefinitions: [
+      {
+        AttributeName: 'DeviceID',
+        AttributeType: 'S'
+      }
+    ],
+    KeySchema: [
+      {
+        AttributeName: 'DeviceID',
+        KeyType: 'HASH',
+      }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    },
+    TableName: event.farmName,
+    StreamSpecification: {
+      StreamEnabled: false
+    }
+  };
+  var ddb = new AWS.DynamoDB();
+  ddb.createTable(params, function(err, data){
+    if(err) {
+      console.log("Error: ", err);
+    } else {
+      console.log("Success => ", data);
+    }
+  })
+};
+
+module.exports.writeDataFromIOT = async (event, context, callback) => {
+  // const DeviceName = event.device;
+  // const DeviceType = event.type;
+  // const DeviceSerial = event.serialNumber;
+  
+  // const FarmName = event.farmName;
+
+  // Separate a topic to get farm name and device
+  let splitStr = event.topic.split("/");
+  var farmName = splitStr[0];
+  var targetDevice = splitStr[1];
+
+  const deviceInfo = (DeviceSerial, DeviceState, FarmName) => {
+    const timestamp = new Date().getTime();
+    return {
+      DeviceID: DeviceSerial,
+      DeviceState: DeviceState,
+      Location: FarmName,
+      DeviceValue: [
+        {
+          "Value": event.payload.Data,
+          "TimeStamp": timestamp,
+          "State": DeviceState
+        }],
+    };
+  };
+
+  // Condition check here!
+  // Case 1: if data was not in table, do `put`
+  // Case 2: if data was already  in the table, do `update`
+  var noData = false;
+  var paramsDeviceInFarm = {
+    TableName: farmName,
+    Key: {
+      DeviceID: targetDevice
+    },
+    ProjectionExpression: "DeviceID, DeviceValue"
+  };
+  var currentData = dynamoDb.get(paramsDeviceInFarm).promise().then(
+    result => {
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify(result.Item)
+      };
+      noData = false;
+      // callback(null, response);
+    }).catch((err) => {
+      console.error(err);
+      noData = true;
+      // callback(new Error("Couldn't fetch data from given params"));
+    });
+
+  const submitDevice = device => {
+    console.log("Submitting device data ... :noData = ", noData);
+    if(!noData){
+      console.log(targetDevice);
+      console.log(farmName);
+    }
+    console.log(device["DeviceValue"]);
+    const deviceInfo = {
+      TableName: farmName,
+      Item: device
+    };
+    const deviceUpdateInfo = {
+      TableName: farmName,
+      Key: {
+        DeviceID: targetDevice
+      },
+      UpdateExpression: "SET #attrName = list_append(#attrName, :attrValue)",
+      ExpressionAttributeNames: {
+        "#attrName": "DeviceValue"
+      },
+      ExpressionAttributeValues:{
+        ":attrValue": device["DeviceValue"]
+      },
+      ReturnValues: "ALL_NEW"
+    };
+    if(noData == true)
+    {
+      console.log("data not found");
+      return dynamoDb.put(deviceInfo).promise().then(res => device);
+    }
+    else{
+      console.log("update");
+      return dynamoDb.update(deviceUpdateInfo).promise().then(res => device);
+    }
+      
+  };
+
+  await submitDevice(deviceInfo(targetDevice, event.DeviceState, event.DeviceLocation)).then(res => {
+    callback(null, event)
+  }).catch(err => {
+    console.log(err);
+    callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Unable to write device's data"
+      })
+    });
+  });
 };
