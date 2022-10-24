@@ -39,8 +39,8 @@ class MQTTClientWrapper {
       String farmName, String deviceName) async {
     String msgToReturn = "";
     client.subscribe("$farmName/$deviceName/data/live", MqttQos.atLeastOnce);
-    _publishMessage(
-        json.encode({"request": "true"}), "$farmName/$deviceName/data/request");
+    _publishMessage(json.encode({"RequestConfirm": "true"}),
+        "$farmName/$deviceName/data/request");
     // Initialize for updates of data
     subscription = client.updates!;
 
