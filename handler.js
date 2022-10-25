@@ -3,6 +3,7 @@
 // Set up libraries
 //const uuid = require('uuid');
 const AWS = require('aws-sdk');
+// const AwsIoT = require('aws-iot-device-sdk');
 const crypto = require('crypto');
 
 // AWS.config.setPromisesDependency(require('bluebird'));
@@ -12,8 +13,15 @@ const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
-var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com'});
-
+var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
+// var awsIoT = AwsIoT.device({
+//   clientId: crypto.randomUUID(),
+//   host: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com',
+//   port: 8883,
+//   keyPath: './assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-private.pem.key',
+//   certPath: './assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-certificate.pem.crt',
+//   caPath: './assets/certificates/AmazonRootCA1.pem',
+// });
 // const MY_NAMESPACE = "578c1580-f296-4fef-8ecf-dc5b1bc31586";
 
 // Encode Function
@@ -444,7 +452,7 @@ module.exports.getAllDevices = (event, context, callback) => {
 //////////////////////////////////////////////////////////////////////////////
 // MQTT: manage mqtt-related functions
 
-module.exports.liveDataHandler = (event, context, callback) => {
+module.exports.liveDataHandler = async (event, context, callback) => {
   // Check if request is sent through json.
   if(event.RequestConfirm == null || event.RequestConfirm == undefined || event.RequestConfirm == ""){
     console.log("Suspicious request. Type: ", typeof event.Request);
@@ -455,7 +463,7 @@ module.exports.liveDataHandler = (event, context, callback) => {
     console.log("Something went wrong with topic. ", event.topic);
     return Error("Unexpected at topic");
   }
-  
+  console.log(JSON.stringify(event));
   // Fetch data from topic
 
   // Separate a topic to get farm name and device
@@ -470,34 +478,46 @@ module.exports.liveDataHandler = (event, context, callback) => {
     Key: {
       DeviceID: targetDevice
     },
-    ProjectionExpression: "Data"
+    ProjectionExpression: "DeviceValue"
   };
-
-  var data = dynamoDb.get(params).promise().then(
-    result => {
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify(result.Item)
-      };
-      callback(null, response);
-    }).catch((err) => {
-      console.error(err);
-      callback(new Error("Couldn't fetch live data from given device"));
-    });
-
+  // var temp = {};
+  const data = await dynamoDb.get(params).promise();
+  // const data = await dynamoDb.get(params).promise().then(
+  //   result => {
+  //     const response = {
+  //       statusCode: 200,
+  //       body: JSON.stringify(result.Item)
+  //     };
+  //     console.log(response);
+  //     // temp = response;
+  //     callback(null, response);
+  //     // return response;
+  //   }).catch((err) => {
+  //     console.error(err);
+  //     callback(new Error("Couldn't fetch live data from given device"));
+  //   });
+    // console.log("temp: ", temp);
   var paramsResponse = {
     topic: farmName+'/'+targetDevice+'/'+'data/live',
     payload: JSON.stringify(data),
     qos: 1
   };
-  
-  return iotdata.publish(paramsResponse, function(err, data){
+  const pub = iotdata.publish(paramsResponse);
+  pub.on('success', ()=>console.log("success")).on('error', ()=>console.log("error"));
+  return new Promise(() => pub.send(function(err, data){
     if(err){
-      console.log("ERROR: "+JSON.stringify(err));
+      console.log(err);
     } else {
-      console.log("Success!");
+      console.log(data);
     }
-  }).promise();
+  }));
+  // return iotdata.publish(paramsResponse, function(err, data){
+  //   if(err){
+  //     console.log("ERROR: "+JSON.stringify(err));
+  //   } else {
+  //     console.log("Success!"+JSON.stringify(data));
+  //   }
+  // }).promise();
 };
 
 module.exports.createFarmAsTable = (event, context, callback) => {
