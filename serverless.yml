@@ -155,6 +155,13 @@ functions:
       - http:
           path: /device/all
           method: GET
+  getDevicesByFarmName:
+    handler: handler.getDevicesByFarmName
+    description: Get devices of target farm
+    events:
+      - http:
+          path: /device/getByFarm
+          method: POST
   liveDataHandler:
     handler: handler.liveDataHandler
     description: handle a request from topic and send back to application

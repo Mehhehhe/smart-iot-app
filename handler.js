@@ -449,6 +449,22 @@ module.exports.getAllDevices = (event, context, callback) => {
   dynamoDb.scan(params, onScan).promise();
 };
 
+module.exports.getDevicesByFarmName = (event, context, callback) => {
+  var raw = this.getAllDevices();
+  var targetList = [];
+  raw.farm.forEach((device) => {
+    if(device.Location == event.DeviceLocation){
+      targetList.push(device);
+    }
+  });
+  return callback(null, {
+    statusCode: 200,
+    body: JSON.stringify({
+      Devices: targetList
+    })
+  })
+};
+
 //////////////////////////////////////////////////////////////////////////////
 // MQTT: manage mqtt-related functions
 
@@ -476,12 +492,21 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   var params = {
     TableName: farmName,
     Key: {
-      DeviceID: targetDevice
+      "DeviceID": targetDevice
     },
-    ProjectionExpression: "DeviceValue"
+    ProjectionExpression: "DeviceValue",
   };
   // var temp = {};
   const data = await dynamoDb.get(params).promise();
+
+  // Query latest 10 items
+  // const data = await dynamoDb.query(params).promise();
+  var itemToReturn = {"LatestItems":[]};
+  if(data.Item["DeviceValue"].length >= 10){
+    itemToReturn.LatestItems = data.Item.slice(data.Item["DeviceValue"].length - 10, data.Item["DeviceValue"].length);
+  } else {
+    itemToReturn.LatestItems = data.Item["DeviceValue"];
+  }
   // const data = await dynamoDb.get(params).promise().then(
   //   result => {
   //     const response = {
@@ -497,9 +522,15 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   //     callback(new Error("Couldn't fetch live data from given device"));
   //   });
     // console.log("temp: ", temp);
+  console.log("[itemToReturn] :===> PASSED");
+  console.log(itemToReturn.LatestItems);
+
+  // itemToReturn.LatestItems = itemToReturn.LatestItems.map((item) => JSON.stringify(item));
+
+  // console.log("Test joining ===> ", itemToReturn.LatestItems.join(","));
   var paramsResponse = {
     topic: farmName+'/'+targetDevice+'/'+'data/live',
-    payload: JSON.stringify(data),
+    payload: JSON.stringify(itemToReturn.LatestItems),
     qos: 1
   };
   const pub = iotdata.publish(paramsResponse);
