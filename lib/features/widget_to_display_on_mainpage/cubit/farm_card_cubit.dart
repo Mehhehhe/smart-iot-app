@@ -41,4 +41,22 @@ class FarmCardCubit extends Cubit<FarmCardInitial> {
     }
     return dec.replaceRange(0, countZero, '');
   }
+
+  // fetch data for plotting graph
+  prepareDataForGraph(
+      Stream<String> mqttFetchData, List<dynamic> chartToAdded, dynamic _obj) {
+    Stream<String> rawData = mqttFetchData;
+    rawData.forEach((element) {
+      var sv = json.decode(element);
+      Map jsonSV = Map<String, dynamic>.from(sv);
+      // access Items
+      List<Map> data = jsonSV["Items"]["DeviceValue"];
+      data.forEach((element) {
+        var ts = DateTime.fromMillisecondsSinceEpoch(element["TimeStamp"]);
+        var v = element["value"];
+        chartToAdded.add(_obj(ts, v));
+      });
+    });
+    return chartToAdded;
+  }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -6,12 +7,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
+import 'package:smart_iot_app/services/lambdaCaller.dart';
+
+import 'graph_in_farm_card.dart';
 
 int farmIndex = 0;
 List mainWidgetDisplay = ["graph", "numbers", "report"];
-int defaultMainDisplay = 0;
+int defaultMainDisplay = 10;
 
 class farmCardView extends StatefulWidget {
   farmCardView({Key? key}) : super(key: key);
@@ -21,15 +27,48 @@ class farmCardView extends StatefulWidget {
 
 class _farmCardViewState extends State<farmCardView> {
   static late MQTTClientWrapper client;
+  List devices = [];
+  List devList = [];
+  var exposedLoc = "";
+  // Data stream
+  static Stream<String> dataResponse = const Stream<String>.empty();
+  bool enableGraph = false;
+  late Timer timer;
 
-  // bool _showFrontCard = true;
-  // GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
   late FlipCardController _controller;
+
+  _farmCardViewState() {
+    timer = Timer.periodic(const Duration(seconds: 10), periodicallyFetch);
+  }
 
   void onIndexSelection(dynamic index) {
     setState(() {
       farmIndex = index;
     });
+  }
+
+  void onDeviceSelection(List ind) async {
+    var loc = devices[0]["Location"];
+    setState(() {
+      enableGraph = true;
+      exposedLoc = loc;
+      devList = ind;
+    });
+  }
+
+  void periodicallyFetch(Timer timer) async {
+    if (enableGraph) {
+      var temp = await client.subscribeToOneResponse(exposedLoc, devList);
+      setState(() {
+        dataResponse = temp;
+      });
+    }
+  }
+
+  // var devicesToList = (farm) async => await getDevicesByFarmName(farm);
+  devicesToList(farm) async {
+    var temp_devices = await getDevicesByFarmName(farm);
+    devices = temp_devices;
   }
 
   @override
@@ -39,17 +78,16 @@ class _farmCardViewState extends State<farmCardView> {
     setState(() {
       client = MQTTClientWrapper();
       client.prepareMqttClient();
+      _controller = FlipCardController();
     });
-    _controller = FlipCardController();
-    _controller.hint(
-        duration: Duration(milliseconds: 500),
-        total: Duration(milliseconds: 500));
   }
 
   @override
   void dispose() {
     super.dispose();
     client.client.disconnect();
+    devices.clear();
+    enableGraph = false;
   }
 
   @override
@@ -68,25 +106,10 @@ class _farmCardViewState extends State<farmCardView> {
                 Map dataMap = Map.from(snapshot.data as Map);
                 return FlipCard(
                     controller: _controller,
+                    flipOnTouch: false,
+                    onFlipDone: (isFront) => print(isFront),
                     front: farmAsCard(context, dataMap["OwnedFarm"]),
                     back: farmCardRear());
-              // return GestureDetector(
-              //   onTap: () => setState(() {
-              //     _showFrontCard = !_showFrontCard;
-              //   }),
-              //   child: AnimatedSwitcher(
-              //       duration: Duration(milliseconds: 200),
-              //       transitionBuilder: __transitionBuilder,
-              //       layoutBuilder: (currentChild, previousChildren) => Stack(
-              //             children: [currentChild!, ...previousChildren],
-              //           ),
-              //       switchInCurve: Curves.easeInBack,
-              //       switchOutCurve: Curves.easeInBack.flipped,
-              //       child: _showFrontCard
-              //           ? farmAsCard(context, dataMap["OwnedFarm"])
-              //           : farmCardRear()),
-              // );
-              // return farmAsCard(context, dataMap["OwnedFarm"]);
               default:
                 break;
             }
@@ -113,6 +136,10 @@ class _farmCardViewState extends State<farmCardView> {
                     "state index: ${state.farmIndex} , farm index: $farmIndex");
                 if (state.farmIndex == farmIndex) {
                   print("Created within condition");
+                  devicesToList(context
+                      .read<FarmCardCubit>()
+                      .decodeAndRemovePadding(data[state.farmIndex]));
+                  print(devices);
                   return Text(
                       context
                           .read<FarmCardCubit>()
@@ -121,6 +148,10 @@ class _farmCardViewState extends State<farmCardView> {
                           fontSize: 28, fontWeight: FontWeight.bold));
                 }
                 print("Created out of condition");
+                devicesToList(context
+                    .read<FarmCardCubit>()
+                    .decodeAndRemovePadding(data[farmIndex]));
+                print(devices);
                 return Text(
                     context
                         .read<FarmCardCubit>()
@@ -145,12 +176,26 @@ class _farmCardViewState extends State<farmCardView> {
                     Text("Change to another farm")
                   ],
                 )),
-            Container(
+            if (defaultMainDisplay > 2 || defaultMainDisplay < 0)
+              Container(
                 height: 300,
                 width: MediaQuery.of(context).size.width - 10,
                 margin: EdgeInsets.all(10),
-                color: Colors.blueGrey,
-                child: Text("Display builder here based on buttons")),
+              ),
+            // Chart
+            if (defaultMainDisplay == 0)
+              Container(
+                height: 300,
+                width: MediaQuery.of(context).size.width,
+                margin: EdgeInsets.all(10),
+                child: BlocProvider(
+                  create: (_) => LiveDataCubit(),
+                  child: LiveChart(
+                    devices: dataResponse,
+                    type: 'line',
+                  ),
+                ),
+              ),
             Text("What to be display ?"),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -194,16 +239,22 @@ class _farmCardViewState extends State<farmCardView> {
                 Column(
                   children: [
                     IconButton(
-                        onPressed: () => setState(() {
-                              // _showFrontCard = !_showFrontCard;
-                              _controller.toggleCard();
-                            }),
+                        onPressed: () => _controller.toggleCard(),
                         icon: Icon(Icons.keyboard_double_arrow_right)),
                     Text("More"),
                   ],
                 ),
               ],
-            )
+            ),
+            TextButton(
+                onPressed: () async {
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DeviceSelector(devices: devices),
+                      )).then((value) => onDeviceSelection(value));
+                },
+                child: Text("Choose devices ..."))
           ]),
     );
   }
@@ -222,6 +273,22 @@ class _farmCardViewState extends State<farmCardView> {
               width: MediaQuery.of(context).size.width,
               height: 300,
               child: Text("Test"),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      IconButton(
+                          onPressed: () => _controller.toggleCard(),
+                          icon: Icon(Icons.keyboard_return)),
+                      Text("Return"),
+                    ],
+                  ),
+                ),
+              ],
             )
           ]),
     );
