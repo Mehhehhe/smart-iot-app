@@ -12,6 +12,7 @@ Map<String, dynamic> _urlMap = {
   "create_farm": Uri.https(_farmApi, '/dev/farm/create'),
   "user_list": Uri.https(_farmApi, '/dev/user/list/all'),
   "get_user_by_id": '/dev/user/get/',
+  "get_devices_by_farm": '/dev/device/getByFarm'
 };
 
 /// ## `fetchFarmList()`
@@ -84,4 +85,15 @@ getUserById(String id) async {
   return response.statusCode == 200
       ? jsonDecode(response.body)
       : Exception(response.body);
+}
+
+Future<List> getDevicesByFarmName(String farm) async {
+  print("Recv: $farm");
+  var postCont = await http.post(
+      Uri.https(_farmApi, _urlMap["get_devices_by_farm"]),
+      body: json.encode({"DeviceLocation": farm}));
+  print("Post body GET: ${postCont.body}");
+  return postCont.statusCode == 200
+      ? jsonDecode(postCont.body)
+      : Exception(postCont.body);
 }
