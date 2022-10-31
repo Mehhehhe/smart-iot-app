@@ -36,11 +36,27 @@ class MQTTClientWrapper {
   }
 
   Future<Stream<String>> subscribeToOneResponse(
-      String farmName, String deviceName) async {
+      String farmName, dynamic deviceName) async {
     String msgToReturn = "";
-    client.subscribe("$farmName/$deviceName/data/live", MqttQos.atLeastOnce);
-    _publishMessage(json.encode({"RequestConfirm": "true"}),
-        "$farmName/$deviceName/data/request");
+    Type typeCheck = deviceName.runtimeType;
+
+    switch (typeCheck) {
+      case String:
+        client.subscribe(
+            "$farmName/$deviceName/data/live", MqttQos.atLeastOnce);
+        _publishMessage(json.encode({"RequestConfirm": "true"}),
+            "$farmName/$deviceName/data/request");
+        break;
+      case List:
+        deviceName.forEach((device) {
+          client.subscribe("$farmName/$device/data/live", MqttQos.atLeastOnce);
+          _publishMessage(json.encode({"RequestConfirm": "true"}),
+              "$farmName/$device/data/request");
+        });
+        break;
+      default:
+    }
+
     // Initialize for updates of data
     subscription = client.updates!;
 
