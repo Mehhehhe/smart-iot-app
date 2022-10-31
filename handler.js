@@ -449,20 +449,55 @@ module.exports.getAllDevices = (event, context, callback) => {
   dynamoDb.scan(params, onScan).promise();
 };
 
-module.exports.getDevicesByFarmName = (event, context, callback) => {
-  var raw = this.getAllDevices();
-  var targetList = [];
-  raw.farm.forEach((device) => {
-    if(device.Location == event.DeviceLocation){
-      targetList.push(device);
+module.exports.getDevicesByFarmName = async (event, context, callback) => {
+  console.log("GET ", event);
+  var transData = JSON.parse(event.body);
+  const loc = transData.DeviceLocation;
+  console.log("location:=",loc);
+  console.log("From body: ", event.body);
+  var params = {
+    TableName: FarmDeviceTable,
+  };
+
+  console.log("Scanning 'DEVICE' table ... ");
+  // const onScan = (err, data) => {
+  //   if(err){
+  //     console.log("Scan failed. Error: ", JSON.stringify(err, null, 2));
+  //     callback(err);
+  //   } else {
+  //     console.log("Scan success. ");
+  //     return callback(null, {
+  //       statusCode: 200,
+  //       body: JSON.stringify({
+  //         farm: data.Items
+  //       })
+  //     });
+  //   }
+  // };
+
+  const raw = await dynamoDb.scan(params).promise();
+  var listToReturn = {"Devices":[]};
+  // raw.farm.forEach((device) => {
+  //   console.log(device);
+  //   if(device.Location == event.DeviceLocation){
+  //     targetList.push(device);
+  //   }
+  // });
+  console.log("scanned: ", raw);
+  // console.log(event.DeviceLocation);
+  raw.Items.forEach((device, index, arr) => {
+    console.log(device);
+    if(device.Location == loc){
+      console.log(device, index);
+      listToReturn.Devices[index] = device;
+      console.log("Inside forEach :=>",listToReturn);
     }
   });
+  console.log(listToReturn);
   return callback(null, {
     statusCode: 200,
-    body: JSON.stringify({
-      Devices: targetList
-    })
-  })
+    body: JSON.stringify(listToReturn.Devices)
+  });
 };
 
 //////////////////////////////////////////////////////////////////////////////
