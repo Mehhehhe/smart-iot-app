@@ -11,6 +11,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
@@ -18,7 +19,7 @@ import 'graph_in_farm_card.dart';
 
 int farmIndex = 0;
 List mainWidgetDisplay = ["graph", "numbers", "report"];
-int defaultMainDisplay = 10;
+int defaultMainDisplay = 0;
 
 class farmCardView extends StatefulWidget {
   farmCardView({Key? key}) : super(key: key);
@@ -90,6 +91,22 @@ class _farmCardViewState extends State<farmCardView> {
   devicesToList(farm) async {
     var temp_devices = await getDevicesByFarmName(farm);
     devices = temp_devices;
+  }
+
+  List<ChartData> transformFromRawData(List<String> inputData) {
+    var tempChartList = [ChartData(DateTime.now(), 0.0)];
+    for (var element in inputData) {
+      var elm = json.decode(element);
+      print("Element: $elm");
+      for (var elsup in elm) {
+        var subelm = Map<String, dynamic>.from(elsup);
+        tempChartList.add(ChartData(
+            DateTime.fromMillisecondsSinceEpoch(subelm["TimeStamp"]),
+            double.parse(subelm["Value"])));
+      }
+    }
+    tempChartList.removeAt(0);
+    return tempChartList;
   }
 
   @override
@@ -214,7 +231,8 @@ class _farmCardViewState extends State<farmCardView> {
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.all(10),
                 child: BlocProvider(
-                  create: (_) => LiveDataCubit(),
+                  create: (_) => LiveDataCubit(
+                      dataResponse, transformFromRawData(dataResponse)),
                   child: LiveChart(
                     devices: dataResponse,
                     type: 'line',
