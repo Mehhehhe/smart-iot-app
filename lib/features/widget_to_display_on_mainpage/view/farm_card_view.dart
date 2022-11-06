@@ -6,6 +6,7 @@ import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
@@ -26,19 +27,25 @@ class farmCardView extends StatefulWidget {
 }
 
 class _farmCardViewState extends State<farmCardView> {
-  static late MQTTClientWrapper client;
+  MQTTClientWrapper client = MQTTClientWrapper();
   List devices = [];
   List devList = [];
   var exposedLoc = "";
+  String tempLoc = "";
   // Data stream
-  static Stream<String> dataResponse = const Stream<String>.empty();
+  List<String> dataResponse = [];
   bool enableGraph = false;
+  bool isLoaded = false;
   late Timer timer;
 
-  late FlipCardController _controller;
+  FlipCardController _controller = FlipCardController();
 
   _farmCardViewState() {
-    timer = Timer.periodic(const Duration(seconds: 10), periodicallyFetch);
+    print("Start timer");
+    if (isLoaded) {
+      Timer.run(() => periodicallyFetch);
+    }
+    timer = Timer.periodic(const Duration(seconds: 15), periodicallyFetch);
   }
 
   void onIndexSelection(dynamic index) {
@@ -56,13 +63,27 @@ class _farmCardViewState extends State<farmCardView> {
     });
   }
 
-  void periodicallyFetch(Timer timer) async {
-    if (enableGraph) {
-      var temp = await client.subscribeToOneResponse(exposedLoc, devList);
+  void setDataListener() {
+    client
+        .getMessageStream()!
+        .listen((List<MqttReceivedMessage<MqttMessage>>? c) {
+      final recMess = c![0].payload as MqttPublishMessage;
+      final pt =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       setState(() {
-        dataResponse = temp;
+        if (!dataResponse.contains(pt)) {
+          dataResponse.add(pt);
+        }
       });
-    }
+    });
+  }
+
+  void periodicallyFetch(Timer timer) async {
+    print("\nStatus sub: $tempLoc, $devices\n");
+    setState(() {
+      client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
+          devList.isEmpty ? devices : devList);
+    });
   }
 
   // var devicesToList = (farm) async => await getDevicesByFarmName(farm);
@@ -73,19 +94,18 @@ class _farmCardViewState extends State<farmCardView> {
 
   @override
   void initState() {
+    client.prepareMqttClient();
+    setDataListener();
     super.initState();
-
     setState(() {
-      client = MQTTClientWrapper();
-      client.prepareMqttClient();
-      _controller = FlipCardController();
+      isLoaded = true;
     });
   }
 
   @override
   void dispose() {
     super.dispose();
-    client.client.disconnect();
+    client.disconnect();
     devices.clear();
     enableGraph = false;
   }
@@ -134,12 +154,15 @@ class _farmCardViewState extends State<farmCardView> {
               builder: (context, state) {
                 print(
                     "state index: ${state.farmIndex} , farm index: $farmIndex");
+
                 if (state.farmIndex == farmIndex) {
-                  print("Created within condition");
+                  // print("Created within condition");
                   devicesToList(context
                       .read<FarmCardCubit>()
                       .decodeAndRemovePadding(data[state.farmIndex]));
-                  print(devices);
+                  // print(devices);
+                  tempLoc = FarmCardCubit()
+                      .decodeAndRemovePadding(data[state.farmIndex]);
                   return Text(
                       context
                           .read<FarmCardCubit>()
@@ -147,11 +170,13 @@ class _farmCardViewState extends State<farmCardView> {
                       style: const TextStyle(
                           fontSize: 28, fontWeight: FontWeight.bold));
                 }
-                print("Created out of condition");
+                // print("Created out of condition");
                 devicesToList(context
                     .read<FarmCardCubit>()
                     .decodeAndRemovePadding(data[farmIndex]));
-                print(devices);
+                // print(devices);
+                tempLoc =
+                    FarmCardCubit().decodeAndRemovePadding(data[farmIndex]);
                 return Text(
                     context
                         .read<FarmCardCubit>()
@@ -272,7 +297,21 @@ class _farmCardViewState extends State<farmCardView> {
             Container(
               width: MediaQuery.of(context).size.width,
               height: 300,
-              child: Text("Test"),
+              child: Text("Display sensor's value here"),
+            ),
+            Container(
+              child: Builder(
+                builder: (context) {
+                  print(dataResponse);
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: dataResponse.length,
+                    itemBuilder: (context, index) {
+                      return Text(dataResponse[index]);
+                    },
+                  );
+                },
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,

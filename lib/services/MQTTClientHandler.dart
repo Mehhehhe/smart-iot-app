@@ -35,8 +35,7 @@ class MQTTClientWrapper {
     _publishMessage('Hello');
   }
 
-  Future<Stream<String>> subscribeToOneResponse(
-      String farmName, dynamic deviceName) async {
+  void subscribeToOneResponse(String farmName, dynamic deviceName) async {
     String msgToReturn = "";
     Type typeCheck = deviceName.runtimeType;
 
@@ -48,36 +47,34 @@ class MQTTClientWrapper {
             "$farmName/$deviceName/data/request");
         break;
       case List:
+        print("Activated for List type");
         deviceName.forEach((device) {
-          client.subscribe("$farmName/$device/data/live", MqttQos.atLeastOnce);
-          _publishMessage(json.encode({"RequestConfirm": "true"}),
-              "$farmName/$device/data/request");
+          print("Inside device list: [CheckType] => ${device.runtimeType}");
+          if (device.runtimeType == Map) {
+            print("$device , type=${device.runtimeType}");
+            client.subscribe("$farmName/${device["DeviceName"]}/data/live",
+                MqttQos.atLeastOnce);
+            _publishMessage(json.encode({"RequestConfirm": "true"}),
+                "$farmName/${device["DeviceName"]}/data/request");
+          } else if (device.runtimeType == String) {
+            print("$device , type=${device.runtimeType}");
+            client.subscribe(
+                "$farmName/${device}/data/live", MqttQos.atLeastOnce);
+            _publishMessage(json.encode({"RequestConfirm": "true"}),
+                "$farmName/${device}/data/request");
+          } else {
+            final map = Map<String, dynamic>.from(device);
+            print("$map , type=${map.runtimeType}");
+            client.subscribe("$farmName/${map["SerialNumber"]}/data/live",
+                MqttQos.atLeastOnce);
+            _publishMessage(json.encode({"RequestConfirm": "true"}),
+                "$farmName/${map["SerialNumber"]}/data/request");
+          }
         });
         break;
       default:
+        break;
     }
-
-    // Initialize for updates of data
-    subscription = client.updates!;
-
-    var stmSubscription =
-        subscription.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-      final MqttPublishMessage recMess = c[0].payload as MqttPublishMessage;
-      var message =
-          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    });
-
-    // transform Mqtt message into stream of message
-    var data = subscription.map((event) {
-      final MqttPublishMessage recMess = event[0].payload as MqttPublishMessage;
-      var message =
-          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      return message;
-    });
-
-    stmSubscription.cancel();
-    //client.unsubscribe("liveDataResponse");
-    return data;
   }
 
   Future<String> publishSettings(Map msgMap) async {
@@ -139,7 +136,7 @@ class MQTTClientWrapper {
       // the next 2 lines are necessary to connect with tls, which is used by HiveMQ Cloud
       ..secure = true
       ..setProtocolV311()
-      ..logging(on: true)
+      ..logging(on: false)
       // ..securityContext = SecurityContext.defaultContext
       ..keepAlivePeriod = 60
       ..onDisconnected = _onDisconnected
@@ -191,7 +188,7 @@ class MQTTClientWrapper {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
     topic = topic ?? 'Dart/Mqtt_client/testtopic';
-    print('Publishing message "$message" to topic $topic');
+    // print('Publishing message "$message" to topic $topic');
     client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
   }
 
@@ -209,5 +206,13 @@ class MQTTClientWrapper {
   void _onConnected() {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print('OnConnected client callback - Client connection was successful');
+  }
+
+  void disconnect() {
+    client.disconnect();
+  }
+
+  Stream<List<MqttReceivedMessage<MqttMessage>>>? getMessageStream() {
+    return client.updates;
   }
 }
