@@ -2,7 +2,7 @@ part of 'live_data_cubit.dart';
 
 abstract class LiveDataState extends Equatable {
   // Data input as Stream<String>
-  List<String> dataResponse;
+  List<Map> dataResponse;
   // Chart Data obj
   List<ChartData>? chartData;
   LiveDataState({required this.dataResponse, required this.chartData});
@@ -12,6 +12,6 @@ abstract class LiveDataState extends Equatable {
 }
 
 class LiveDataInitial extends LiveDataState {
-  LiveDataInitial({required List<String> data, List<ChartData>? chartData})
+  LiveDataInitial({required List<Map> data, List<ChartData>? chartData})
       : super(dataResponse: data, chartData: chartData);
 }

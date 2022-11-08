@@ -34,10 +34,13 @@ class _farmCardViewState extends State<farmCardView> {
   var exposedLoc = "";
   String tempLoc = "";
   // Data stream
-  List<String> dataResponse = [];
+  List<Map> dataResponse = [];
   bool enableGraph = false;
-  bool isLoaded = false;
-  late Timer timer;
+  bool isRefreshed = false;
+
+  // Boolean for control widgets
+  bool isDraggable = true;
+  // late Timer timer;
 
   FlipCardController _controller = FlipCardController();
 
@@ -72,11 +75,14 @@ class _farmCardViewState extends State<farmCardView> {
         .getMessageStream()!
         .listen((List<MqttReceivedMessage<MqttMessage>>? c) {
       final recMess = c![0].payload as MqttPublishMessage;
+      print("PAYLOAD INSPECT: ${c[0].topic}");
+      final originalPos = c[0].topic.split("/").elementAt(1);
+      print("Topic type:${originalPos.runtimeType}.$originalPos.");
       final pt =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       setState(() {
         if (!dataResponse.contains(pt)) {
-          dataResponse.add(pt);
+          dataResponse.add({"Data": pt, "FromDevice": originalPos});
         }
       });
     });
@@ -89,6 +95,7 @@ class _farmCardViewState extends State<farmCardView> {
         client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
             devList.isEmpty ? devices : devList);
       }
+      isRefreshed = false;
     });
   }
 
@@ -98,20 +105,36 @@ class _farmCardViewState extends State<farmCardView> {
     devices = temp_devices;
   }
 
-  List<ChartData> transformFromRawData(List<String> inputData) {
-    var tempChartList = [ChartData(DateTime.now(), 0.0)];
+  List<ChartData> transformFromRawData(List<Map> inputData) {
+    var tempChartList = [ChartData(DateTime.now(), 0.0, "any")];
     for (var element in inputData) {
-      var elm = json.decode(element);
+      var elm = json.decode(element["Data"]);
+      print("json decoding${element["FromDevice"]}.");
+      var plc = element["FromDevice"];
       print("Element: $elm");
       for (var elsup in elm) {
         var subelm = Map<String, dynamic>.from(elsup);
         tempChartList.add(ChartData(
             DateTime.fromMillisecondsSinceEpoch(subelm["TimeStamp"]),
-            double.parse(subelm["Value"])));
+            double.parse(subelm["Value"]),
+            plc));
       }
     }
     tempChartList.removeAt(0);
     return tempChartList;
+  }
+
+  void _onMainCardDragEnd(DragEndDetails details) {
+    if (details.velocity.pixelsPerSecond.dy.abs().floorToDouble() >= -100.0) {
+      print("start refresh");
+      setState(() {
+        isRefreshed = true;
+        isDraggable = false;
+      });
+      periodicallyFetch();
+      Timer(const Duration(seconds: 10),
+          () => setState(() => isDraggable = true));
+    }
   }
 
   @override
@@ -119,9 +142,6 @@ class _farmCardViewState extends State<farmCardView> {
     client.prepareMqttClient();
     setDataListener();
     super.initState();
-    setState(() {
-      isLoaded = true;
-    });
   }
 
   @override
@@ -130,36 +150,42 @@ class _farmCardViewState extends State<farmCardView> {
     client.disconnect();
     devices.clear();
     enableGraph = false;
-    timer.cancel();
+    // timer.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Column(
-      children: [
-        FutureBuilder(
-          future: context.read<FarmCardCubit>().getOwnedFarmsList(),
-          builder: (context, snapshot) {
-            var connectionState = snapshot.connectionState;
-            print(connectionState);
-            switch (connectionState) {
-              case ConnectionState.done:
-                print(snapshot.data);
-                Map dataMap = Map.from(snapshot.data as Map);
-                return FlipCard(
-                    controller: _controller,
-                    flipOnTouch: false,
-                    onFlipDone: (isFront) => print(isFront),
-                    front: farmAsCard(context, dataMap["OwnedFarm"]),
-                    back: farmCardRear());
-              default:
-                break;
-            }
-            return Container();
-          },
-        )
-      ],
+    return ListView.builder(
+      itemCount: 1,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onVerticalDragEnd: (details) =>
+              isDraggable ? _onMainCardDragEnd(details) : {},
+          child: FutureBuilder(
+            future: context.read<FarmCardCubit>().getOwnedFarmsList(),
+            builder: (context, snapshot) {
+              var connectionState = snapshot.connectionState;
+              // print(connectionState);
+              switch (connectionState) {
+                case ConnectionState.done:
+                  // print(snapshot.data);
+                  Map dataMap = Map.from(snapshot.data as Map);
+                  return FlipCard(
+                      controller: _controller,
+                      flipOnTouch: false,
+                      onFlipDone: (isFront) => print(isFront),
+                      front: farmAsCard(context, dataMap["OwnedFarm"]),
+                      back: farmCardRear());
+                default:
+                  break;
+              }
+              return Container();
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -236,14 +262,21 @@ class _farmCardViewState extends State<farmCardView> {
                 height: 300,
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.all(10),
-                child: BlocProvider(
-                  create: (_) => LiveDataCubit(
-                      dataResponse, transformFromRawData(dataResponse)),
-                  child: LiveChart(
-                    devices: dataResponse,
-                    type: 'line',
-                  ),
-                ),
+                child: Stack(children: [
+                  if (dataResponse.isEmpty)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  else
+                    BlocProvider(
+                      create: (_) => LiveDataCubit(
+                          dataResponse, transformFromRawData(dataResponse)),
+                      child: LiveChart(
+                        devices: dataResponse,
+                        type: 'line',
+                      ),
+                    )
+                ]),
               ),
             Text("What to be display ?"),
             Row(
@@ -331,7 +364,7 @@ class _farmCardViewState extends State<farmCardView> {
                     shrinkWrap: true,
                     itemCount: dataResponse.length,
                     itemBuilder: (context, index) {
-                      return Text(dataResponse[index]);
+                      return Text(dataResponse[index]["Data"]);
                     },
                   );
                 },
