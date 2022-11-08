@@ -10,7 +10,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 class LiveChart extends StatefulWidget {
   String type;
-  List<String> devices;
+  List<Map> devices;
   LiveChart({Key? key, required this.type, required this.devices})
       : super(key: key);
   State<StatefulWidget> createState() => _LiveChartState();
@@ -20,33 +20,8 @@ class _LiveChartState extends State<LiveChart> {
   ChartSeriesController? _chartSeriesController;
   // List<_ChartData> chartData = [_ChartData(DateTime.now(), 0.0)];
   late String chartType;
-  late List<String> dev;
+  late List<Map> dev;
   late Timer timer;
-
-  // void setDataStreamToChartList(Timer timer) async {
-  //   if (mounted) {
-  //     setState(() {
-  //       dev.forEach((element) {
-  //         var elm = json.decode(element);
-  //         for (var subElement in elm) {
-  //           var subMap = Map<String, dynamic>.from(subElement);
-  //           print("Read submap $subMap");
-  //           chartData.add(_ChartData(
-  //               DateTime.fromMillisecondsSinceEpoch(subMap["TimeStamp"])
-  //                   .toLocal(),
-  //               double.parse(subMap["Value"])));
-  //         }
-  //       });
-  //     });
-  //     updateData();
-  //   }
-  // }
-
-  // void updateData() {
-  //   _chartSeriesController!.updateDataSource(
-  //       addedDataIndexes: <int>[chartData.length - 1],
-  //       removedDataIndexes: <int>[0]);
-  // }
 
   @override
   void initState() {
@@ -58,16 +33,7 @@ class _LiveChartState extends State<LiveChart> {
     });
   }
 
-  // @override
-  // void dispose() {
-  //   chartType = "";
-  //   dev = const Stream<String>.empty();
-  //   _chartSeriesController = null;
-  //   chartData.clear();
-  //   super.dispose();
-  // }
-
-  Widget liveChart(String type, List<String> dev) {
+  Widget liveChart(String type, List<Map> dev) {
     final bloc = BlocProvider.of<LiveDataCubit>(context);
     return BlocBuilder<LiveDataCubit, LiveDataInitial>(
       builder: (context, state) {
@@ -82,13 +48,6 @@ class _LiveChartState extends State<LiveChart> {
         return Container();
       },
     );
-    // return StreamBuilder(
-    //   stream: bloc.liveData,
-    //   builder: (context, snapshot) {
-    //     if (!snapshot.hasData) return CircularProgressIndicator();
-    //     return _buildLineChart(context.read<LiveDataCubit>().getNewChartData());
-    //   },
-    // );
   }
 
   SfCartesianChart _buildLineChart(List<ChartData> data) {
@@ -119,17 +78,7 @@ class _LiveChartState extends State<LiveChart> {
       primaryYAxis: NumericAxis(
           axisLine: const AxisLine(width: 0),
           majorTickLines: const MajorTickLines(size: 0)),
-      series: <LineSeries<ChartData, DateTime>>[
-        LineSeries<ChartData, DateTime>(
-          onRendererCreated: (ChartSeriesController controller) {
-            _chartSeriesController = controller;
-          },
-          dataSource: data,
-          enableTooltip: true,
-          xValueMapper: (ChartData datum, index) => datum.date,
-          yValueMapper: (ChartData datum, index) => datum.values,
-        )
-      ],
+      series: _lineSeries(data),
       tooltipBehavior: TooltipBehavior(
           enable: true,
           elevation: 5,
@@ -150,6 +99,38 @@ class _LiveChartState extends State<LiveChart> {
             markerVisibility: TrackballVisibilityMode.hidden,
           )),
     );
+  }
+
+  _lineSeries(List<ChartData> data) {
+    List<LineSeries<ChartData, DateTime>> temp =
+        <LineSeries<ChartData, DateTime>>[];
+    List<String> places = [];
+    // Find all devices
+    for (var elm in data) {
+      print("Prepare data ${elm.place}, ${elm.values}");
+      if (!places.contains(elm.place)) {
+        places.add(elm.place);
+      }
+    }
+    // Seperate data for each devices
+    for (var plc in places) {
+      List<ChartData> temp_arr = [];
+      for (var chrt in data) {
+        if (chrt.place == plc) {
+          temp_arr.add(chrt);
+        }
+      }
+      temp.add(LineSeries(
+        onRendererCreated: (controller) => _chartSeriesController = controller,
+        name: plc,
+        dataSource: temp_arr,
+        enableTooltip: true,
+        xValueMapper: (datum, index) => datum.date,
+        yValueMapper: (datum, index) => datum.values,
+      ));
+      temp_arr = [];
+    }
+    return temp;
   }
 
   @override
