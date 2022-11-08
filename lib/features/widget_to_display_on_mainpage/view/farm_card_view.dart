@@ -43,10 +43,13 @@ class _farmCardViewState extends State<farmCardView> {
 
   _farmCardViewState() {
     print("Start timer");
-    if (isLoaded) {
-      Timer.run(() => periodicallyFetch);
-    }
-    timer = Timer.periodic(const Duration(seconds: 15), periodicallyFetch);
+    // if (isLoaded) {
+    //   Timer.run(() => periodicallyFetch);
+    // }
+    Future.delayed(const Duration(seconds: 10), () => periodicallyFetch());
+    // Timer.run(() => periodicallyFetch);
+    print("Future finished");
+    // timer = Timer.periodic(const Duration(seconds: 30), periodicallyFetch);
   }
 
   void onIndexSelection(dynamic index) {
@@ -79,11 +82,13 @@ class _farmCardViewState extends State<farmCardView> {
     });
   }
 
-  void periodicallyFetch(Timer timer) async {
+  void periodicallyFetch() {
     print("\nStatus sub: $tempLoc, $devices\n");
     setState(() {
-      client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
-          devList.isEmpty ? devices : devList);
+      if (mounted) {
+        client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
+            devList.isEmpty ? devices : devList);
+      }
     });
   }
 
@@ -125,6 +130,7 @@ class _farmCardViewState extends State<farmCardView> {
     client.disconnect();
     devices.clear();
     enableGraph = false;
+    timer.cancel();
   }
 
   @override
