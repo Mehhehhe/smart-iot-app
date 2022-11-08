@@ -31,8 +31,8 @@ class MQTTClientWrapper {
   void prepareMqttClient() async {
     _setupMqttClient();
     await _connectClient();
-    _subscribeToTopic('Dart/Mqtt_client/testtopic');
-    _publishMessage('Hello');
+    // _subscribeToTopic('Dart/Mqtt_client/testtopic');
+    // _publishMessage('Hello');
   }
 
   void subscribeToOneResponse(String farmName, dynamic deviceName) async {
@@ -77,33 +77,33 @@ class MQTTClientWrapper {
     }
   }
 
-  Future<String> publishSettings(Map msgMap) async {
-    var device_name = "";
-    var sensor = "";
-    String result = "";
-    msgMap.forEach((key, value) {
-      if (key == "id") {
-        device_name = value.toString().split('.')[0];
-        sensor = value.toString().split('.')[1];
-      }
-      bool isActValue = key == "actuator_value";
-      bool isTreshValue = key == "threshold";
-      _publishMessage(
-        isActValue
-            ? value
-            : isTreshValue
-                ? value
-                : "unknown",
-      );
-      // isActValue
-      //     ? "$device_name/actuator/value/set"
-      //     : isTreshValue
-      //         ? "$device_name/sensor/threshold/set"
-      //         : null);
-    });
-    result = device_name.isNotEmpty ? "success" : "failed";
-    return result;
-  }
+  // Future<String> publishSettings(Map msgMap) async {
+  //   var device_name = "";
+  //   var sensor = "";
+  //   String result = "";
+  //   msgMap.forEach((key, value) {
+  //     if (key == "id") {
+  //       device_name = value.toString().split('.')[0];
+  //       sensor = value.toString().split('.')[1];
+  //     }
+  //     bool isActValue = key == "actuator_value";
+  //     bool isTreshValue = key == "threshold";
+  //     _publishMessage(
+  //       isActValue
+  //           ? value
+  //           : isTreshValue
+  //               ? value
+  //               : "unknown",
+  //     );
+  //     // isActValue
+  //     //     ? "$device_name/actuator/value/set"
+  //     //     : isTreshValue
+  //     //         ? "$device_name/sensor/threshold/set"
+  //     //         : null);
+  //   });
+  //   result = device_name.isNotEmpty ? "success" : "failed";
+  //   return result;
+  // }
 
   // waiting for the connection, if an error occurs, print it and disconnect
   Future<void> _connectClient() async {
@@ -184,10 +184,10 @@ class MQTTClientWrapper {
     });
   }
 
-  void _publishMessage(String message, [String? topic]) {
+  void _publishMessage(String message, String topic) {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
-    topic = topic ?? 'Dart/Mqtt_client/testtopic';
+    // topic = topic ?? 'Dart/Mqtt_client/testtopic';
     // print('Publishing message "$message" to topic $topic');
     client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
   }
