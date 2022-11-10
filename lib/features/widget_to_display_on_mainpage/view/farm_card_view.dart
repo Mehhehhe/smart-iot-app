@@ -11,6 +11,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -277,6 +278,24 @@ class _farmCardViewState extends State<farmCardView> {
                       ),
                     )
                 ]),
+              ),
+            if (defaultMainDisplay == 1)
+              Container(
+                height: 300,
+                width: MediaQuery.of(context).size.width,
+                child: Stack(
+                  children: [
+                    if (dataResponse.isEmpty)
+                      const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    else
+                      BlocProvider(
+                        create: (_) => LiveDataCubit(dataResponse),
+                        child: numberCard(inputData: dataResponse),
+                      )
+                  ],
+                ),
               ),
             Text("What to be display ?"),
             Row(
