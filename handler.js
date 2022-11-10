@@ -14,15 +14,9 @@ const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
 var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
-// var awsIoT = AwsIoT.device({
-//   clientId: crypto.randomUUID(),
-//   host: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com',
-//   port: 8883,
-//   keyPath: './assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-private.pem.key',
-//   certPath: './assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-certificate.pem.crt',
-//   caPath: './assets/certificates/AmazonRootCA1.pem',
-// });
-// const MY_NAMESPACE = "578c1580-f296-4fef-8ecf-dc5b1bc31586";
+const ALLOWED_ORIGIN = [
+  "https://project-three-dun.vercel.app/"
+];
 
 // Encode Function
 function encode(msg){
@@ -184,6 +178,20 @@ module.exports.createUser = async (event, context, callback) => {
   const Email = event.email;
   var owned_farm = event.OwnedFarm ?? ["Wait for update"];
 
+  const origin = event.headers.origin;
+  let headers;
+
+  if(ALLOWED_ORIGIN.includes(origin)){
+    headers = {
+      'Access-Control-Allow-Origin': 'https://project-three-dun.vercel.app/',
+      'Access-Control-Allow-Credentials': true,
+    }
+  } else {
+    headers = {
+      'Access-Control-Allow-Origin': '*',
+    }
+  }
+
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
     console.error("Validation failed");
     // console.log(event.user);
@@ -231,6 +239,7 @@ module.exports.createUser = async (event, context, callback) => {
   await submitUser(userInfo(User, UserID, owned_farm)).then(res => {
     callback(null, {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         message: "Successfully created "+res.FarmUser,
         userID: res.ID
@@ -240,6 +249,7 @@ module.exports.createUser = async (event, context, callback) => {
     console.log(err);
     callback(null, {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         message: "Unable to create user"
       })
