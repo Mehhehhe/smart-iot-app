@@ -113,6 +113,16 @@ functions:
       - http:
           path: /user/create
           method: POST
+          cors: 
+            origin: "https://project-three-dun.vercel.app/"
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
   createUserToTable:
     handler: handler.createUserToTable
     description: Use by lambda trigger only.

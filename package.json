@@ -5,6 +5,7 @@
   },
   "name": "smart-iot-app",
   "dependencies": {
+    "aws-iot-device-sdk": "^2.2.12",
     "bluebird": "^3.7.2",
     "uuid": "^9.0.0"
   }

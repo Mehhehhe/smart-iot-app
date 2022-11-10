@@ -137,6 +137,12 @@
         "LogGroupName": "/aws/lambda/smart-iot-app-dev-getAllDevices"
       }
     },
+    "GetDevicesByFarmNameLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/smart-iot-app-dev-getDevicesByFarmName"
+      }
+    },
     "LiveDataHandlerLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -304,7 +310,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getFarmExample",
         "Runtime": "nodejs14.x",
@@ -342,7 +348,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getFarmList",
         "Runtime": "nodejs14.x",
@@ -381,7 +387,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getFarmByID",
         "Runtime": "nodejs14.x",
@@ -420,7 +426,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.createFarm",
         "Runtime": "nodejs14.x",
@@ -459,7 +465,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.createUser",
         "Runtime": "nodejs14.x",
@@ -498,7 +504,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.createUserToTable",
         "Runtime": "nodejs14.x",
@@ -537,7 +543,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getUserList",
         "Runtime": "nodejs14.x",
@@ -576,7 +582,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getUserByID",
         "Runtime": "nodejs14.x",
@@ -615,7 +621,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.registerDevice",
         "Runtime": "nodejs14.x",
@@ -654,7 +660,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getDeviceByID",
         "Runtime": "nodejs14.x",
@@ -693,7 +699,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.getAllDevices",
         "Runtime": "nodejs14.x",
@@ -725,6 +731,45 @@
         "GetAllDevicesLogGroup"
       ]
     },
+    "GetDevicesByFarmNameLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
+        },
+        "Handler": "handler.getDevicesByFarmName",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "smart-iot-app-dev-getDevicesByFarmName",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Description": "Get devices of target farm",
+        "Environment": {
+          "Variables": {
+            "FARM_TABLE": {
+              "Ref": "FarmDynamoDbTable"
+            },
+            "FARM_USER_TABLE": {
+              "Ref": "FarmUserDynamoDbTable"
+            },
+            "FARM_DEVICE_TABLE": {
+              "Ref": "FarmDevicesDynamoDbTable"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetDevicesByFarmNameLogGroup"
+      ]
+    },
     "LiveDataHandlerLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -732,7 +777,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.liveDataHandler",
         "Runtime": "nodejs14.x",
@@ -771,7 +816,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.createFarmAsTable",
         "Runtime": "nodejs14.x",
@@ -810,7 +855,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/smart-iot-app/dev/1666512776381-2022-10-23T08:12:56.381Z/smart-iot-app.zip"
+          "S3Key": "serverless/smart-iot-app/dev/1667994777524-2022-11-09T11:52:57.524Z/smart-iot-app.zip"
         },
         "Handler": "handler.writeDataFromIOT",
         "Runtime": "nodejs14.x",
@@ -842,156 +887,167 @@
         "WriteDataFromIOTLogGroup"
       ]
     },
-    "GetFarmExampleLambdaVersionXlFdgNAG2dxdYVILNLESvdjkc8ySoOE1CKRK4PTTnw": {
+    "GetFarmExampleLambdaVersionj6sgspvvm7wNgtlQfpd9ckEM0AYgqOzJqw0wAL8jY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetFarmExampleLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs="
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ="
       }
     },
-    "GetFarmListLambdaVersion065PXZEuCnWiXb4WoBqbonmva1eha0t0C2pJlzlcTI": {
+    "GetFarmListLambdaVersionzc91tD9J3S2rIAC0xH5tXolbN9ocB89qsIiEInAsLxQ": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetFarmListLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "List all farms"
       }
     },
-    "GetFarmByIDLambdaVersionkYACncLgNWYN9BDXqZ7LBey2pmDIwR7JrtZBeOQ4": {
+    "GetFarmByIDLambdaVersionLrcoiUIWNvyyqO89u5cdwArfhd5pDZTa7xI94JXXY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetFarmByIDLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Get a farm data by farm's ID"
       }
     },
-    "CreateFarmLambdaVersioncHGVMeLqTy1KgIasVT18YlNfv3ijGGI4UyfQCMNZWY": {
+    "CreateFarmLambdaVersionuILTOMS8gePbvDIYC4SHVYqzP4J6JiMieRJlPhQwEU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateFarmLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Send a farm information"
       }
     },
-    "CreateUserLambdaVersionMjZIStbAZ97V5Fp7DJDyUGawqLrrS5XowhQHXB6WoA": {
+    "CreateUserLambdaVersionM2D7wnqNCiTUUVcczNquH0m4jf1fmFojWNJeAeurJI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateUserLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Send a user information with username and list of farms"
       }
     },
-    "CreateUserToTableLambdaVersionDotjbPevfcIVFygq0VDQH5O91ELa8k7mCq8uGuLWkg": {
+    "CreateUserToTableLambdaVersionOUkZ9mZU0kXQjBpmmqw9MZAs0yIIQw7aKQGje14": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateUserToTableLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Use by lambda trigger only."
       }
     },
-    "GetUserListLambdaVersioniN2WVc2X0oeT1Whfy3FbyWYjTfhhNyec28QOcHdgMxI": {
+    "GetUserListLambdaVersionTHvUfVfOcq22L99RlPWocm1DhLNML79naCVd3yVOg": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetUserListLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Return a list of users with id"
       }
     },
-    "GetUserByIDLambdaVersionNr4yITbCuPM2qVZuxgjwNxeXF4c9Vis3lGv6HBOI": {
+    "GetUserByIDLambdaVersionzon5sSBvQrEQlmtI1FubXhQUvBTbfNK8AetXaRwX0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetUserByIDLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Get a data of user by given ID"
       }
     },
-    "RegisterDeviceLambdaVersionFmyr78kQ4CXVN0iUJj5OP2eFZknmSVTlNB3e6ZTg": {
+    "RegisterDeviceLambdaVersionEe6LSGiRC49GrovIAZGFI3cvjzrkR36qLZlBynPleVI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "RegisterDeviceLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Use for first time register of new device."
       }
     },
-    "GetDeviceByIDLambdaVersionPvNNouvlrAuaeqRvOgWZoOFkwwNU0mqQPyNuF2InrY": {
+    "GetDeviceByIDLambdaVersionQFBnvpXU63X5VCFaWyXdvGVVgfFoSUZBnPMq75hA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetDeviceByIDLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Get device by given ID."
       }
     },
-    "GetAllDevicesLambdaVersiongePifCVgzysS4m1Vl7I9GQ7zDPH30347odnH25H6y1M": {
+    "GetAllDevicesLambdaVersionplg7K6Fe24KexV6NbQQGjVkXQVdEmlJcRYTGUSzflDs": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetAllDevicesLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Get all devices."
       }
     },
-    "LiveDataHandlerLambdaVersionNRmpDuGiGBBW40rKIDkbe22TFDtXUOHnqjajCg2F4": {
+    "GetDevicesByFarmNameLambdaVersionL6kCjw3XLGfxMf2hFTv4NgxUg7oCR8tcRRbiuDN5A": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetDevicesByFarmNameLambdaFunction"
+        },
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
+        "Description": "Get devices of target farm"
+      }
+    },
+    "LiveDataHandlerLambdaVersionFyFFpEPJWRKfkSIrufMTvRkz59IAfdijT4c5Er4M0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "LiveDataHandlerLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "handle a request from topic and send back to application"
       }
     },
-    "CreateFarmAsTableLambdaVersioniNYvNH94Ls5nbbbCPTePuwxii8oKc3pjIyFSXluhYMU": {
+    "CreateFarmAsTableLambdaVersioncMFMEfI9FjpfVSEOfJJ4k6wm8nFPombfdtshaI3RxQ": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateFarmAsTableLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "(For web only!) Create a farm table which used for logging live data for each device."
       }
     },
-    "WriteDataFromIOTLambdaVersionF4JHvWvmc4BWNFpcijcSWDOd4StIfMtH8UIClDzjo": {
+    "WriteDataFromIOTLambdaVersionn3Cw3R0jg3PlYfQvgDzzra5SaJUieg9CCUO0JVCtwI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "WriteDataFromIOTLambdaFunction"
         },
-        "CodeSha256": "AMKuCco5oJZfGwZbkZvidq/XBg1lfNNfrpMLcm5Q3qs=",
+        "CodeSha256": "szKry+bL4vaOlVRhp8AbWtJ5S2A7Uy7kiDja8w/11QQ=",
         "Description": "Handle write and update of value from iot device in the farm table"
       }
     },
@@ -1283,6 +1339,18 @@
         }
       }
     },
+    "ApiGatewayResourceDeviceGetbyfarm": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceDevice"
+        },
+        "PathPart": "getByFarm",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
     "ApiGatewayResourceLivedata": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
@@ -1293,6 +1361,51 @@
           ]
         },
         "PathPart": "liveData",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodUserCreateOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'https://project-three-dun.vercel.app/'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceUserCreate"
+        },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -1804,6 +1917,52 @@
         "GetAllDevicesLambdaPermissionApiGateway"
       ]
     },
+    "ApiGatewayMethodDeviceGetbyfarmPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceDeviceGetbyfarm"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetDevicesByFarmNameLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetDevicesByFarmNameLambdaPermissionApiGateway"
+      ]
+    },
     "ApiGatewayMethodLivedataPost": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
@@ -1942,7 +2101,7 @@
         "WriteDataFromIOTLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1666512770222": {
+    "ApiGatewayDeployment1667994760683": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1951,6 +2110,7 @@
         "StageName": "dev"
       },
       "DependsOn": [
+        "ApiGatewayMethodUserCreateOptions",
         "ApiGatewayMethodFarmGetExampleGet",
         "ApiGatewayMethodFarmListAllGet",
         "ApiGatewayMethodFarmGetIdVarGet",
@@ -1962,6 +2122,7 @@
         "ApiGatewayMethodDeviceRegisterPost",
         "ApiGatewayMethodDeviceInIdVarGet",
         "ApiGatewayMethodDeviceAllGet",
+        "ApiGatewayMethodDeviceGetbyfarmPost",
         "ApiGatewayMethodLivedataPost",
         "ApiGatewayMethodFarmCreateastablePost",
         "ApiGatewayMethodFarmWritePost"
@@ -2374,6 +2535,43 @@
         }
       }
     },
+    "GetDevicesByFarmNameLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetDevicesByFarmNameLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
     "LiveDataHandlerLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -2567,7 +2765,7 @@
     "GetFarmExampleLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetFarmExampleLambdaVersionXlFdgNAG2dxdYVILNLESvdjkc8ySoOE1CKRK4PTTnw"
+        "Ref": "GetFarmExampleLambdaVersionj6sgspvvm7wNgtlQfpd9ckEM0AYgqOzJqw0wAL8jY"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetFarmExampleLambdaFunctionQualifiedArn"
@@ -2576,7 +2774,7 @@
     "GetFarmListLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetFarmListLambdaVersion065PXZEuCnWiXb4WoBqbonmva1eha0t0C2pJlzlcTI"
+        "Ref": "GetFarmListLambdaVersionzc91tD9J3S2rIAC0xH5tXolbN9ocB89qsIiEInAsLxQ"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetFarmListLambdaFunctionQualifiedArn"
@@ -2585,7 +2783,7 @@
     "GetFarmByIDLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetFarmByIDLambdaVersionkYACncLgNWYN9BDXqZ7LBey2pmDIwR7JrtZBeOQ4"
+        "Ref": "GetFarmByIDLambdaVersionLrcoiUIWNvyyqO89u5cdwArfhd5pDZTa7xI94JXXY"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetFarmByIDLambdaFunctionQualifiedArn"
@@ -2594,7 +2792,7 @@
     "CreateFarmLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateFarmLambdaVersioncHGVMeLqTy1KgIasVT18YlNfv3ijGGI4UyfQCMNZWY"
+        "Ref": "CreateFarmLambdaVersionuILTOMS8gePbvDIYC4SHVYqzP4J6JiMieRJlPhQwEU"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-CreateFarmLambdaFunctionQualifiedArn"
@@ -2603,7 +2801,7 @@
     "CreateUserLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateUserLambdaVersionMjZIStbAZ97V5Fp7DJDyUGawqLrrS5XowhQHXB6WoA"
+        "Ref": "CreateUserLambdaVersionM2D7wnqNCiTUUVcczNquH0m4jf1fmFojWNJeAeurJI"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-CreateUserLambdaFunctionQualifiedArn"
@@ -2612,7 +2810,7 @@
     "CreateUserToTableLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateUserToTableLambdaVersionDotjbPevfcIVFygq0VDQH5O91ELa8k7mCq8uGuLWkg"
+        "Ref": "CreateUserToTableLambdaVersionOUkZ9mZU0kXQjBpmmqw9MZAs0yIIQw7aKQGje14"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-CreateUserToTableLambdaFunctionQualifiedArn"
@@ -2621,7 +2819,7 @@
     "GetUserListLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetUserListLambdaVersioniN2WVc2X0oeT1Whfy3FbyWYjTfhhNyec28QOcHdgMxI"
+        "Ref": "GetUserListLambdaVersionTHvUfVfOcq22L99RlPWocm1DhLNML79naCVd3yVOg"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetUserListLambdaFunctionQualifiedArn"
@@ -2630,7 +2828,7 @@
     "GetUserByIDLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetUserByIDLambdaVersionNr4yITbCuPM2qVZuxgjwNxeXF4c9Vis3lGv6HBOI"
+        "Ref": "GetUserByIDLambdaVersionzon5sSBvQrEQlmtI1FubXhQUvBTbfNK8AetXaRwX0"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetUserByIDLambdaFunctionQualifiedArn"
@@ -2639,7 +2837,7 @@
     "RegisterDeviceLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "RegisterDeviceLambdaVersionFmyr78kQ4CXVN0iUJj5OP2eFZknmSVTlNB3e6ZTg"
+        "Ref": "RegisterDeviceLambdaVersionEe6LSGiRC49GrovIAZGFI3cvjzrkR36qLZlBynPleVI"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-RegisterDeviceLambdaFunctionQualifiedArn"
@@ -2648,7 +2846,7 @@
     "GetDeviceByIDLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetDeviceByIDLambdaVersionPvNNouvlrAuaeqRvOgWZoOFkwwNU0mqQPyNuF2InrY"
+        "Ref": "GetDeviceByIDLambdaVersionQFBnvpXU63X5VCFaWyXdvGVVgfFoSUZBnPMq75hA"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetDeviceByIDLambdaFunctionQualifiedArn"
@@ -2657,16 +2855,25 @@
     "GetAllDevicesLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetAllDevicesLambdaVersiongePifCVgzysS4m1Vl7I9GQ7zDPH30347odnH25H6y1M"
+        "Ref": "GetAllDevicesLambdaVersionplg7K6Fe24KexV6NbQQGjVkXQVdEmlJcRYTGUSzflDs"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-GetAllDevicesLambdaFunctionQualifiedArn"
       }
     },
+    "GetDevicesByFarmNameLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetDevicesByFarmNameLambdaVersionL6kCjw3XLGfxMf2hFTv4NgxUg7oCR8tcRRbiuDN5A"
+      },
+      "Export": {
+        "Name": "sls-smart-iot-app-dev-GetDevicesByFarmNameLambdaFunctionQualifiedArn"
+      }
+    },
     "LiveDataHandlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "LiveDataHandlerLambdaVersionNRmpDuGiGBBW40rKIDkbe22TFDtXUOHnqjajCg2F4"
+        "Ref": "LiveDataHandlerLambdaVersionFyFFpEPJWRKfkSIrufMTvRkz59IAfdijT4c5Er4M0"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-LiveDataHandlerLambdaFunctionQualifiedArn"
@@ -2675,7 +2882,7 @@
     "CreateFarmAsTableLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateFarmAsTableLambdaVersioniNYvNH94Ls5nbbbCPTePuwxii8oKc3pjIyFSXluhYMU"
+        "Ref": "CreateFarmAsTableLambdaVersioncMFMEfI9FjpfVSEOfJJ4k6wm8nFPombfdtshaI3RxQ"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-CreateFarmAsTableLambdaFunctionQualifiedArn"
@@ -2684,7 +2891,7 @@
     "WriteDataFromIOTLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "WriteDataFromIOTLambdaVersionF4JHvWvmc4BWNFpcijcSWDOd4StIfMtH8UIClDzjo"
+        "Ref": "WriteDataFromIOTLambdaVersionn3Cw3R0jg3PlYfQvgDzzra5SaJUieg9CCUO0JVCtwI"
       },
       "Export": {
         "Name": "sls-smart-iot-app-dev-WriteDataFromIOTLambdaFunctionQualifiedArn"
