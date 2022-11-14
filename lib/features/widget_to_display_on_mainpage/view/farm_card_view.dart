@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -42,6 +43,8 @@ class _farmCardViewState extends State<farmCardView> {
   // Boolean for control widgets
   bool isDraggable = true;
   // late Timer timer;
+  ScrollController refreshScroll = ScrollController();
+  ScrollController historyScroll = ScrollController();
 
   FlipCardController _controller = FlipCardController();
 
@@ -82,6 +85,7 @@ class _farmCardViewState extends State<farmCardView> {
       final pt =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       setState(() {
+        print("Fetch pt := $pt, base data array := $dataResponse");
         if (!dataResponse.contains(pt)) {
           dataResponse.add({"Data": pt, "FromDevice": originalPos});
         }
@@ -93,6 +97,7 @@ class _farmCardViewState extends State<farmCardView> {
     print("\nStatus sub: $tempLoc, $devices\n");
     setState(() {
       if (mounted) {
+        dataResponse.clear();
         client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
             devList.isEmpty ? devices : devList);
       }
@@ -193,8 +198,8 @@ class _farmCardViewState extends State<farmCardView> {
   Widget farmAsCard(BuildContext context, dynamic data) {
     print(context);
     return Card(
-      key: ValueKey(true),
-      margin: EdgeInsets.all(20),
+      key: const ValueKey(true),
+      margin: const EdgeInsets.all(20),
       elevation: 5.0,
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -255,14 +260,14 @@ class _farmCardViewState extends State<farmCardView> {
               Container(
                 height: 300,
                 width: MediaQuery.of(context).size.width - 10,
-                margin: EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
               ),
             // Chart
             if (defaultMainDisplay == 0)
               Container(
                 height: 300,
                 width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 child: Stack(children: [
                   if (dataResponse.isEmpty)
                     const Center(
@@ -297,7 +302,7 @@ class _farmCardViewState extends State<farmCardView> {
                   ],
                 ),
               ),
-            Text("What to be display ?"),
+            const Text("What to be display ?"),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -309,8 +314,8 @@ class _farmCardViewState extends State<farmCardView> {
                             defaultMainDisplay = 0;
                           });
                         },
-                        icon: Icon(Icons.auto_graph)),
-                    Text("Graph"),
+                        icon: const Icon(Icons.auto_graph)),
+                    const Text("Graph"),
                   ],
                 ),
                 Column(
@@ -321,8 +326,8 @@ class _farmCardViewState extends State<farmCardView> {
                             defaultMainDisplay = 1;
                           });
                         },
-                        icon: Icon(Icons.numbers)),
-                    Text("Numbers"),
+                        icon: const Icon(Icons.numbers)),
+                    const Text("Numbers"),
                   ],
                 ),
                 Column(
@@ -333,16 +338,16 @@ class _farmCardViewState extends State<farmCardView> {
                             defaultMainDisplay = 2;
                           });
                         },
-                        icon: Icon(Icons.description_outlined)),
-                    Text("Status Report"),
+                        icon: const Icon(Icons.description_outlined)),
+                    const Text("Status Report"),
                   ],
                 ),
                 Column(
                   children: [
                     IconButton(
                         onPressed: () => _controller.toggleCard(),
-                        icon: Icon(Icons.keyboard_double_arrow_right)),
-                    Text("More"),
+                        icon: const Icon(Icons.keyboard_double_arrow_right)),
+                    const Text("More"),
                   ],
                 ),
               ],
@@ -355,51 +360,108 @@ class _farmCardViewState extends State<farmCardView> {
                         builder: (context) => DeviceSelector(devices: devices),
                       )).then((value) => onDeviceSelection(value));
                 },
-                child: Text("Choose devices ..."))
+                child: const Text("Choose devices ..."))
           ]),
     );
   }
 
   Widget farmCardRear() {
     return Card(
-      key: ValueKey(false),
-      margin: EdgeInsets.all(20),
+      key: const ValueKey(false),
+      margin: const EdgeInsets.all(20),
       elevation: 5.0,
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("Rear"),
+            const Text("Rear"),
             Container(
               width: MediaQuery.of(context).size.width,
-              height: 300,
-              child: Text("Display sensor's value here"),
+              child: const Text("Value History"),
             ),
+            Divider(),
             Container(
+              height: 300,
               child: Builder(
                 builder: (context) {
-                  print(dataResponse);
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: dataResponse.length,
-                    itemBuilder: (context, index) {
-                      return Text(dataResponse[index]["Data"]);
-                    },
-                  );
+                  // Transform into single array
+                  var newDataArray = [];
+                  for (var m in dataResponse) {
+                    m.forEach((key, value) {
+                      if (key == "Data") {
+                        var tr = json.decode(value).cast().toList();
+                        for (var element in tr) {
+                          var temp = {
+                            "Value": element["Value"],
+                            "State": element["State"],
+                            "TimeStamp": DateTime.fromMillisecondsSinceEpoch(
+                                    element["TimeStamp"])
+                                .toLocal()
+                                .toString(),
+                            "FromDevice": m["FromDevice"]
+                          };
+                          newDataArray.add(temp);
+                          temp = {};
+                        }
+                      }
+                    });
+                  }
+                  newDataArray.sort((a, b) =>
+                      DateTime.parse(b["TimeStamp"]).millisecondsSinceEpoch -
+                      DateTime.parse(a["TimeStamp"]).millisecondsSinceEpoch);
+                  return Scrollbar(
+                      thumbVisibility: true,
+                      controller: historyScroll,
+                      thickness: 8.0,
+                      interactive: true,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: newDataArray.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin:
+                                const EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 0.0),
+                            decoration: BoxDecoration(
+                              color: newDataArray[index]["State"] == true
+                                  ? Colors.lightGreen
+                                  : Colors.redAccent,
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(5)),
+                            ),
+                            child: ListTile(
+                                title: Text(
+                                  newDataArray[index]["FromDevice"],
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(newDataArray[index]["Value"],
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                      Text(newDataArray[index]["TimeStamp"])
+                                    ])),
+                          );
+                        },
+                      ));
                 },
               ),
             ),
+            // TextButton(
+            //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       IconButton(
                           onPressed: () => _controller.toggleCard(),
-                          icon: Icon(Icons.keyboard_return)),
-                      Text("Return"),
+                          icon: const Icon(Icons.keyboard_return)),
+                      const Text("Return"),
                     ],
                   ),
                 ),
