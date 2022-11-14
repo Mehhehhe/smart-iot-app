@@ -85,6 +85,7 @@ functions:
       - http:
           path: /farm/get/example
           method: GET
+          cors: true
   getFarmList:
     handler: handler.getFarmList
     description: List all farms

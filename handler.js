@@ -15,7 +15,7 @@ const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
 var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
 const ALLOWED_ORIGIN = [
-  "https://project-three-dun.vercel.app/"
+  "https://project-three-dun.vercel.app"
 ];
 
 // Encode Function
@@ -35,8 +35,13 @@ function encode(msg){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module.exports.getFarmExample = (event, context, callback) => {
   let example = getFarm();
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
   const response =  {
     statusCode: 200,
+    headers,
     body: JSON.stringify(example),
   };
   callback(null, response);
