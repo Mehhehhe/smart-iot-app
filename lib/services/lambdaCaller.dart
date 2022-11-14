@@ -7,6 +7,7 @@ const _farmApi = "d62mrahbok.execute-api.ap-southeast-1.amazonaws.com";
 const _myNamespace = '578c1580-f296-4fef-8ecf-dc5b1bc31586';
 
 Map<String, dynamic> _urlMap = {
+  "example": Uri.https(_farmApi, "/dev/farm/get/example"),
   "farm_list": Uri.https(_farmApi, '/dev/farm/list/all'),
   "get_farm_by_id": Uri.https(_farmApi, '/dev/farm/get/'),
   "create_farm": Uri.https(_farmApi, '/dev/farm/create'),
@@ -14,6 +15,11 @@ Map<String, dynamic> _urlMap = {
   "get_user_by_id": '/dev/user/get/',
   "get_devices_by_farm": '/dev/device/getByFarm'
 };
+
+getFarmExmaple() async {
+  var response = await http.get(_urlMap["example"]);
+  print("TEST EXAMPLE: ${response.body}");
+}
 
 /// ## `fetchFarmList()`
 ///
