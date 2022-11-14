@@ -46,8 +46,21 @@ class _numberCardState extends State<numberCard> {
     return GridView.builder(
       shrinkWrap: true,
       itemCount: data.length,
-      itemBuilder: (context, index) =>
-          Card(child: Text(data[index].toString())),
+      itemBuilder: (context, index) {
+        var currMap = Map<String, Map<String, dynamic>>.from(data[index]);
+        var currentName = currMap.keys.first;
+        var currentValue = currMap.values.first.values.first;
+        print("$currentName, $currentValue");
+        return Card(
+            child: Column(
+          children: [
+            Text(currentName, style: const TextStyle(fontSize: 28)),
+            Text(currentValue, style: const TextStyle(fontSize: 24)),
+            // Text(data[index]["Value"].toString(),
+            //     style: const TextStyle(fontSize: 28))
+          ],
+        ));
+      },
       gridDelegate:
           const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
     );
