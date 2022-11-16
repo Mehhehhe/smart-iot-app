@@ -5,13 +5,16 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_
 import 'farm_card_view.dart';
 
 class farmCard extends StatelessWidget {
-  const farmCard({Key? key}) : super(key: key);
+  String username;
+  farmCard({Key? key, required this.username}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => FarmCardCubit(),
-      child: farmCardView(),
+      child: farmCardView(
+        username: username,
+      ),
     );
   }
 }

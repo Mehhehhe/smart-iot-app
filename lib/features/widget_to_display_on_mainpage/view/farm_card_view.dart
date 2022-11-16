@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -13,7 +11,9 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
+import 'package:smart_iot_app/model/ReportModel.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
@@ -21,10 +21,13 @@ import 'graph_in_farm_card.dart';
 
 int farmIndex = 0;
 List mainWidgetDisplay = ["graph", "numbers", "report"];
+List rearWidgetDisplay = ["state_setting", "hist"];
 int defaultMainDisplay = 0;
+int displayRearIndex = 0;
 
 class farmCardView extends StatefulWidget {
-  farmCardView({Key? key}) : super(key: key);
+  String username;
+  farmCardView({Key? key, required this.username}) : super(key: key);
   @override
   State<StatefulWidget> createState() => _farmCardViewState();
 }
@@ -33,6 +36,7 @@ class _farmCardViewState extends State<farmCardView> {
   MQTTClientWrapper client = MQTTClientWrapper();
   List devices = [];
   List devList = [];
+  List<Map<String, String>> deviceAndType = [];
   var exposedLoc = "";
   String tempLoc = "";
   // Data stream
@@ -43,8 +47,7 @@ class _farmCardViewState extends State<farmCardView> {
   // Boolean for control widgets
   bool isDraggable = true;
   // late Timer timer;
-  ScrollController refreshScroll = ScrollController();
-  ScrollController historyScroll = ScrollController();
+  ScrollController historyScroll = ScrollController(initialScrollOffset: 0.0);
 
   FlipCardController _controller = FlipCardController();
 
@@ -79,13 +82,13 @@ class _farmCardViewState extends State<farmCardView> {
         .getMessageStream()!
         .listen((List<MqttReceivedMessage<MqttMessage>>? c) {
       final recMess = c![0].payload as MqttPublishMessage;
-      print("PAYLOAD INSPECT: ${c[0].topic}");
+      // print("PAYLOAD INSPECT: ${c[0].topic}");
       final originalPos = c[0].topic.split("/").elementAt(1);
-      print("Topic type:${originalPos.runtimeType}.$originalPos.");
+      // print("Topic type:${originalPos.runtimeType}.$originalPos.");
       final pt =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       setState(() {
-        print("Fetch pt := $pt, base data array := $dataResponse");
+        // print("Fetch pt := $pt, base data array := $dataResponse");
         if (!dataResponse.contains(pt)) {
           dataResponse.add({"Data": pt, "FromDevice": originalPos});
         }
@@ -94,12 +97,13 @@ class _farmCardViewState extends State<farmCardView> {
   }
 
   void periodicallyFetch() {
-    print("\nStatus sub: $tempLoc, $devices\n");
+    // print("\nStatus sub: $tempLoc, $devices\n");
     setState(() {
       if (mounted) {
         dataResponse.clear();
         client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
             devList.isEmpty ? devices : devList);
+        devicesToTypeMap(List<Map>.from(devices));
       }
       isRefreshed = false;
     });
@@ -109,6 +113,17 @@ class _farmCardViewState extends State<farmCardView> {
   devicesToList(farm) async {
     var temp_devices = await getDevicesByFarmName(farm);
     devices = temp_devices;
+  }
+
+  devicesToTypeMap(List<Map> devs) {
+    for (var sub in devs) {
+      var temp = {
+        "Name": sub["DeviceName"].toString(),
+        "Type": sub["Type"].toString()
+      };
+      deviceAndType.add(temp);
+      temp = {};
+    }
   }
 
   List<ChartData> transformFromRawData(List<Map> inputData) {
@@ -263,7 +278,7 @@ class _farmCardViewState extends State<farmCardView> {
                 margin: const EdgeInsets.all(10),
               ),
             // Chart
-            if (defaultMainDisplay == 0)
+            if (mainWidgetDisplay[defaultMainDisplay] == "graph")
               Container(
                 height: 300,
                 width: MediaQuery.of(context).size.width,
@@ -284,7 +299,7 @@ class _farmCardViewState extends State<farmCardView> {
                     )
                 ]),
               ),
-            if (defaultMainDisplay == 1)
+            if (mainWidgetDisplay[defaultMainDisplay] == "numbers")
               Container(
                 height: 300,
                 width: MediaQuery.of(context).size.width,
@@ -302,6 +317,11 @@ class _farmCardViewState extends State<farmCardView> {
                   ],
                 ),
               ),
+            // if (mainWidgetDisplay[defaultMainDisplay] == "report")
+            //   Container(
+            //       height: 300,
+            //       width: MediaQuery.of(context).size.width,
+            //       child: ),
             const Text("What to be display ?"),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -333,11 +353,13 @@ class _farmCardViewState extends State<farmCardView> {
                 Column(
                   children: [
                     IconButton(
-                        onPressed: () {
-                          setState(() {
-                            defaultMainDisplay = 2;
-                          });
-                        },
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReportPreview(
+                                  reportCard: ReportCard(tempLoc, deviceAndType,
+                                      Text(""), "-", widget.username)),
+                            )),
                         icon: const Icon(Icons.description_outlined)),
                     const Text("Status Report"),
                   ],
@@ -381,7 +403,7 @@ class _farmCardViewState extends State<farmCardView> {
             ),
             Divider(),
             Container(
-              height: 300,
+              height: 400,
               child: Builder(
                 builder: (context) {
                   // Transform into single array
@@ -451,6 +473,7 @@ class _farmCardViewState extends State<farmCardView> {
             ),
             // TextButton(
             //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
+            // Bottom buttons for choosing widget
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -462,6 +485,28 @@ class _farmCardViewState extends State<farmCardView> {
                           onPressed: () => _controller.toggleCard(),
                           icon: const Icon(Icons.keyboard_return)),
                       const Text("Return"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      IconButton(
+                          onPressed: () => setState(() => displayRearIndex = 0),
+                          icon: const Icon(Icons.settings)),
+                      const Text("Device State Settings"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      IconButton(
+                          onPressed: () => setState(() => displayRearIndex = 1),
+                          icon: const Icon(Icons.history)),
+                      const Text("Logs"),
                     ],
                   ),
                 ),

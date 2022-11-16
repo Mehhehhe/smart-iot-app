@@ -22,7 +22,7 @@ class _MainPageState extends State<MainPage> {
   late List<Widget> _screen;
   // User variables
   Map<String, dynamic> account = {"name": "name", "email": "email"};
-  late String accountName;
+  String accountName = "";
   late String accountEmail;
   late var ownedFarm;
   // Farm variables
@@ -58,6 +58,7 @@ class _MainPageState extends State<MainPage> {
 
     setState(() {
       account = userInf;
+      accountName = res.username.toString();
       ownedFarm = userInf["ownedFarm"];
     });
     return userInf;
@@ -84,7 +85,7 @@ class _MainPageState extends State<MainPage> {
     // use getUserList() first to get all users.
     // select a user where name is matched then return id.
     // using this id in parameter of `get_farm_by_id`
-    _screen = [const farmCard(), const Text("Second")];
+    _screen = [farmCard(username: accountName), const Text("Second")];
     super.initState();
   }
 
@@ -112,30 +113,30 @@ class _MainPageState extends State<MainPage> {
                   toolbarHeight: 80,
                 ),
                 body: _screen[index],
-                bottomNavigationBar: NavigationBarTheme(
-                  data: NavigationBarThemeData(
-                      indicatorColor: Colors.white,
-                      labelTextStyle: MaterialStateProperty.all(const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w500))),
-                  child: NavigationBar(
-                    height: 60,
-                    //               backgroundColor: Colors.amberAccent,
-                    labelBehavior:
-                        NavigationDestinationLabelBehavior.onlyShowSelected,
-                    selectedIndex: index,
-                    animationDuration: const Duration(milliseconds: 500),
-                    onDestinationSelected: (index) =>
-                        setState(() => this.index = index),
-                    destinations: const [
-                      NavigationDestination(
-                          icon: Icon(Icons.home_outlined),
-                          selectedIcon: Icon(Icons.home),
-                          label: 'Home'),
-                      NavigationDestination(
-                          icon: Icon(Icons.history), label: 'History'),
-                    ],
-                  ),
-                ),
+                // bottomNavigationBar: NavigationBarTheme(
+                //   data: NavigationBarThemeData(
+                //       indicatorColor: Colors.white,
+                //       labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                //           fontSize: 14, fontWeight: FontWeight.w500))),
+                //   child: NavigationBar(
+                //     height: 60,
+                //     //               backgroundColor: Colors.amberAccent,
+                //     labelBehavior:
+                //         NavigationDestinationLabelBehavior.onlyShowSelected,
+                //     selectedIndex: index,
+                //     animationDuration: const Duration(milliseconds: 500),
+                //     onDestinationSelected: (index) =>
+                //         setState(() => this.index = index),
+                //     destinations: const [
+                //       NavigationDestination(
+                //           icon: Icon(Icons.home_outlined),
+                //           selectedIcon: Icon(Icons.home),
+                //           label: 'Home'),
+                //       NavigationDestination(
+                //           icon: Icon(Icons.history), label: 'History'),
+                //     ],
+                //   ),
+                // ),
                 backgroundColor: Color.fromARGB(255, 79, 168, 108),
                 drawer: Drawer(
                   elevation: 5.0,
