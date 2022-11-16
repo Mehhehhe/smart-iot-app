@@ -75,6 +75,12 @@ dependencies:
 
   flip_card: ^0.6.0
 
+  pdf:
+  printing:
+  screenshot:
+  # permission_handler:
+  flutter_email_sender:
+
 dev_dependencies:
 
   # The "flutter_lints" package below contains a set of recommended lints to
