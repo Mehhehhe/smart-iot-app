@@ -194,6 +194,13 @@ functions:
       - http:
           path: /farm/write
           method: POST
+  changeDeviceStatusByMobile:
+    handler: handler.changeDeviceStatusByMobile
+    description: To control state of device from mobile application, topics{For app use 'farmName/device/change_state', For device use 'farmName/device/state/listen/request'}
+    events:
+      - http:
+          path: /farm/device/changeState
+          method: POST
 
 resources:
   Resources:

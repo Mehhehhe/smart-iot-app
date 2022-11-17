@@ -735,3 +735,33 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
     });
   });
 };
+
+module.exports.changeDeviceStatusByMobile = async (event, context, callback) => {
+  var requestToChangeTo = event.requestedState;
+  if(requestToChangeTo == null || typeof requestToChangeTo !== 'boolean'){
+    console.log("Unknown state. Something wrong with requested state.");
+    return Error("Unexpected State");
+  }
+
+  let splitStr = event.topic.split("/");
+  var farmName = splitStr[0];
+  var targetDevice = splitStr[1];
+
+  // Received from topic "farmName/device/change_state"
+  // Send to device to set its state to either "true/false" 
+  // If 'false', send only its status and pause on sending other sensor value
+  var responseToDevice = {
+    topic: farmName+'/'+targetDevice+'/'+'state/listen/request',
+    payload: JSON.stringify(requestToChangeTo),
+    qos: 1
+  };
+  const pub = iotdata.publish(responseToDevice);
+  pub.on('success', () => console.log("successfully send requested state change")).on('error', () => console.log("error. request not function correctly"));
+  return new Promise(() => pub.send(function(err, data){
+    if(err){
+      console.log(err);
+    } else {
+      console.log(data);
+    }
+  }));
+};
