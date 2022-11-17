@@ -67,3 +67,8 @@ amplifytools.xcconfig
 **.sample
 #amplify-do-not-edit-end
 /assets/certificates/
+
+# Deploy items
+.serverless/cloudformation-template-update-stack.json
+.serverless/smart-iot-app.zip
+.serverless/serverless-state.json
