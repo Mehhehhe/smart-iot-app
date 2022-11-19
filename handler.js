@@ -553,7 +553,7 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   // const data = await dynamoDb.query(params).promise();
   var itemToReturn = {"LatestItems":[]};
   if(data.Item["DeviceValue"].length >= 10){
-    itemToReturn.LatestItems = data.Item.slice(data.Item["DeviceValue"].length - 10, data.Item["DeviceValue"].length);
+    itemToReturn.LatestItems = data.Item["DeviceValue"].slice(data.Item["DeviceValue"].length - 10, data.Item["DeviceValue"].length);
   } else {
     itemToReturn.LatestItems = data.Item["DeviceValue"];
   }
