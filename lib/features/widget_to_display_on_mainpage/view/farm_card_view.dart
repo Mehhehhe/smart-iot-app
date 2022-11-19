@@ -402,75 +402,86 @@ class _farmCardViewState extends State<farmCardView> {
               child: const Text("Value History"),
             ),
             Divider(),
-            Container(
-              height: 400,
-              child: Builder(
-                builder: (context) {
-                  // Transform into single array
-                  var newDataArray = [];
-                  for (var m in dataResponse) {
-                    m.forEach((key, value) {
-                      if (key == "Data") {
-                        var tr = json.decode(value).cast().toList();
-                        for (var element in tr) {
-                          var temp = {
-                            "Value": element["Value"],
-                            "State": element["State"],
-                            "TimeStamp": DateTime.fromMillisecondsSinceEpoch(
-                                    element["TimeStamp"])
-                                .toLocal()
-                                .toString(),
-                            "FromDevice": m["FromDevice"]
-                          };
-                          newDataArray.add(temp);
-                          temp = {};
+            if (displayRearIndex == 0)
+              Container(
+                child: TextButton(
+                    child: Text("Test Set state"),
+                    onPressed: () => {
+                          client.publishToSetDeviceState(
+                              "AdFarm1", "RP-TEST", false)
+                        }),
+              )
+            else if (displayRearIndex == 1)
+              Container(
+                height: 400,
+                child: Builder(
+                  builder: (context) {
+                    // Transform into single array
+                    var newDataArray = [];
+                    for (var m in dataResponse) {
+                      m.forEach((key, value) {
+                        if (key == "Data") {
+                          var tr = json.decode(value).cast().toList();
+                          for (var element in tr) {
+                            var temp = {
+                              "Value": element["Value"],
+                              "State": element["State"],
+                              "TimeStamp": DateTime.fromMillisecondsSinceEpoch(
+                                      element["TimeStamp"])
+                                  .toLocal()
+                                  .toString(),
+                              "FromDevice": m["FromDevice"]
+                            };
+                            newDataArray.add(temp);
+                            temp = {};
+                          }
                         }
-                      }
-                    });
-                  }
-                  newDataArray.sort((a, b) =>
-                      DateTime.parse(b["TimeStamp"]).millisecondsSinceEpoch -
-                      DateTime.parse(a["TimeStamp"]).millisecondsSinceEpoch);
-                  return Scrollbar(
-                      thumbVisibility: true,
-                      controller: historyScroll,
-                      thickness: 8.0,
-                      interactive: true,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: newDataArray.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin:
-                                const EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 0.0),
-                            decoration: BoxDecoration(
-                              color: newDataArray[index]["State"] == true
-                                  ? Colors.lightGreen
-                                  : Colors.redAccent,
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(5)),
-                            ),
-                            child: ListTile(
-                                title: Text(
-                                  newDataArray[index]["FromDevice"],
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(newDataArray[index]["Value"],
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold)),
-                                      Text(newDataArray[index]["TimeStamp"])
-                                    ])),
-                          );
-                        },
-                      ));
-                },
+                      });
+                    }
+                    newDataArray.sort((a, b) =>
+                        DateTime.parse(b["TimeStamp"]).millisecondsSinceEpoch -
+                        DateTime.parse(a["TimeStamp"]).millisecondsSinceEpoch);
+                    return Scrollbar(
+                        thumbVisibility: true,
+                        controller: historyScroll,
+                        thickness: 8.0,
+                        interactive: true,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: newDataArray.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin:
+                                  const EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 0.0),
+                              decoration: BoxDecoration(
+                                color: newDataArray[index]["State"] == true
+                                    ? Colors.lightGreen
+                                    : Colors.redAccent,
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(5)),
+                              ),
+                              child: ListTile(
+                                  title: Text(
+                                    newDataArray[index]["FromDevice"],
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(newDataArray[index]["Value"],
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold)),
+                                        Text(newDataArray[index]["TimeStamp"])
+                                      ])),
+                            );
+                          },
+                        ));
+                  },
+                ),
               ),
-            ),
             // TextButton(
             //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
             // Bottom buttons for choosing widget
