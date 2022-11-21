@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/back_of_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
@@ -194,11 +194,24 @@ class _farmCardViewState extends State<farmCardView> {
                 case ConnectionState.done:
                   // print(snapshot.data);
                   Map dataMap = Map.from(snapshot.data as Map);
+
+                  // return BlocProvider(
+                  //     create: (_) => WidgetSelectorBloc(),
+                  //     child: FlipCard(
+                  //       controller: _controller,
+                  //       flipOnTouch: false,
+                  //       front: farmAsCard(context, dataMap["OwnedFarm"]),
+                  //       back: farmCardRear(),
+                  //     ));
+
                   return FlipCard(
                       controller: _controller,
                       flipOnTouch: false,
                       onFlipDone: (isFront) => print(isFront),
-                      front: farmAsCard(context, dataMap["OwnedFarm"]),
+                      front: BlocProvider(
+                        create: (_) => FrontOfCardCubit(),
+                        child: farmAsCard(context, dataMap["OwnedFarm"]),
+                      ),
                       back: BlocProvider(
                         create: (_) => BackOfCardCubit(),
                         child: farmCardRear(),
@@ -215,184 +228,176 @@ class _farmCardViewState extends State<farmCardView> {
   }
 
   Widget farmAsCard(BuildContext context, dynamic data) {
-    print(context);
-    return Card(
-      key: const ValueKey(true),
-      margin: const EdgeInsets.all(20),
-      elevation: 5.0,
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            BlocBuilder<FarmCardCubit, FarmCardInitial>(
-              builder: (context, state) {
-                print(
-                    "state index: ${state.farmIndex} , farm index: $farmIndex");
-
-                if (state.farmIndex == farmIndex) {
-                  // print("Created within condition");
-                  devicesToList(context
-                      .read<FarmCardCubit>()
-                      .decodeAndRemovePadding(data[state.farmIndex]));
-                  // print(devices);
-                  tempLoc = FarmCardCubit()
-                      .decodeAndRemovePadding(data[state.farmIndex]);
-                  return Text(
-                      context
-                          .read<FarmCardCubit>()
-                          .decodeAndRemovePadding(data[state.farmIndex]),
-                      style: const TextStyle(
-                          fontSize: 28, fontWeight: FontWeight.bold));
-                }
-                // print("Created out of condition");
-                devicesToList(context
-                    .read<FarmCardCubit>()
-                    .decodeAndRemovePadding(data[farmIndex]));
-                // print(devices);
-                tempLoc =
-                    FarmCardCubit().decodeAndRemovePadding(data[farmIndex]);
-                return Text(
-                    context
-                        .read<FarmCardCubit>()
-                        .decodeAndRemovePadding(data[farmIndex]),
-                    style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.bold));
-              },
-            ),
-            TextButton(
-                onPressed: () async {
-                  // _displayFarmEditor(context, data);
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FarmEditor(farm: data),
-                      )).then((value) => onIndexSelection(value));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.edit),
-                    Text("Change to another farm")
-                  ],
-                )),
-            if (defaultMainDisplay > 2 || defaultMainDisplay < 0)
-              Container(
-                height: 300,
-                width: MediaQuery.of(context).size.width - 10,
-                margin: const EdgeInsets.all(10),
-              ),
-            // Chart
-            if (mainWidgetDisplay[defaultMainDisplay] == "graph")
-              Container(
-                height: 300,
-                width: MediaQuery.of(context).size.width,
-                margin: const EdgeInsets.all(10),
-                child: Stack(children: [
-                  if (dataResponse.isEmpty)
-                    const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  else
-                    BlocProvider(
-                      create: (_) => LiveDataCubit(
-                          dataResponse, transformFromRawData(dataResponse)),
-                      child: LiveChart(
-                        devices: dataResponse,
-                        type: 'line',
-                      ),
-                    )
-                ]),
-              ),
-            if (mainWidgetDisplay[defaultMainDisplay] == "numbers")
-              Container(
-                height: 300,
-                width: MediaQuery.of(context).size.width,
-                child: Stack(
-                  children: [
-                    if (dataResponse.isEmpty)
-                      const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    else
-                      BlocProvider(
-                        create: (_) => LiveDataCubit(dataResponse),
-                        child: numberCard(inputData: dataResponse),
-                      )
-                  ],
-                ),
-              ),
-            // if (mainWidgetDisplay[defaultMainDisplay] == "report")
-            //   Container(
-            //       height: 300,
-            //       width: MediaQuery.of(context).size.width,
-            //       child: ),
-            const Text("What to be display ?"),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return BlocBuilder<FrontOfCardCubit, CardState>(
+      builder: (context, state) {
+        return Card(
+          key: const ValueKey(true),
+          margin: const EdgeInsets.all(20),
+          elevation: 5.0,
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
+                BlocBuilder<FarmCardCubit, FarmCardInitial>(
+                  builder: (context, state) {
+                    print(
+                        "state index: ${state.farmIndex} , farm index: $farmIndex");
+
+                    if (state.farmIndex == farmIndex) {
+                      // print("Created within condition");
+                      devicesToList(context
+                          .read<FarmCardCubit>()
+                          .decodeAndRemovePadding(data[state.farmIndex]));
+                      // print(devices);
+                      tempLoc = FarmCardCubit()
+                          .decodeAndRemovePadding(data[state.farmIndex]);
+                      return Text(
+                          context
+                              .read<FarmCardCubit>()
+                              .decodeAndRemovePadding(data[state.farmIndex]),
+                          style: const TextStyle(
+                              fontSize: 28, fontWeight: FontWeight.bold));
+                    }
+                    // print("Created out of condition");
+                    devicesToList(context
+                        .read<FarmCardCubit>()
+                        .decodeAndRemovePadding(data[farmIndex]));
+                    // print(devices);
+                    tempLoc =
+                        FarmCardCubit().decodeAndRemovePadding(data[farmIndex]);
+                    return Text(
+                        context
+                            .read<FarmCardCubit>()
+                            .decodeAndRemovePadding(data[farmIndex]),
+                        style: const TextStyle(
+                            fontSize: 28, fontWeight: FontWeight.bold));
+                  },
+                ),
+                TextButton(
+                    onPressed: () async {
+                      // _displayFarmEditor(context, data);
+                      await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FarmEditor(farm: data),
+                          )).then((value) => onIndexSelection(value));
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.edit),
+                        Text("Change to another farm")
+                      ],
+                    )),
+                if (state.widgetIndex == 0)
+                  Container(
+                    height: 300,
+                    width: MediaQuery.of(context).size.width,
+                    margin: const EdgeInsets.all(10),
+                    child: Stack(children: [
+                      if (dataResponse.isEmpty)
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      else
+                        BlocProvider(
+                          create: (_) => LiveDataCubit(
+                              dataResponse, transformFromRawData(dataResponse)),
+                          child: LiveChart(
+                            devices: dataResponse,
+                            type: 'line',
+                          ),
+                        )
+                    ]),
+                  )
+                else if (state.widgetIndex == 1)
+                  Container(
+                    height: 300,
+                    width: MediaQuery.of(context).size.width,
+                    child: Stack(
+                      children: [
+                        if (dataResponse.isEmpty)
+                          const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        else
+                          BlocProvider(
+                            create: (_) => LiveDataCubit(dataResponse),
+                            child: numberCard(inputData: dataResponse),
+                          )
+                      ],
+                    ),
+                  ),
+                const Text("What to be display ?"),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            defaultMainDisplay = 0;
-                          });
-                        },
-                        icon: const Icon(Icons.auto_graph)),
-                    const Text("Graph"),
+                    Column(
+                      children: [
+                        IconButton(
+                            onPressed: () =>
+                                context.read<FrontOfCardCubit>().chooseIndex(0),
+                            icon: const Icon(Icons.auto_graph)),
+                        const Text("Graph"),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        IconButton(
+                            onPressed: () =>
+                                context.read<FrontOfCardCubit>().chooseIndex(1),
+                            icon: const Icon(Icons.numbers)),
+                        const Text("Numbers"),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        IconButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportPreview(
+                                      reportCard: ReportCard(
+                                          tempLoc,
+                                          deviceAndType,
+                                          Text(""),
+                                          "-",
+                                          widget.username)),
+                                )),
+                            icon: const Icon(Icons.description_outlined)),
+                        const Text("Status Report"),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        IconButton(
+                            onPressed: () => _controller.toggleCard(),
+                            icon:
+                                const Icon(Icons.keyboard_double_arrow_right)),
+                        const Text("More"),
+                      ],
+                    ),
                   ],
                 ),
-                Column(
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            defaultMainDisplay = 1;
-                          });
-                        },
-                        icon: const Icon(Icons.numbers)),
-                    const Text("Numbers"),
-                  ],
-                ),
-                Column(
-                  children: [
-                    IconButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReportPreview(
-                                  reportCard: ReportCard(tempLoc, deviceAndType,
-                                      Text(""), "-", widget.username)),
-                            )),
-                        icon: const Icon(Icons.description_outlined)),
-                    const Text("Status Report"),
-                  ],
-                ),
-                Column(
-                  children: [
-                    IconButton(
-                        onPressed: () => _controller.toggleCard(),
-                        icon: const Icon(Icons.keyboard_double_arrow_right)),
-                    const Text("More"),
-                  ],
-                ),
-              ],
-            ),
-            TextButton(
-                onPressed: () async {
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DeviceSelector(devices: devices),
-                      )).then((value) => onDeviceSelection(value));
-                },
-                child: const Text("Choose devices ..."))
-          ]),
+                TextButton(
+                    onPressed: () async {
+                      await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DeviceSelector(devices: devices),
+                          )).then((value) => onDeviceSelection(value));
+                    },
+                    child: const Text("Choose devices ..."))
+              ]),
+        );
+        ;
+      },
     );
   }
 
   Widget farmCardRear() {
-    return BlocBuilder<BackOfCardCubit, BackOfCardInitial>(
+    return BlocBuilder<BackOfCardCubit, CardState>(
         builder: (context, state) => Card(
               key: const ValueKey(false),
               margin: const EdgeInsets.all(20),
