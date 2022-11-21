@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/back_of_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
@@ -198,7 +199,10 @@ class _farmCardViewState extends State<farmCardView> {
                       flipOnTouch: false,
                       onFlipDone: (isFront) => print(isFront),
                       front: farmAsCard(context, dataMap["OwnedFarm"]),
-                      back: farmCardRear());
+                      back: BlocProvider(
+                        create: (_) => BackOfCardCubit(),
+                        child: farmCardRear(),
+                      ));
                 default:
                   break;
               }
@@ -388,142 +392,156 @@ class _farmCardViewState extends State<farmCardView> {
   }
 
   Widget farmCardRear() {
-    return Card(
-      key: const ValueKey(false),
-      margin: const EdgeInsets.all(20),
-      elevation: 5.0,
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text("Rear"),
-            Container(
-              width: MediaQuery.of(context).size.width,
-              child: const Text("Value History"),
-            ),
-            Divider(),
-            if (displayRearIndex == 0)
-              Container(
-                child: TextButton(
-                    child: Text("Test Set state"),
-                    onPressed: () => {
-                          client.publishToSetDeviceState(
-                              "AdFarm1", "RP-TEST", false)
-                        }),
-              )
-            else if (displayRearIndex == 1)
-              Container(
-                height: 400,
-                child: Builder(
-                  builder: (context) {
-                    // Transform into single array
-                    var newDataArray = [];
-                    for (var m in dataResponse) {
-                      m.forEach((key, value) {
-                        if (key == "Data") {
-                          var tr = json.decode(value).cast().toList();
-                          for (var element in tr) {
-                            var temp = {
-                              "Value": element["Value"],
-                              "State": element["State"],
-                              "TimeStamp": DateTime.fromMillisecondsSinceEpoch(
-                                      element["TimeStamp"])
-                                  .toLocal()
-                                  .toString(),
-                              "FromDevice": m["FromDevice"]
-                            };
-                            newDataArray.add(temp);
-                            temp = {};
-                          }
-                        }
-                      });
-                    }
-                    newDataArray.sort((a, b) =>
-                        DateTime.parse(b["TimeStamp"]).millisecondsSinceEpoch -
-                        DateTime.parse(a["TimeStamp"]).millisecondsSinceEpoch);
-                    return Scrollbar(
-                        thumbVisibility: true,
-                        controller: historyScroll,
-                        thickness: 8.0,
-                        interactive: true,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: newDataArray.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              margin:
-                                  const EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 0.0),
-                              decoration: BoxDecoration(
-                                color: newDataArray[index]["State"] == true
-                                    ? Colors.lightGreen
-                                    : Colors.redAccent,
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(5)),
-                              ),
-                              child: ListTile(
-                                  title: Text(
-                                    newDataArray[index]["FromDevice"],
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(newDataArray[index]["Value"],
+    return BlocBuilder<BackOfCardCubit, BackOfCardInitial>(
+        builder: (context, state) => Card(
+              key: const ValueKey(false),
+              margin: const EdgeInsets.all(20),
+              elevation: 5.0,
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text("Rear"),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: const Text("Value History"),
+                    ),
+                    Divider(),
+                    if (state.widgetIndex == 0)
+                      Container(
+                        child: TextButton(
+                            child: Text("Test Set state"),
+                            onPressed: () => {
+                                  client.publishToSetDeviceState(
+                                      "AdFarm1", "RP-TEST", false)
+                                }),
+                      )
+                    else if (state.widgetIndex == 1)
+                      Container(
+                        height: 400,
+                        child: Builder(
+                          builder: (context) {
+                            // Transform into single array
+                            var newDataArray = [];
+                            for (var m in dataResponse) {
+                              m.forEach((key, value) {
+                                if (key == "Data") {
+                                  var tr = json.decode(value).cast().toList();
+                                  for (var element in tr) {
+                                    var temp = {
+                                      "Value": element["Value"],
+                                      "State": element["State"],
+                                      "TimeStamp":
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                                  element["TimeStamp"])
+                                              .toLocal()
+                                              .toString(),
+                                      "FromDevice": m["FromDevice"]
+                                    };
+                                    newDataArray.add(temp);
+                                    temp = {};
+                                  }
+                                }
+                              });
+                            }
+                            newDataArray.sort((a, b) =>
+                                DateTime.parse(b["TimeStamp"])
+                                    .millisecondsSinceEpoch -
+                                DateTime.parse(a["TimeStamp"])
+                                    .millisecondsSinceEpoch);
+                            return Scrollbar(
+                                thumbVisibility: true,
+                                controller: historyScroll,
+                                thickness: 8.0,
+                                interactive: true,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: newDataArray.length,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      margin: const EdgeInsets.fromLTRB(
+                                          0.0, 5.0, 0.0, 0.0),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            newDataArray[index]["State"] == true
+                                                ? Colors.lightGreen
+                                                : Colors.redAccent,
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(5)),
+                                      ),
+                                      child: ListTile(
+                                          title: Text(
+                                            newDataArray[index]["FromDevice"],
                                             style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold)),
-                                        Text(newDataArray[index]["TimeStamp"])
-                                      ])),
-                            );
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          subtitle: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                    newDataArray[index]
+                                                        ["Value"],
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                Text(newDataArray[index]
+                                                    ["TimeStamp"])
+                                              ])),
+                                    );
+                                  },
+                                ));
                           },
-                        ));
-                  },
-                ),
-              ),
-            // TextButton(
-            //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
-            // Bottom buttons for choosing widget
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      IconButton(
-                          onPressed: () => _controller.toggleCard(),
-                          icon: const Icon(Icons.keyboard_return)),
-                      const Text("Return"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      IconButton(
-                          onPressed: () => setState(() => displayRearIndex = 0),
-                          icon: const Icon(Icons.settings)),
-                      const Text("Device State Settings"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      IconButton(
-                          onPressed: () => setState(() => displayRearIndex = 1),
-                          icon: const Icon(Icons.history)),
-                      const Text("Logs"),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          ]),
-    );
+                        ),
+                      ),
+                    // TextButton(
+                    //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
+                    // Bottom buttons for choosing widget
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              IconButton(
+                                  onPressed: () => _controller.toggleCard(),
+                                  icon: const Icon(Icons.keyboard_return)),
+                              const Text("Return"),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              IconButton(
+                                  onPressed: () => context
+                                      .read<BackOfCardCubit>()
+                                      .chooseIndex(0),
+                                  icon: const Icon(Icons.settings)),
+                              const Text("Device State Settings"),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              IconButton(
+                                  onPressed: () => context
+                                      .read<BackOfCardCubit>()
+                                      .chooseIndex(1),
+                                  icon: const Icon(Icons.history)),
+                              const Text("Logs"),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  ]),
+            ));
   }
 }
