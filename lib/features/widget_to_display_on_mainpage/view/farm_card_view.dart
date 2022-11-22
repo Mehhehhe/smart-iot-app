@@ -47,7 +47,7 @@ class _farmCardViewState extends State<farmCardView> {
 
   // Boolean for control widgets
   bool isDraggable = true;
-  // late Timer timer;
+  late Timer timer;
   ScrollController historyScroll = ScrollController(initialScrollOffset: 0.0);
 
   FlipCardController _controller = FlipCardController();
@@ -60,7 +60,7 @@ class _farmCardViewState extends State<farmCardView> {
     Future.delayed(const Duration(seconds: 10), () => periodicallyFetch());
     // Timer.run(() => periodicallyFetch);
     print("Future finished");
-    // timer = Timer.periodic(const Duration(seconds: 30), periodicallyFetch);
+    timer = Timer.periodic(const Duration(seconds: 30), periodicallyFetchLoop);
   }
 
   void onIndexSelection(dynamic index) {
@@ -110,6 +110,19 @@ class _farmCardViewState extends State<farmCardView> {
     });
   }
 
+  void periodicallyFetchLoop(Timer timer) {
+    // print("\nStatus sub: $tempLoc, $devices\n");
+    setState(() {
+      if (mounted) {
+        dataResponse.clear();
+        client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
+            devList.isEmpty ? devices : devList);
+        devicesToTypeMap(List<Map>.from(devices));
+      }
+      isRefreshed = false;
+    });
+  }
+
   // var devicesToList = (farm) async => await getDevicesByFarmName(farm);
   devicesToList(farm) async {
     var temp_devices = await getDevicesByFarmName(farm);
@@ -144,6 +157,31 @@ class _farmCardViewState extends State<farmCardView> {
     }
     tempChartList.removeAt(0);
     return tempChartList;
+  }
+
+  List localizedResponse() {
+    var newDataArray = [];
+    for (var m in dataResponse) {
+      m.forEach((key, value) {
+        if (key == "Data") {
+          var tr = json.decode(value).cast().toList();
+          for (var element in tr) {
+            var temp = {
+              "Value": element["Value"],
+              "State": element["State"],
+              "TimeStamp":
+                  DateTime.fromMillisecondsSinceEpoch(element["TimeStamp"])
+                      .toLocal()
+                      .toString(),
+              "FromDevice": m["FromDevice"]
+            };
+            newDataArray.add(temp);
+            temp = {};
+          }
+        }
+      });
+    }
+    return newDataArray;
   }
 
   void _onMainCardDragEnd(DragEndDetails details) {
@@ -358,7 +396,9 @@ class _farmCardViewState extends State<farmCardView> {
                                 MaterialPageRoute(
                                   builder: (context) => ReportPreview(
                                       reportCard: ReportCard(
-                                          tempLoc,
+                                          exposedLoc == ""
+                                              ? tempLoc
+                                              : exposedLoc,
                                           deviceAndType,
                                           Text(""),
                                           "-",
@@ -413,13 +453,52 @@ class _farmCardViewState extends State<farmCardView> {
                     ),
                     Divider(),
                     if (state.widgetIndex == 0)
-                      Container(
-                        child: TextButton(
-                            child: Text("Test Set state"),
-                            onPressed: () => {
-                                  client.publishToSetDeviceState(
-                                      "AdFarm1", "RP-TEST", false)
-                                }),
+                      Builder(
+                        builder: (context) {
+                          var tempArr = <Map>[];
+                          for (var data in dataResponse) {
+                            var tempMap = {};
+                            final t_device = data["FromDevice"];
+                            final lt_data = json.decode(data["Data"]);
+                            tempMap = {
+                              t_device.toString(): lt_data[lt_data.length - 1]
+                            };
+                            tempArr.add(tempMap);
+                            tempMap = {};
+                          }
+
+                          return Container(
+                            child: GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2),
+                                itemBuilder: (context, index) {
+                                  var currMap =
+                                      Map<String, dynamic>.from(tempArr[index]);
+                                  var currName = currMap.keys.first;
+                                  print(
+                                      "$currMap State Check: ${currMap[currName]["State"]}");
+                                  return Column(
+                                    children: [
+                                      Text(currName),
+                                      // Text(tempArr[index][""]),
+                                      Switch(
+                                        value: currMap[currName]["State"],
+                                        onChanged: (value) =>
+                                            client.publishToSetDeviceState(
+                                                exposedLoc == ""
+                                                    ? tempLoc
+                                                    : exposedLoc,
+                                                currName,
+                                                value),
+                                      )
+                                    ],
+                                  );
+                                },
+                                shrinkWrap: true,
+                                itemCount: tempArr.length),
+                          );
+                        },
                       )
                     else if (state.widgetIndex == 1)
                       Container(
@@ -427,28 +506,7 @@ class _farmCardViewState extends State<farmCardView> {
                         child: Builder(
                           builder: (context) {
                             // Transform into single array
-                            var newDataArray = [];
-                            for (var m in dataResponse) {
-                              m.forEach((key, value) {
-                                if (key == "Data") {
-                                  var tr = json.decode(value).cast().toList();
-                                  for (var element in tr) {
-                                    var temp = {
-                                      "Value": element["Value"],
-                                      "State": element["State"],
-                                      "TimeStamp":
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                                  element["TimeStamp"])
-                                              .toLocal()
-                                              .toString(),
-                                      "FromDevice": m["FromDevice"]
-                                    };
-                                    newDataArray.add(temp);
-                                    temp = {};
-                                  }
-                                }
-                              });
-                            }
+                            var newDataArray = localizedResponse();
                             newDataArray.sort((a, b) =>
                                 DateTime.parse(b["TimeStamp"])
                                     .millisecondsSinceEpoch -
