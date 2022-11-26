@@ -93,6 +93,7 @@ functions:
       - http:
           path: /farm/list/all
           method: GET
+          cors: true
   getFarmByID:
     handler: handler.getFarmByID
     description: Get a farm data by farm's ID
@@ -138,6 +139,7 @@ functions:
       - http:
           path: /user/list/all
           method: GET
+          cors: true
   getUserByID:
     handler: handler.getUserByID
     description: Get a data of user by given ID
@@ -166,6 +168,7 @@ functions:
       - http:
           path: /device/all
           method: GET
+          cors: true
   getDevicesByFarmName:
     handler: handler.getDevicesByFarmName
     description: Get devices of target farm

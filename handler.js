@@ -53,6 +53,11 @@ module.exports.getFarmList = (event, context, callback) => {
     ProjectionExpression: "ID, FarmName"
   };
 
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
+
   console.log("Scanning 'FARM' table ... ");
   const onScan = (err, data) => {
     if(err){
@@ -62,6 +67,7 @@ module.exports.getFarmList = (event, context, callback) => {
       console.log("Scan success. ");
       return callback(null, {
         statusCode: 200,
+        headers,
         body: JSON.stringify({
           farm: data.Items
         })
@@ -329,6 +335,10 @@ module.exports.getUserList = (event, context, callback) => {
     TableName: FarmUserTable,
     ProjectionExpression: "ID, FarmUser"
   };
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
   console.log("Retrieving users ... ");
   const onScan = (err, data) => {
     if(err){
@@ -338,6 +348,7 @@ module.exports.getUserList = (event, context, callback) => {
       console.log("Retreived success.");
       return callback(null, {
         statusCode: 200,
+        headers,
         body: JSON.stringify({
           users: data.Items
         })
@@ -445,6 +456,11 @@ module.exports.getAllDevices = (event, context, callback) => {
     TableName: FarmDeviceTable,
   };
 
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
+
   console.log("Scanning 'DEVICE' table ... ");
   const onScan = (err, data) => {
     if(err){
@@ -454,6 +470,7 @@ module.exports.getAllDevices = (event, context, callback) => {
       console.log("Scan success. ");
       return callback(null, {
         statusCode: 200,
+        headers,
         body: JSON.stringify({
           farm: data.Items
         })
