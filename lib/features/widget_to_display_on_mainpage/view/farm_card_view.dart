@@ -15,6 +15,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/number
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
+import 'package:smart_iot_app/modules/pipe.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
@@ -60,7 +61,7 @@ class _farmCardViewState extends State<farmCardView> {
     Future.delayed(const Duration(seconds: 10), () => periodicallyFetch());
     // Timer.run(() => periodicallyFetch);
     print("Future finished");
-    timer = Timer.periodic(const Duration(seconds: 30), periodicallyFetchLoop);
+    timer = Timer.periodic(const Duration(seconds: 60), periodicallyFetchLoop);
   }
 
   void onIndexSelection(dynamic index) {
@@ -98,7 +99,7 @@ class _farmCardViewState extends State<farmCardView> {
   }
 
   void periodicallyFetch() {
-    // print("\nStatus sub: $tempLoc, $devices\n");
+    // print("\nStatusperiodicallyFetch sub: $tempLoc, $devices\n");
     setState(() {
       if (mounted) {
         dataResponse.clear();
@@ -478,19 +479,24 @@ class _farmCardViewState extends State<farmCardView> {
                                   var currName = currMap.keys.first;
                                   print(
                                       "$currMap State Check: ${currMap[currName]["State"]}");
+                                  Iterable chainCode = const Iterable.empty();
                                   return Column(
                                     children: [
                                       Text(currName),
                                       // Text(tempArr[index][""]),
                                       Switch(
                                         value: currMap[currName]["State"],
-                                        onChanged: (value) =>
-                                            client.publishToSetDeviceState(
-                                                exposedLoc == ""
-                                                    ? tempLoc
-                                                    : exposedLoc,
-                                                currName,
-                                                value),
+                                        onChanged: (value) {
+                                          client.publishToSetDeviceState(
+                                              exposedLoc == ""
+                                                  ? tempLoc
+                                                  : exposedLoc,
+                                              currName,
+                                              value);
+                                          Future.delayed(
+                                              const Duration(seconds: 5),
+                                              periodicallyFetch);
+                                        },
                                       )
                                     ],
                                   );
