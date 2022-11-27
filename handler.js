@@ -86,10 +86,16 @@ module.exports.getFarmByID = (event, context, callback) => {
     }
   };
 
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
+
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
         statusCode:200, 
+        headers,
         body: JSON.stringify(result.Item)
       };
       callback(null, response);
@@ -366,10 +372,16 @@ module.exports.getUserByID = (event, context, callback) => {
     }
   };
 
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
+
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
         statusCode: 200,
+        headers,
         body: JSON.stringify(result.Item)
       };
       callback(null, response);
@@ -438,10 +450,16 @@ module.exports.getDeviceByID = (event, context, callback) => {
     ProjectionExpression: "ID, DeviceName"
   };
 
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+  }
+
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
         statusCode: 200,
+        headers,
         body: JSON.stringify(result.Item)
       };
       callback(null, response);

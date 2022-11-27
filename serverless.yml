@@ -101,6 +101,7 @@ functions:
       - http:
           path: /farm/get/{ID}
           method: GET
+          cors: true
   createFarm:
     handler: handler.createFarm
     description: Send a farm information
@@ -147,6 +148,7 @@ functions:
       - http:
           path: /user/get/{ID}
           method: GET
+          cors: true
   registerDevice:
     handler: handler.registerDevice
     description: Use for first time register of new device.
@@ -161,6 +163,7 @@ functions:
       - http:
           path: /device/in/{ID}
           method: GET
+          cors: true
   getAllDevices:
     handler: handler.getAllDevices
     description: Get all devices.
