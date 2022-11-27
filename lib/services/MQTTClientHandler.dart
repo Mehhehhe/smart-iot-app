@@ -77,10 +77,11 @@ class MQTTClientWrapper {
     }
   }
 
-  void publishToSetDeviceState(
+  Future<bool> publishToSetDeviceState(
       String farmName, String device, bool stateToSet) async {
     _publishMessage(json.encode({"requestedState": stateToSet}),
         "$farmName/$device/change_state");
+    return true;
   }
 
   // waiting for the connection, if an error occurs, print it and disconnect
