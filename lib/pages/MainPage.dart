@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card_view.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
 class MainPage extends StatefulWidget {
@@ -73,6 +75,12 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  onIndexSelection(int value) {
+    setState(() {
+      farmInd = value;
+    });
+  }
+
   @override
   void initState() {
     // Test if farm table is interable
@@ -85,7 +93,7 @@ class _MainPageState extends State<MainPage> {
     // use getUserList() first to get all users.
     // select a user where name is matched then return id.
     // using this id in parameter of `get_farm_by_id`
-    _screen = [farmCard(username: accountName), const Text("Second")];
+    // _screen = [farmCard(username: accountName), const Text("Second")];
     super.initState();
   }
 
@@ -112,7 +120,21 @@ class _MainPageState extends State<MainPage> {
                   leadingWidth: 80,
                   toolbarHeight: 80,
                 ),
-                body: _screen[index],
+                body: BlocBuilder<FarmCardCubit, FarmCardInitial>(
+                  bloc: context.read<FarmCardCubit>(),
+                  builder: (context, state) {
+                    if (state.farmIndex == farmInd) {
+                      return farmCardView(
+                        username: accountName,
+                        overrideFarmIndex: state.farmIndex,
+                      );
+                    }
+                    return farmCardView(
+                      username: accountName,
+                      overrideFarmIndex: farmInd,
+                    );
+                  },
+                ),
                 // bottomNavigationBar: NavigationBarTheme(
                 //   data: NavigationBarThemeData(
                 //       indicatorColor: Colors.white,
@@ -175,7 +197,16 @@ class _MainPageState extends State<MainPage> {
                             ),
                             isThreeLine: true,
                             hoverColor: Colors.white70,
-                            onTap: () {},
+                            subtitle: const Text(""),
+                            onTap: () async {
+                              // _displayFarmEditor(context, data);
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        FarmEditor(farm: ownedFarm),
+                                  )).then((value) => onIndexSelection(value));
+                            },
                             onLongPress: () => const Dialog(
                                 child: Text(
                                     "เลือกฟาร์มของคุณ กด 1 ครั้งเพื่อนำทางไปยังหน้าต่างเลือกฟาร์ม โดยจะแสดงผลเป็นรายชื่อฟาร์มทั้งหมด")),
