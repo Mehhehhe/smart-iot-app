@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 import 'package:smart_iot_app/pages/MainPage.dart';
 import 'package:smart_iot_app/services/authentication.dart';
 
@@ -109,7 +110,7 @@ class _LogIn extends State<LogIn> {
           builder: Authenticator.builder(),
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            body: MainPage(),
+            body: farmCard(),
           ),
         ));
   }
