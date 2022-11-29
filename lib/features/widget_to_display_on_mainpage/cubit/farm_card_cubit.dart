@@ -9,6 +9,8 @@ part 'farm_card_state.dart';
 
 class FarmCardCubit extends Cubit<FarmCardInitial> {
   FarmCardCubit() : super(FarmCardInitial(farmIndex: 0, farms: const []));
+  FarmCardCubit.withIndex(int index)
+      : super(FarmCardInitial(farmIndex: index, farms: const []));
 
   void chooseIndex(int index, List farms) =>
       emit(FarmCardInitial(farmIndex: index));
