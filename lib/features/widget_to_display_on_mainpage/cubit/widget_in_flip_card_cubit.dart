@@ -11,7 +11,7 @@ class BackOfCardCubit extends Cubit<BackOfCardInitial> {
 }
 
 class FrontOfCardCubit extends Cubit<FrontOfCardInitial> {
-  FrontOfCardCubit() : super(FrontOfCardInitial(widgetIndex: 0));
+  FrontOfCardCubit() : super(FrontOfCardInitial(widgetIndex: 1));
 
   int currentIndex() => state.widgetIndex;
   void chooseIndex(int index) => emit(FrontOfCardInitial(widgetIndex: index));
