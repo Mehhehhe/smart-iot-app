@@ -14,4 +14,4 @@ class _OnUserDataStreaming extends UserDataStreamEvent {
   const _OnUserDataStreaming({required this.data, required this.pos});
 }
 
-class OnUserStreamingEnds {}
+class OnUserStreamingEnds extends UserDataStreamEvent {}
