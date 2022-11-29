@@ -24,12 +24,14 @@ import 'graph_in_farm_card.dart';
 int farmIndex = 0;
 List mainWidgetDisplay = ["graph", "numbers", "report"];
 List rearWidgetDisplay = ["state_setting", "hist"];
-int defaultMainDisplay = 0;
+int defaultMainDisplay = 1;
 int displayRearIndex = 0;
 
 class farmCardView extends StatefulWidget {
   String username;
-  farmCardView({Key? key, required this.username}) : super(key: key);
+  int? overrideFarmIndex;
+  farmCardView({Key? key, required this.username, this.overrideFarmIndex})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() => _farmCardViewState();
 }
@@ -281,7 +283,12 @@ class _farmCardViewState extends State<farmCardView> {
                   builder: (context, state) {
                     print(
                         "state index: ${state.farmIndex} , farm index: $farmIndex");
-
+                    if (widget.overrideFarmIndex != null) {
+                      return Text(context
+                          .read<FarmCardCubit>()
+                          .decodeAndRemovePadding(
+                              data[widget.overrideFarmIndex]));
+                    }
                     if (state.farmIndex == farmIndex) {
                       // print("Created within condition");
                       devicesToList(context
