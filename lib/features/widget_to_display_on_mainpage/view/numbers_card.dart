@@ -1,11 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/user_data_stream_bloc.dart';
+import 'package:smart_iot_app/pages/DeviceDetail.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 class numberCard extends StatefulWidget {
   List<Map> inputData;
+  String whichFarm;
 
-  numberCard({Key? key, required this.inputData}) : super(key: key);
+  numberCard({Key? key, required this.inputData, required this.whichFarm})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _numberCardState();
@@ -54,7 +60,20 @@ class _numberCardState extends State<numberCard> {
         return Card(
             child: Column(
           children: [
-            Text(currentName, style: const TextStyle(fontSize: 28)),
+            TextButton(
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider(
+                        create: (_) => UserDataStreamBloc(
+                            client: MQTTClientWrapper(),
+                            device: currentName,
+                            location: widget.whichFarm),
+                        child: DeviceDetail()),
+                  )),
+              child: Text(currentName, style: const TextStyle(fontSize: 28)),
+            ),
+
             Text(currentValue, style: const TextStyle(fontSize: 24)),
             // Text(data[index]["Value"].toString(),
             //     style: const TextStyle(fontSize: 28))
