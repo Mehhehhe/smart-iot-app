@@ -680,9 +680,9 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
   let splitStr = event.topic.split("/");
   var farmName = splitStr[0];
   var targetDevice = splitStr[1];
-
+  
+  const timestamp = new Date().getTime();
   const deviceInfo = (DeviceSerial, DeviceState, FarmName) => {
-    const timestamp = new Date().getTime();
     return {
       DeviceID: DeviceSerial,
       DeviceState: DeviceState,
@@ -758,14 +758,38 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
       
   };
 
+  var paramsResponse = {
+    topic: farmName+'/'+targetDevice+'/'+'data/live',
+    payload: JSON.stringify([
+      {
+        "Value": event.payload.Data,
+        "TimeStamp": timestamp,
+        "State": event.DeviceState
+      }]),
+    qos: 1
+  };
+
+  const pub = iotdata.publish(paramsResponse);
+  pub.on('success', () => console.log("[Success] send data from IOT")).on('error', () => console.log("[Error] something went wrong..."));
+
+
+
   await submitDevice(deviceInfo(targetDevice, event.DeviceState, event.DeviceLocation)).then(res => {
     callback(null, event)
+  }).then(() => {
+    return new Promise(() => pub.send(function(err, data){
+      if(err){
+        console.log("[Error] ", err);
+      } else {
+        console.log(data);
+      }
+    }));
   }).catch(err => {
     console.log(err);
     callback(null, {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Unable to write device's data"
+        message: "Unable to write or publish device's data"
       })
     });
   });
