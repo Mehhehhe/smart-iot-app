@@ -56,14 +56,8 @@ class _farmCardViewState extends State<farmCardView> {
   FlipCardController _controller = FlipCardController();
 
   _farmCardViewState() {
-    print("Start timer");
-    // if (isLoaded) {
-    //   Timer.run(() => periodicallyFetch);
-    // }
+    // Fetch for initialize
     Future.delayed(const Duration(seconds: 10), () => periodicallyFetch());
-    // Timer.run(() => periodicallyFetch);
-    print("Future finished");
-    timer = Timer.periodic(const Duration(seconds: 60), periodicallyFetchLoop);
   }
 
   void onIndexSelection(dynamic index) {
@@ -113,19 +107,6 @@ class _farmCardViewState extends State<farmCardView> {
     });
   }
 
-  void periodicallyFetchLoop(Timer timer) {
-    // print("\nStatus sub: $tempLoc, $devices\n");
-    setState(() {
-      if (mounted) {
-        dataResponse.clear();
-        client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
-            devList.isEmpty ? devices : devList);
-        devicesToTypeMap(List<Map>.from(devices));
-      }
-      isRefreshed = false;
-    });
-  }
-
   // var devicesToList = (farm) async => await getDevicesByFarmName(farm);
   devicesToList(farm) async {
     var temp_devices = await getDevicesByFarmName(farm);
@@ -143,24 +124,24 @@ class _farmCardViewState extends State<farmCardView> {
     }
   }
 
-  List<ChartData> transformFromRawData(List<Map> inputData) {
-    var tempChartList = [ChartData(DateTime.now(), 0.0, "any")];
-    for (var element in inputData) {
-      var elm = json.decode(element["Data"]);
-      print("json decoding${element["FromDevice"]}.");
-      var plc = element["FromDevice"];
-      print("Element: $elm");
-      for (var elsup in elm) {
-        var subelm = Map<String, dynamic>.from(elsup);
-        tempChartList.add(ChartData(
-            DateTime.fromMillisecondsSinceEpoch(subelm["TimeStamp"]),
-            double.parse(subelm["Value"]),
-            plc));
-      }
-    }
-    tempChartList.removeAt(0);
-    return tempChartList;
-  }
+  // List<ChartData> transformFromRawData(List<Map> inputData) {
+  //   var tempChartList = [ChartData(DateTime.now(), 0.0, "any")];
+  //   for (var element in inputData) {
+  //     var elm = json.decode(element["Data"]);
+  //     print("json decoding${element["FromDevice"]}.");
+  //     var plc = element["FromDevice"];
+  //     print("Element: $elm");
+  //     for (var elsup in elm) {
+  //       var subelm = Map<String, dynamic>.from(elsup);
+  //       tempChartList.add(ChartData(
+  //           DateTime.fromMillisecondsSinceEpoch(subelm["TimeStamp"]),
+  //           double.parse(subelm["Value"]),
+  //           plc));
+  //     }
+  //   }
+  //   tempChartList.removeAt(0);
+  //   return tempChartList;
+  // }
 
   List localizedResponse() {
     var newDataArray = [];
@@ -284,10 +265,13 @@ class _farmCardViewState extends State<farmCardView> {
                     print(
                         "state index: ${state.farmIndex} , farm index: $farmIndex");
                     if (widget.overrideFarmIndex != null) {
-                      return Text(context
+                      var farmTarget = context
                           .read<FarmCardCubit>()
                           .decodeAndRemovePadding(
-                              data[widget.overrideFarmIndex]));
+                              data[widget.overrideFarmIndex]);
+                      devicesToList(farmTarget);
+                      tempLoc = farmTarget;
+                      return Text(farmTarget);
                     }
                     if (state.farmIndex == farmIndex) {
                       // print("Created within condition");
@@ -335,28 +319,28 @@ class _farmCardViewState extends State<farmCardView> {
                         Text("Change to another farm")
                       ],
                     )),
-                if (state.widgetIndex == 0)
-                  Container(
-                    height: 300,
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.all(10),
-                    child: Stack(children: [
-                      if (dataResponse.isEmpty)
-                        const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      else
-                        BlocProvider(
-                          create: (_) => LiveDataCubit(
-                              dataResponse, transformFromRawData(dataResponse)),
-                          child: LiveChart(
-                            devices: dataResponse,
-                            type: 'line',
-                          ),
-                        )
-                    ]),
-                  )
-                else if (state.widgetIndex == 1)
+                // if (state.widgetIndex == 0)
+                //   Container(
+                //     height: 300,
+                //     width: MediaQuery.of(context).size.width,
+                //     margin: const EdgeInsets.all(10),
+                //     child: Stack(children: [
+                //       if (dataResponse.isEmpty)
+                //         const Center(
+                //           child: CircularProgressIndicator(),
+                //         )
+                //       else
+                //         BlocProvider(
+                //           create: (_) => LiveDataCubit(
+                //               dataResponse, transformFromRawData(dataResponse)),
+                //           child: LiveChart(
+                //             devices: dataResponse,
+                //             type: 'line',
+                //           ),
+                //         )
+                //     ]),
+                //   )
+                if (state.widgetIndex == 1)
                   Container(
                     height: 300,
                     width: MediaQuery.of(context).size.width,
@@ -369,7 +353,8 @@ class _farmCardViewState extends State<farmCardView> {
                         else
                           BlocProvider(
                             create: (_) => LiveDataCubit(dataResponse),
-                            child: numberCard(inputData: dataResponse),
+                            child: numberCard(
+                                inputData: dataResponse, whichFarm: tempLoc),
                           )
                       ],
                     ),
