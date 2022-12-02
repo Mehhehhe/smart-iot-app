@@ -22,10 +22,11 @@ class UserDataStreamBloc
         _device = device,
         _location = location,
         super(const UserDataStreamState.unknown()) {
-    client.prepareMqttClient();
-    client.subscribeToOneResponse(location, device);
+    // Client not existed; uncomment below!
+    // client.prepareMqttClient();
+    client.subscribeToOneResponse(location, device, true);
     on<_OnUserDataStreaming>((event, emit) async {
-      return emit(UserDataStreamState.init(device, location, data));
+      return emit(UserDataStreamState.init(device, location, event.data));
     });
     on<OnUserStreamingEnds>(
       (event, emit) async {
@@ -37,8 +38,10 @@ class UserDataStreamBloc
         .listen((List<MqttReceivedMessage<MqttMessage>>? event) {
       final recMsg = event![0].payload as MqttPublishMessage;
       final originalPos = event[0].topic.split("/").elementAt(1);
-      final pt = MqttPublishPayload.bytesToString(recMsg.payload.message);
+      final pt =
+          MqttPublishPayload.bytesToStringAsString(recMsg.payload.message);
       data = pt;
+      print("[FindPt] $pt");
       add(_OnUserDataStreaming(data: data, pos: location));
     });
   }
