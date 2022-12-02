@@ -354,7 +354,9 @@ class _farmCardViewState extends State<farmCardView> {
                           BlocProvider(
                             create: (_) => LiveDataCubit(dataResponse),
                             child: numberCard(
-                                inputData: dataResponse, whichFarm: tempLoc),
+                                inputData: dataResponse,
+                                whichFarm: tempLoc,
+                                existedCli: client),
                           )
                       ],
                     ),
