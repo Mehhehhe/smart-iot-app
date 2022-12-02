@@ -9,8 +9,13 @@ import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 class numberCard extends StatefulWidget {
   List<Map> inputData;
   String whichFarm;
+  MQTTClientWrapper existedCli;
 
-  numberCard({Key? key, required this.inputData, required this.whichFarm})
+  numberCard(
+      {Key? key,
+      required this.inputData,
+      required this.whichFarm,
+      required this.existedCli})
       : super(key: key);
 
   @override
@@ -29,7 +34,11 @@ class _numberCardState extends State<numberCard> {
       final lat = latestData[0];
       print("{$cardName: ${latestData[latestData.length - 1]}}");
       tempMap = {cardName: latestData[latestData.length - 1]};
-      latestList.add(tempMap);
+      if (!latestList.contains(tempMap)) {
+        print("[]");
+        latestList.add(tempMap);
+      }
+
       tempMap = {};
     }
     setState(() {
@@ -66,7 +75,7 @@ class _numberCardState extends State<numberCard> {
                   MaterialPageRoute(
                     builder: (context) => BlocProvider(
                         create: (_) => UserDataStreamBloc(
-                            client: MQTTClientWrapper(),
+                            client: widget.existedCli,
                             device: currentName,
                             location: widget.whichFarm),
                         child: DeviceDetail()),
