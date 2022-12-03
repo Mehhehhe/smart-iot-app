@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/user_data_stream_bloc.dart';
 
 class DeviceDetail extends StatelessWidget {
-  DeviceDetail({Key? key}) : super(key: key);
+  Map detail;
+  DeviceDetail({Key? key, required this.detail}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,12 +12,19 @@ class DeviceDetail extends StatelessWidget {
         body: SafeArea(
             child: Container(
       child: ListView(shrinkWrap: true, children: [
-        Text("Title"),
+        Text("${detail["DeviceName"]}"),
         BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
           builder: (context, state) {
             if (state.data != "" || state.data != null) {
               print("[CheckDetail] ${state.data}");
-              return Text(state.data);
+              return Column(
+                children: [
+                  Text("Detail"),
+                  Text(detail.toString()),
+                  Text("Graph"),
+                  Text(state.data),
+                ],
+              );
             }
             return Text("Fetching data ... ");
           },
