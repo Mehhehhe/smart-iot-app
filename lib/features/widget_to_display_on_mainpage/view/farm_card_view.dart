@@ -100,7 +100,7 @@ class _farmCardViewState extends State<farmCardView> {
       if (mounted) {
         dataResponse.clear();
         client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
-            devList.isEmpty ? devices : devList);
+            devList.isEmpty ? devices : devList, false);
         devicesToTypeMap(List<Map>.from(devices));
       }
       isRefreshed = false;
@@ -356,7 +356,8 @@ class _farmCardViewState extends State<farmCardView> {
                             child: numberCard(
                                 inputData: dataResponse,
                                 whichFarm: tempLoc,
-                                existedCli: client),
+                                existedCli: client,
+                                devicesData: devices),
                           )
                       ],
                     ),
