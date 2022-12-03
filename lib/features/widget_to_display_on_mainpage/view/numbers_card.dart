@@ -10,12 +10,14 @@ class numberCard extends StatefulWidget {
   List<Map> inputData;
   String whichFarm;
   MQTTClientWrapper existedCli;
+  List devicesData;
 
   numberCard(
       {Key? key,
       required this.inputData,
       required this.whichFarm,
-      required this.existedCli})
+      required this.existedCli,
+      required this.devicesData})
       : super(key: key);
 
   @override
@@ -35,7 +37,14 @@ class _numberCardState extends State<numberCard> {
       print("{$cardName: ${latestData[latestData.length - 1]}}");
       tempMap = {cardName: latestData[latestData.length - 1]};
       if (!latestList.contains(tempMap)) {
-        print("[]");
+        print("[LatestList] $tempMap");
+        // Check existing device
+        for (var submap in latestList) {
+          if (submap.containsKey(cardName)) {
+            latestList.remove(submap);
+            break;
+          }
+        }
         latestList.add(tempMap);
       }
 
@@ -44,6 +53,14 @@ class _numberCardState extends State<numberCard> {
     setState(() {
       data = latestList;
     });
+  }
+
+  getDetailOfDevice(String serial) {
+    Map target = {};
+    for (Map i in widget.devicesData) {
+      target = i["SerialNumber"] == serial ? i : {};
+    }
+    return target;
   }
 
   @override
@@ -65,6 +82,9 @@ class _numberCardState extends State<numberCard> {
         var currMap = Map<String, Map<String, dynamic>>.from(data[index]);
         var currentName = currMap.keys.first;
         var currentValue = currMap.values.first.values.first;
+
+        var details = getDetailOfDevice(currentName);
+
         print("$currentName, $currentValue");
         return Card(
             child: Column(
@@ -78,7 +98,7 @@ class _numberCardState extends State<numberCard> {
                             client: widget.existedCli,
                             device: currentName,
                             location: widget.whichFarm),
-                        child: DeviceDetail()),
+                        child: DeviceDetail(detail: details)),
                   )),
               child: Text(currentName, style: const TextStyle(fontSize: 28)),
             ),
