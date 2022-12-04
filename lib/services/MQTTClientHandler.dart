@@ -39,7 +39,7 @@ class MQTTClientWrapper {
       [bool? isOnlySubscribe]) async {
     String msgToReturn = "";
     Type typeCheck = deviceName.runtimeType;
-
+    print("$farmName, $deviceName, $isOnlySubscribe");
     switch (typeCheck) {
       case String:
         client.subscribe(
