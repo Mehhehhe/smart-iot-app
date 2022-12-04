@@ -86,11 +86,10 @@ class _numberCardState extends State<numberCard> {
         var details = getDetailOfDevice(currentName);
 
         print("$currentName, $currentValue");
+
         return Card(
-            child: Column(
-          children: [
-            TextButton(
-              onPressed: () => Navigator.push(
+          child: InkWell(
+              onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => BlocProvider(
@@ -98,16 +97,19 @@ class _numberCardState extends State<numberCard> {
                             client: widget.existedCli,
                             device: currentName,
                             location: widget.whichFarm),
-                        child: DeviceDetail(detail: details)),
+                        child: DeviceDetail(
+                            detail: details, latestDatePlaceholder: [currMap])),
                   )),
-              child: Text(currentName, style: const TextStyle(fontSize: 28)),
-            ),
+              child: Column(
+                children: [
+                  Text(currentName, style: const TextStyle(fontSize: 28)),
 
-            Text(currentValue, style: const TextStyle(fontSize: 24)),
-            // Text(data[index]["Value"].toString(),
-            //     style: const TextStyle(fontSize: 28))
-          ],
-        ));
+                  Text(currentValue, style: const TextStyle(fontSize: 24)),
+                  // Text(data[index]["Value"].toString(),
+                  //     style: const TextStyle(fontSize: 28))
+                ],
+              )),
+        );
       },
       gridDelegate:
           const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
