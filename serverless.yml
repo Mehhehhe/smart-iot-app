@@ -109,6 +109,7 @@ functions:
       - http:
           path: /farm/create
           method: POST
+          cors: true
   createUser:
     handler: handler.createUser
     description: Send a user information with username and list of farms
@@ -156,6 +157,7 @@ functions:
       - http:
           path: /device/register
           method: POST
+          cors: true
   getDeviceByID:
     handler: handler.getDeviceByID
     description: Get device by given ID.
@@ -193,6 +195,7 @@ functions:
       - http:
           path: /farm/create_as_table
           method: POST
+          cors: true
   writeDataFromIOT:
     handler: handler.writeDataFromIOT
     description: Handle write and update of value from iot device in the farm table
