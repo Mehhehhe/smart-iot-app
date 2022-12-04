@@ -42,7 +42,9 @@ class UserDataStreamBloc
           MqttPublishPayload.bytesToStringAsString(recMsg.payload.message);
       data = pt;
       print("[FindPt] $pt");
-      add(_OnUserDataStreaming(data: data, pos: location));
+      if (data.length > 0) {
+        add(_OnUserDataStreaming(data: data, pos: location));
+      }
     });
   }
 }
