@@ -70,6 +70,7 @@ dependencies:
   screenshot:
   # permission_handler:
   flutter_email_sender:
+  easy_debounce:
 
 dev_dependencies:
 
