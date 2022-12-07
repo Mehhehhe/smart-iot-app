@@ -73,6 +73,12 @@ class _numberCardState extends State<numberCard> {
   }
 
   @override
+  void dispose() {
+    data.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return GridView.builder(
@@ -102,9 +108,20 @@ class _numberCardState extends State<numberCard> {
                   )),
               child: Column(
                 children: [
-                  Text(currentName, style: const TextStyle(fontSize: 28)),
-
+                  Padding(
+                    padding: EdgeInsets.all(5),
+                    child:
+                        Text(currentName, style: const TextStyle(fontSize: 20)),
+                  ),
                   Text(currentValue, style: const TextStyle(fontSize: 24)),
+                  const Divider(),
+                  Switch(
+                    value: currMap[currentName]!["State"],
+                    onChanged: (value) {
+                      widget.existedCli.publishToSetDeviceState(
+                          widget.whichFarm, currentName, value);
+                    },
+                  ),
                   // Text(data[index]["Value"].toString(),
                   //     style: const TextStyle(fontSize: 28))
                 ],
