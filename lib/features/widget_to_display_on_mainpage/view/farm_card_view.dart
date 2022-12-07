@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,6 +55,8 @@ class _farmCardViewState extends State<farmCardView> {
   ScrollController historyScroll = ScrollController(initialScrollOffset: 0.0);
 
   FlipCardController _controller = FlipCardController();
+  late TextEditingController searchTextController;
+  String searchedText = "";
 
   _farmCardViewState() {
     // Fetch for initialize
@@ -81,14 +84,17 @@ class _farmCardViewState extends State<farmCardView> {
         .listen((List<MqttReceivedMessage<MqttMessage>>? c) {
       final recMess = c![0].payload as MqttPublishMessage;
       // print("PAYLOAD INSPECT: ${c[0].topic}");
-      final originalPos = c[0].topic.split("/").elementAt(1);
+      final splitTop = c[0].topic.split("/");
+      final originFarm = splitTop.elementAt(0);
+      final originalPos = splitTop.elementAt(1);
       // print("Topic type:${originalPos.runtimeType}.$originalPos.");
       final pt =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       setState(() {
         // print("Fetch pt := $pt, base data array := $dataResponse");
         if (!dataResponse.contains(pt)) {
-          dataResponse.add({"Data": pt, "FromDevice": originalPos});
+          dataResponse.add(
+              {"Data": pt, "FromDevice": originalPos, "FromFarm": originFarm});
         }
       });
     });
@@ -185,6 +191,7 @@ class _farmCardViewState extends State<farmCardView> {
   void initState() {
     client.prepareMqttClient();
     setDataListener();
+    searchTextController = TextEditingController();
     super.initState();
   }
 
@@ -194,64 +201,172 @@ class _farmCardViewState extends State<farmCardView> {
     client.disconnect();
     devices.clear();
     enableGraph = false;
+    dataResponse.clear();
+    devList.clear();
+    tempLoc = "";
+    exposedLoc = "";
     // timer.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ListView.builder(
-      itemCount: 1,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onVerticalDragEnd: (details) =>
-              isDraggable ? _onMainCardDragEnd(details) : {},
-          child: FutureBuilder(
-            future: context.read<FarmCardCubit>().getOwnedFarmsList(),
-            builder: (context, snapshot) {
-              var connectionState = snapshot.connectionState;
-              // print(connectionState);
-              switch (connectionState) {
-                case ConnectionState.done:
-                  // print(snapshot.data);
-                  Map dataMap = Map.from(snapshot.data as Map);
-
-                  // return BlocProvider(
-                  //     create: (_) => WidgetSelectorBloc(),
-                  //     child: FlipCard(
-                  //       controller: _controller,
-                  //       flipOnTouch: false,
-                  //       front: farmAsCard(context, dataMap["OwnedFarm"]),
-                  //       back: farmCardRear(),
-                  //     ));
-
-                  return FlipCard(
-                      controller: _controller,
-                      flipOnTouch: false,
-                      onFlipDone: (isFront) => print(isFront),
-                      front: BlocProvider(
-                        create: (_) => FrontOfCardCubit(),
-                        child: farmAsCard(context, dataMap["OwnedFarm"]),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Search bar\
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 4,
+                        color: Color(0x33000000),
+                        offset: Offset(0, 2),
+                      )
+                    ],
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Stack(
+                    children: [
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(20, 0, 20, 0),
+                        child: TextFormField(
+                          controller: searchTextController,
+                          // onTap: () => searchTextController.clear(),
+                          // onChanged: (_) => EasyDebounce.debounce(
+                          //   'textController',
+                          //   Duration(milliseconds: 100),
+                          //   () => setState(() {}),
+                          // ),
+                          onSaved: (newValue) => setState(() {
+                            searchedText = newValue!;
+                          }),
+                          autofocus: false,
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            hintText: 'Search your device ...',
+                            hintStyle: Theme.of(context).textTheme.bodyText2,
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color(0x00000000),
+                                width: 1,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4.0),
+                                topRight: Radius.circular(4.0),
+                              ),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color(0x00000000),
+                                width: 1,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4.0),
+                                topRight: Radius.circular(4.0),
+                              ),
+                            ),
+                            errorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color(0x00000000),
+                                width: 1,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4.0),
+                                topRight: Radius.circular(4.0),
+                              ),
+                            ),
+                            focusedErrorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color(0x00000000),
+                                width: 1,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4.0),
+                                topRight: Radius.circular(4.0),
+                              ),
+                            ),
+                            prefixIcon: Icon(
+                              Icons.send_sharp,
+                            ),
+                            suffixIcon: searchTextController!.text.isNotEmpty
+                                ? InkWell(
+                                    onTap: () async {
+                                      searchTextController?.clear();
+                                      setState(() {});
+                                    },
+                                    child: Icon(
+                                      Icons.clear,
+                                      color: Color(0xFF757575),
+                                      size: 22,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          style: Theme.of(context).textTheme.bodyText1,
+                        ),
                       ),
-                      back: BlocProvider(
-                        create: (_) => BackOfCardCubit(),
-                        child: farmCardRear(),
-                      ));
-                default:
-                  break;
-              }
-              return Container();
-            },
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+          ListView.builder(
+            itemCount: 1,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onVerticalDragEnd: (details) =>
+                    isDraggable ? _onMainCardDragEnd(details) : {},
+                child: FutureBuilder(
+                  future: context.read<FarmCardCubit>().getOwnedFarmsList(),
+                  builder: (context, snapshot) {
+                    var connectionState = snapshot.connectionState;
+                    // print(connectionState);
+                    switch (connectionState) {
+                      case ConnectionState.done:
+                        // print(snapshot.data);
+                        Map dataMap = Map.from(snapshot.data as Map);
+                        return FlipCard(
+                            controller: _controller,
+                            flipOnTouch: false,
+                            onFlipDone: (isFront) => print(isFront),
+                            front: BlocProvider(
+                              create: (_) => FrontOfCardCubit(),
+                              child: farmAsCard(context, dataMap["OwnedFarm"]),
+                            ),
+                            back: BlocProvider(
+                              create: (_) => BackOfCardCubit(),
+                              child: farmCardRear(),
+                            ));
+                      default:
+                        break;
+                    }
+                    return Container();
+                  },
+                ),
+              );
+            },
+          )
+        ],
+      ),
     );
   }
 
   Widget farmAsCard(BuildContext context, dynamic data) {
     return BlocBuilder<FrontOfCardCubit, CardState>(
       builder: (context, state) {
+        print("[Device] $devices");
         return Card(
           key: const ValueKey(true),
           margin: const EdgeInsets.all(20),
@@ -264,12 +379,18 @@ class _farmCardViewState extends State<farmCardView> {
                   builder: (context, state) {
                     print(
                         "state index: ${state.farmIndex} , farm index: $farmIndex");
+                    print("[Response] $dataResponse");
                     if (widget.overrideFarmIndex != null) {
+                      // onIndexSelection(widget.overrideFarmIndex);
                       var farmTarget = context
                           .read<FarmCardCubit>()
                           .decodeAndRemovePadding(
                               data[widget.overrideFarmIndex]);
                       devicesToList(farmTarget);
+                      // if (state.farmIndex != widget.overrideFarmIndex) {
+                      //   dataResponse.removeWhere(
+                      //       (element) => !devices.contains(element));
+                      // }
                       tempLoc = farmTarget;
                       return Text(farmTarget);
                     }
@@ -351,13 +472,23 @@ class _farmCardViewState extends State<farmCardView> {
                             child: CircularProgressIndicator(),
                           )
                         else
-                          BlocProvider(
-                            create: (_) => LiveDataCubit(dataResponse),
-                            child: numberCard(
-                                inputData: dataResponse,
-                                whichFarm: tempLoc,
-                                existedCli: client,
-                                devicesData: devices),
+                          BlocBuilder<FarmCardCubit, FarmCardInitial>(
+                            bloc: context.read<FarmCardCubit>(),
+                            builder: (context, state) {
+                              print("Respond To Change: ${state.farmIndex}");
+                              var selectedResponse = dataResponse
+                                  .where((element) =>
+                                      element["FromFarm"] == tempLoc)
+                                  .toList();
+                              return BlocProvider(
+                                create: (_) => LiveDataCubit(selectedResponse),
+                                child: numberCard(
+                                    inputData: selectedResponse,
+                                    whichFarm: tempLoc,
+                                    existedCli: client,
+                                    devicesData: devices),
+                              );
+                            },
                           )
                       ],
                     ),
@@ -396,7 +527,7 @@ class _farmCardViewState extends State<farmCardView> {
                                               ? tempLoc
                                               : exposedLoc,
                                           deviceAndType,
-                                          Text(""),
+                                          const Text(""),
                                           "-",
                                           widget.username)),
                                 )),
@@ -447,7 +578,7 @@ class _farmCardViewState extends State<farmCardView> {
                       width: MediaQuery.of(context).size.width,
                       child: const Text("Value History"),
                     ),
-                    Divider(),
+                    const Divider(),
                     if (state.widgetIndex == 0)
                       Builder(
                         builder: (context) {
@@ -536,7 +667,7 @@ class _farmCardViewState extends State<farmCardView> {
                                       child: ListTile(
                                           title: Text(
                                             newDataArray[index]["FromDevice"],
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           subtitle: Row(
@@ -547,7 +678,7 @@ class _farmCardViewState extends State<farmCardView> {
                                                 Text(
                                                     newDataArray[index]
                                                         ["Value"],
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold)),
