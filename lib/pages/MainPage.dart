@@ -205,7 +205,12 @@ class _MainPageState extends State<MainPage> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         FarmEditor(farm: ownedFarm),
-                                  )).then((value) => onIndexSelection(value));
+                                  )).then((value) {
+                                onIndexSelection(value);
+                                context
+                                    .read<FarmCardCubit>()
+                                    .chooseIndex(index, ownedFarm);
+                              });
                             },
                             onLongPress: () => const Dialog(
                                 child: Text(
