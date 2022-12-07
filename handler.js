@@ -18,6 +18,13 @@ const ALLOWED_ORIGIN = [
   "https://project-three-dun.vercel.app"
 ];
 
+// const test_header = {
+//   'Access-Control-Allow-Origin': '*',
+//   'Access-Control-Allow-Credentials': true,
+//   "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+//   "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, X-Requested-With"
+// };
+
 // Encode Function
 function encode(msg){
   const maximumLength = 8;
@@ -37,8 +44,8 @@ module.exports.getFarmExample = (event, context, callback) => {
   let example = getFarm();
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
+    'Access-Control-Allow-Credentials': true
+  };
   const response =  {
     statusCode: 200,
     headers,
@@ -52,12 +59,10 @@ module.exports.getFarmList = (event, context, callback) => {
     TableName: FarmTable,
     ProjectionExpression: "ID, FarmName"
   };
-
   var headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Credentials': true
   };
-
   console.log("Scanning 'FARM' table ... ");
   const onScan = (err, data) => {
     if(err){
@@ -85,12 +90,10 @@ module.exports.getFarmByID = (event, context, callback) => {
       ID: event.pathParameters.ID
     }
   };
-
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
-
+    'Access-Control-Allow-Credentials': true
+  };
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
@@ -109,10 +112,20 @@ module.exports.getFarmByID = (event, context, callback) => {
 module.exports.createFarm = async (event, context, callback) => {
   //console.log(JSON.stringify(event));
   //const requestBody = await JSON.parse(event);
-  const FarmName = event.FarmName;
-  const FarmOwner = event.Owner;
-  const AllowedUsersInFarm = event.AllowedUsers;
-  const AvailableDevicesInFarm = event.AvailableDevices;
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
+
+  var bodyFromWebInput = {};
+  if(event.body != undefined){
+    bodyFromWebInput = JSON.parse(event.body);
+  }
+
+  const FarmName = event.FarmName == undefined ? bodyFromWebInput.FarmName: event.farmName;
+  const FarmOwner = event.Owner == undefined ? bodyFromWebInput.Owner : event.Owner;
+  const AllowedUsersInFarm = event.AllowedUsers == undefined ? bodyFromWebInput.AllowedUsers : event.AllowedUsers;
+  const AvailableDevicesInFarm = event.AvailableDevices == undefined ? bodyFromWebInput.AvailableDevices : event.AvailableDevices;
 
   if(typeof FarmName !== 'string' || typeof FarmOwner !== 'string' || !(Array.isArray(AllowedUsersInFarm)) || !(Array.isArray(AvailableDevicesInFarm))){
     console.error("Validation failed.");
@@ -151,6 +164,7 @@ module.exports.createFarm = async (event, context, callback) => {
   await submitFarm(farmInfo(FarmName, FarmOwner, AllowedUsersInFarm, AvailableDevicesInFarm)).then(res => {
     callback(null, {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         message: "Successfully created ${Owner}'s farm ==> ${FarmName}",
         farmID: res.ID
@@ -256,7 +270,7 @@ module.exports.createUser = async (event, context, callback) => {
   await submitUser(userInfo(User, UserID, owned_farm)).then(res => {
     callback(null, {
       statusCode: 200,
-      headers,
+      headers: headers,
       body: JSON.stringify({
         message: "Successfully created "+res.FarmUser,
         userID: res.ID
@@ -266,7 +280,7 @@ module.exports.createUser = async (event, context, callback) => {
     console.log(err);
     callback(null, {
       statusCode: 500,
-      headers,
+      headers: headers,
       body: JSON.stringify({
         message: "Unable to create user"
       })
@@ -275,9 +289,18 @@ module.exports.createUser = async (event, context, callback) => {
 };
 
 module.exports.createUserToTable = async (event, context, callback) => {
-  const User = event.userName;
-  const Email = event.request.userAttributes.email;
+  var bodyFromWebInput = {};
+  if(event.body != undefined){
+    bodyFromWebInput = JSON.parse(event.body);
+  }
+  const User = event.userName == undefined ? bodyFromWebInput.userName: event.userName;
+  const Email = event.request.userAttributes.email == undefined ? bodyFromWebInput.email: event.request.userAttributes.email;
   var owned_farm = event.OwnedFarm ?? ["Wait for update"];
+
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
 
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
     console.error("Validation failed");
@@ -324,7 +347,11 @@ module.exports.createUserToTable = async (event, context, callback) => {
   };
 
   await submitUser(userInfo(User, UserID, owned_farm)).then(res => {
-    callback(null, event)
+    callback(null, {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({message: "registered user to table successfully"})
+    })
   }).catch(err => {
     console.log(err);
     callback(null, {
@@ -343,8 +370,8 @@ module.exports.getUserList = (event, context, callback) => {
   };
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
+    'Access-Control-Allow-Credentials': true
+  };
   console.log("Retrieving users ... ");
   const onScan = (err, data) => {
     if(err){
@@ -371,12 +398,10 @@ module.exports.getUserByID = (event, context, callback) => {
       ID: event.pathParameters.ID
     }
   };
-
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
-
+    'Access-Control-Allow-Credentials': true
+  };
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
@@ -396,17 +421,32 @@ module.exports.getUserByID = (event, context, callback) => {
 // Device functions
 
 module.exports.registerDevice = async (event, context, callback) => {
-  const DeviceName = event.device;
-  const DeviceType = event.type;
-  const DeviceSerial = event.serialNumber;
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+    "Access-Control-Allow-Headers": "Content-Type, Origin, Cache-Control, X-Requested-With",
+    "Access-Control-Allow-Methods": "POST, GET",
+  };
+
+  var bodyExisted = event.body;
+  var jsonBody = {};
+  if(bodyExisted != undefined){
+    jsonBody = JSON.parse(bodyExisted);
+  }
+
+  const DeviceName = event.device == undefined ? jsonBody.device : event.device;
+  const DeviceType = event.type == undefined ? jsonBody.type : event.type;
+  const DeviceSerial = event.serialNumber == undefined ? jsonBody.serialNumber : event.serialNumber;
   
-  const FarmName = event.farmName;
+  const FarmName = event.farmName == undefined ? jsonBody.farmName : event.farmName;
 
   if(typeof DeviceType !== 'string' || typeof FarmName !== 'string' || typeof DeviceName !== 'string' || typeof DeviceSerial !== 'string'){
     console.error("Validation failed");
+    console.log(event, typeof event.body);
+    console.log("DeviceType "+typeof DeviceType+", FarmName: "+typeof FarmName + ", DeviceName: " + typeof DeviceName+", DeviceSerial: ", typeof DeviceSerial);
     callback(new Error("Couldn't create because of validation errors"));
   }
-
+  // console.log(event);
   const deviceInfo = (DeviceSerial, DeviceName, DeviceType, FarmName) => {
     const timestamp = new Date().getTime();
     return {
@@ -429,11 +469,17 @@ module.exports.registerDevice = async (event, context, callback) => {
   };
 
   await submitDevice(deviceInfo(DeviceSerial, DeviceName, DeviceType, FarmName)).then(res => {
-    callback(null, event)
+    callback(null, {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({message: "device registered successfully"})
+    })
   }).catch(err => {
     console.log(err);
     callback(null, {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         message: "Unable to create device"
       })
@@ -449,12 +495,10 @@ module.exports.getDeviceByID = (event, context, callback) => {
     },
     ProjectionExpression: "ID, DeviceName"
   };
-
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
-
+    'Access-Control-Allow-Credentials': true
+  };
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
@@ -473,12 +517,10 @@ module.exports.getAllDevices = (event, context, callback) => {
   var params = {
     TableName: FarmDeviceTable,
   };
-
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  }
-
+    'Access-Control-Allow-Credentials': true
+  };
   console.log("Scanning 'DEVICE' table ... ");
   const onScan = (err, data) => {
     if(err){
@@ -539,7 +581,7 @@ module.exports.getDevicesByFarmName = async (event, context, callback) => {
     console.log(device);
     if(device.Location == loc){
       console.log(device, index);
-      listToReturn.Devices[index] = device;
+      listToReturn.Devices.push(device)
       console.log("Inside forEach :=>",listToReturn);
     }
   });
@@ -637,6 +679,13 @@ module.exports.liveDataHandler = async (event, context, callback) => {
 };
 
 module.exports.createFarmAsTable = (event, context, callback) => {
+  var body = {};
+  if(event.body != undefined){
+    body = JSON.parse(event.body);
+  }
+
+  var table_name_from_body = event.farmName == undefined ? body.farmName: event.farmName;
+
   const params = {
     AttributeDefinitions: [
       {
@@ -654,10 +703,14 @@ module.exports.createFarmAsTable = (event, context, callback) => {
       ReadCapacityUnits: 1,
       WriteCapacityUnits: 1
     },
-    TableName: event.farmName,
+    TableName: table_name_from_body,
     StreamSpecification: {
       StreamEnabled: false
     }
+  };
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
   };
   var ddb = new AWS.DynamoDB();
   ddb.createTable(params, function(err, data){
@@ -667,6 +720,11 @@ module.exports.createFarmAsTable = (event, context, callback) => {
       console.log("Success => ", data);
     }
   })
+  callback(null, {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({message: "create farm as table successfully"})
+  });
 };
 
 module.exports.writeDataFromIOT = async (event, context, callback) => {
