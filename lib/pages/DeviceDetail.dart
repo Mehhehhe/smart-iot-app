@@ -29,54 +29,131 @@ class DeviceDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+            elevation: 5,
+            centerTitle: true,
+            title: Text("${detail["DeviceName"]}",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold))),
         body: SafeArea(
             child: Container(
-      child: ListView(shrinkWrap: true, children: [
-        Text("${detail["DeviceName"]}"),
-        BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
-          builder: (context, state) {
-            print(
-                "[CheckLength] length = ${state.data.length}, [Details] : $detail");
-            if (state.data != "" || state.data != null) {
-              print("[CheckDetail] .${state.data}.");
-              if (state.data.length == 0) {
-                print("[CheckSerial] ${detail["SerialNumber"]}");
-                print(
-                    "[LatestPlaceholder] ${latestDatePlaceholder[0].runtimeType}");
-                liveData.add(latestDatePlaceholder[0][detail["SerialNumber"]]);
-                insertChartData(json
-                    .encode(latestDatePlaceholder[0][detail["SerialNumber"]]));
-              } else {
-                print(
-                    "[LiveReceived] state updated : ${state.data.runtimeType}");
-                String trimmedData =
-                    state.data.substring(1, state.data.length - 1);
-                liveData.add(json.decode(trimmedData));
-                insertChartData(trimmedData);
-              }
-              return Column(
+          child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: ListView(
+                shrinkWrap: true,
                 children: [
-                  Text("Detail"),
-                  Text(detail.toString()),
-                  Text("Graph"),
-                  Text(state.data),
-                  if (dataToPlot != null && liveData != null)
-                    Container(
-                      height: 300,
-                      width: MediaQuery.of(context).size.width,
-                      child: BlocProvider(
-                          create: (_) => LiveDataCubit(liveData, dataToPlot),
-                          child: LiveChart(type: 'line', devices: liveData)),
-                    )
-                  else
-                    const CircularProgressIndicator()
+                  BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
+                    builder: (context, state) {
+                      print(
+                          "[CheckLength] length = ${state.data.length}, [Details] : $detail");
+                      if (state.data != "" || state.data != null) {
+                        print("[CheckDetail] .${state.data}.");
+                        if (state.data.length == 0) {
+                          liveData.add(
+                              latestDatePlaceholder[0][detail["SerialNumber"]]);
+                          insertChartData(json.encode(latestDatePlaceholder[0]
+                              [detail["SerialNumber"]]));
+                        } else {
+                          String trimmedData =
+                              state.data.substring(1, state.data.length - 1);
+                          liveData.add(json.decode(trimmedData));
+                          insertChartData(trimmedData);
+                        }
+                        return Column(
+                          children: [
+                            Text(
+                              "Detail",
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                            // Text(detail.toString()),
+                            // Detail Box
+                            Container(
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              height: MediaQuery.of(context).size.height * 0.25,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 4,
+                                      color: Color(0x33000000),
+                                      offset: Offset(0, 2),
+                                    )
+                                  ]),
+                              child: ListView.builder(
+                                itemCount: detail.length,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  var dateCreate = "";
+                                  if (detail.entries.elementAt(index).key ==
+                                      "CreateAt") {
+                                    dateCreate =
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                                detail.entries
+                                                    .elementAt(index)
+                                                    .value)
+                                            .toLocal()
+                                            .toString();
+                                  }
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                        child: Text(
+                                          detail.entries
+                                              .elementAt(index)
+                                              .key
+                                              .toString(),
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                        child: Text(
+                                          dateCreate == ""
+                                              ? detail.entries
+                                                  .elementAt(index)
+                                                  .value
+                                                  .toString()
+                                              : dateCreate,
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            // Text("Graph"),
+                            Text(state.data),
+                            if (dataToPlot != null && liveData != null)
+                              Container(
+                                height: 300,
+                                width: MediaQuery.of(context).size.width,
+                                child: BlocProvider(
+                                    create: (_) =>
+                                        LiveDataCubit(liveData, dataToPlot),
+                                    child: LiveChart(
+                                        type: 'line', devices: liveData)),
+                              )
+                            else
+                              const CircularProgressIndicator()
+                          ],
+                        );
+                      }
+                      return Text("Fetching data ... ");
+                    },
+                  )
                 ],
-              );
-            }
-            return Text("Fetching data ... ");
-          },
-        )
-      ]),
-    )));
+              )),
+        )));
   }
 }
