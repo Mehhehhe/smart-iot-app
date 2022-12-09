@@ -1,3 +1,7 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
+
+import '../services/lambdaCaller.dart';
+
 class ResultItem {
   const ResultItem({required this.deviceName, required this.whichFarm});
 
@@ -7,6 +11,10 @@ class ResultItem {
   factory ResultItem.fromJSON(dynamic json) {
     return ResultItem(
         deviceName: json["deviceName"], whichFarm: json["whichFarm"]);
+  }
+
+  toMap() {
+    return {"deviceName": deviceName, "whichFarm": whichFarm};
   }
 }
 
@@ -41,15 +49,25 @@ class SearchCache {
 }
 
 class SearchDevice {
-  const SearchDevice(this.cache, this.dev);
+  SearchDevice(this.cache, this.dev);
   final SearchCache cache;
-  final List dev;
+  List dev;
+
+  addDeviceList(List newDeviceList) {
+    if (newDeviceList.every((element) => dev.contains(element))) {
+      print("Added $newDeviceList");
+      dev.addAll(newDeviceList);
+    }
+  }
+
   SearchResult search(String term) {
     final cachedResult = cache.get(term);
     if (cachedResult != null) return cachedResult;
+    print("Search on devices list : => $dev");
     final result = dev
-        .where((element) => element.contains(term))
-        .map((e) => ResultItem(deviceName: e["device"], whichFarm: e["farm"]))
+        .where((element) => element["SerialNumber"] == term)
+        .map((e) =>
+            ResultItem(deviceName: e["SerialNumber"], whichFarm: e["Location"]))
         .toList();
     cache.set(term, SearchResult(items: result));
     return SearchResult(items: result);
