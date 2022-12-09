@@ -2,15 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/user_data_stream_bloc.dart';
+import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/pages/DeviceDetail.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class numberCard extends StatefulWidget {
   List<Map> inputData;
   String whichFarm;
   MQTTClientWrapper existedCli;
-  List devicesData;
+  List? devicesData;
 
   numberCard(
       {Key? key,
@@ -57,7 +60,13 @@ class _numberCardState extends State<numberCard> {
 
   getDetailOfDevice(String serial) {
     Map target = {};
-    for (Map i in widget.devicesData) {
+    if (widget.devicesData![0].runtimeType == ResultItem) {
+      for (var i in data) {
+        target = i[serial] ?? {};
+      }
+      return target;
+    }
+    for (Map i in widget.devicesData!) {
       target = i["SerialNumber"] == serial ? i : {};
     }
     return target;
@@ -83,53 +92,151 @@ class _numberCardState extends State<numberCard> {
     // TODO: implement build
     return GridView.builder(
       shrinkWrap: true,
-      itemCount: data.length,
+      itemCount: widget.devicesData == null ? 1 : widget.devicesData!.length,
       itemBuilder: (context, index) {
-        var currMap = Map<String, Map<String, dynamic>>.from(data[index]);
-        var currentName = currMap.keys.first;
-        var currentValue = currMap.values.first.values.first;
-
-        var details = getDetailOfDevice(currentName);
-
-        print("$currentName, $currentValue");
-
-        return Card(
-          child: InkWell(
-              onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BlocProvider(
-                        create: (_) => UserDataStreamBloc(
-                            client: widget.existedCli,
-                            device: currentName,
-                            location: widget.whichFarm),
-                        child: DeviceDetail(
-                            detail: details, latestDatePlaceholder: [currMap])),
-                  )),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(5),
-                    child:
-                        Text(currentName, style: const TextStyle(fontSize: 20)),
+        return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+          builder: (context, state) {
+            if (state is SearchWidgetSuccess && state.items.isNotEmpty) {
+              // if (state.items.isEmpty) {
+              //   return Container();
+              // }
+              var name = state.items[0].deviceName;
+              print("Build searched $name, from $data");
+              var currmap = Map<String, dynamic>.from(data
+                  .where((element) => element.keys.toString() == "($name)")
+                  .toList()[0]);
+              print("Query get : $currmap");
+              var currentValue = currmap[name]["Value"];
+              var details = getDetailOfDevice(name);
+              return Card(
+                child: InkWell(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BlocProvider(
+                            create: (_) => UserDataStreamBloc(
+                                client: widget.existedCli,
+                                device: name,
+                                location: widget.whichFarm),
+                            child: DeviceDetail(
+                                detail: details,
+                                latestDatePlaceholder: [currmap])),
+                      )),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Stack(
+                      children: [
+                        // gauge here!
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.2,
+                          child: SfRadialGauge(
+                            enableLoadingAnimation: true,
+                            title: GaugeTitle(text: name),
+                            axes: <RadialAxis>[
+                              RadialAxis(
+                                minimum: 0,
+                                maximum: 100,
+                                radiusFactor: 0.8,
+                                showLabels: false,
+                                showTicks: false,
+                                pointers: <GaugePointer>[
+                                  RangePointer(
+                                    value: double.parse(currentValue),
+                                    width: 18,
+                                    color: Colors.greenAccent,
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: currmap[name]!["State"],
+                          onChanged: (value) {
+                            widget.existedCli.publishToSetDeviceState(
+                                widget.whichFarm, name, value);
+                          },
+                        )
+                      ],
+                    ),
                   ),
-                  Text(currentValue, style: const TextStyle(fontSize: 24)),
-                  const Divider(),
-                  Switch(
-                    value: currMap[currentName]!["State"],
-                    onChanged: (value) {
-                      widget.existedCli.publishToSetDeviceState(
-                          widget.whichFarm, currentName, value);
-                    },
+                ),
+              );
+            } else if (state is SearchStateEmpty) {
+              var currmap = Map<String, Map<String, dynamic>>.from(data[index]);
+              var name = currmap.keys.first;
+              var currentValue = data[index][name]["Value"];
+              var details = getDetailOfDevice(name);
+              return Card(
+                child: InkWell(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BlocProvider(
+                            create: (_) => UserDataStreamBloc(
+                                client: widget.existedCli,
+                                device: name,
+                                location: widget.whichFarm),
+                            child: DeviceDetail(
+                                detail: details,
+                                latestDatePlaceholder: [currmap])),
+                      )),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Stack(
+                      children: [
+                        // gauge here!
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.2,
+                          child: SfRadialGauge(
+                            enableLoadingAnimation: true,
+                            title: GaugeTitle(text: name),
+                            axes: <RadialAxis>[
+                              RadialAxis(
+                                minimum: 0,
+                                maximum: 100,
+                                radiusFactor: 0.8,
+                                showLabels: false,
+                                showTicks: false,
+                                pointers: <GaugePointer>[
+                                  RangePointer(
+                                    value: double.parse(currentValue),
+                                    width: 18,
+                                    color: Colors.greenAccent,
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: currmap[name]!["State"],
+                          onChanged: (value) {
+                            widget.existedCli.publishToSetDeviceState(
+                                widget.whichFarm, name, value);
+                          },
+                        )
+                      ],
+                    ),
                   ),
-                  // Text(data[index]["Value"].toString(),
-                  //     style: const TextStyle(fontSize: 28))
-                ],
-              )),
+                ),
+              );
+            } else if (state is SearchError) {
+              return Container();
+            }
+            return Container(
+              child: Center(
+                child: Text(
+                  "No result. Please try again",
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            );
+          },
         );
       },
-      gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: widget.devicesData == null ? 1 : 2),
     );
   }
 }
