@@ -9,6 +9,14 @@ abstract class SearchWidgetState extends Equatable {
 
 class SearchStateEmpty extends SearchWidgetState {}
 
+class SearchStateNewList extends SearchWidgetState {
+  const SearchStateNewList({required this.dev});
+  final List dev;
+
+  @override
+  List<Object> get props => [dev];
+}
+
 class SearchStateLoading extends SearchWidgetState {}
 
 class SearchWidgetSuccess extends SearchWidgetState {
