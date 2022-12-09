@@ -12,12 +12,25 @@ EventTransformer<Event> debounce<Event>(Duration duration) {
 
 class SearchWidgetBloc extends Bloc<SearchWidgetEvent, SearchWidgetState> {
   SearchWidgetBloc({required this.searchDev}) : super(SearchStateEmpty()) {
-    on<TextChanged>((event, emit) {
-      // TODO: implement event handler
-    });
+    on<BaseListChanged>(
+      (event, emit) {
+        // searchDev.addDeviceList(event.dev);
+        // List targetList = [];
+        // for (var ser in event.dev) {
+        //   targetList.add(ser["SerialNumber"]);
+        // }
+        searchDev = SearchDevice(SearchCache(), event.dev);
+
+        // print("Filter serial: $targetList");
+        // emit(SearchStateNewList(dev: targetList));
+        // emit(SearchStateEmpty());
+      },
+    );
+    on<TextChanged>(_onTextChanged,
+        transformer: debounce(const Duration(microseconds: 300)));
   }
 
-  final SearchDevice searchDev;
+  SearchDevice searchDev;
 
   void _onTextChanged(
       TextChanged event, Emitter<SearchWidgetState> emit) async {
@@ -30,7 +43,7 @@ class SearchWidgetBloc extends Bloc<SearchWidgetEvent, SearchWidgetState> {
     } catch (e) {
       emit(e is SearchWidgetError
           ? SearchWidgetError(error: e.error)
-          : SearchWidgetError(error: "something went wrong"));
+          : SearchWidgetError(error: "something went wrong $e"));
     }
   }
 }
