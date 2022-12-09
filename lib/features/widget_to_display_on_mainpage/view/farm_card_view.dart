@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
@@ -14,8 +15,10 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
+import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/modules/pipe.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -130,25 +133,6 @@ class _farmCardViewState extends State<farmCardView> {
     }
   }
 
-  // List<ChartData> transformFromRawData(List<Map> inputData) {
-  //   var tempChartList = [ChartData(DateTime.now(), 0.0, "any")];
-  //   for (var element in inputData) {
-  //     var elm = json.decode(element["Data"]);
-  //     print("json decoding${element["FromDevice"]}.");
-  //     var plc = element["FromDevice"];
-  //     print("Element: $elm");
-  //     for (var elsup in elm) {
-  //       var subelm = Map<String, dynamic>.from(elsup);
-  //       tempChartList.add(ChartData(
-  //           DateTime.fromMillisecondsSinceEpoch(subelm["TimeStamp"]),
-  //           double.parse(subelm["Value"]),
-  //           plc));
-  //     }
-  //   }
-  //   tempChartList.removeAt(0);
-  //   return tempChartList;
-  // }
-
   List localizedResponse() {
     var newDataArray = [];
     for (var m in dataResponse) {
@@ -172,19 +156,6 @@ class _farmCardViewState extends State<farmCardView> {
       });
     }
     return newDataArray;
-  }
-
-  void _onMainCardDragEnd(DragEndDetails details) {
-    if (details.velocity.pixelsPerSecond.dy.abs().floorToDouble() >= -100.0) {
-      print("start refresh");
-      setState(() {
-        isRefreshed = true;
-        isDraggable = false;
-      });
-      periodicallyFetch();
-      Timer(const Duration(seconds: 10),
-          () => setState(() => isDraggable = true));
-    }
   }
 
   @override
@@ -212,158 +183,83 @@ class _farmCardViewState extends State<farmCardView> {
   Widget build(BuildContext context) {
     // TODO: implement build
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Search bar\
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: BlocProvider(
+          create: (_) =>
+              SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
+          child: Column(
             children: [
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 4,
-                        color: Color(0x33000000),
-                        offset: Offset(0, 2),
-                      )
-                    ],
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(20, 0, 20, 0),
-                        child: TextFormField(
-                          controller: searchTextController,
-                          // onTap: () => searchTextController.clear(),
-                          // onChanged: (_) => EasyDebounce.debounce(
-                          //   'textController',
-                          //   Duration(milliseconds: 100),
-                          //   () => setState(() {}),
-                          // ),
-                          onSaved: (newValue) => setState(() {
-                            searchedText = newValue!;
-                          }),
-                          autofocus: false,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            hintText: 'Search your device ...',
-                            hintStyle: Theme.of(context).textTheme.bodyText2,
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0x00000000),
-                                width: 1,
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4.0),
-                                topRight: Radius.circular(4.0),
-                              ),
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0x00000000),
-                                width: 1,
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4.0),
-                                topRight: Radius.circular(4.0),
-                              ),
-                            ),
-                            errorBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0x00000000),
-                                width: 1,
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4.0),
-                                topRight: Radius.circular(4.0),
-                              ),
-                            ),
-                            focusedErrorBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0x00000000),
-                                width: 1,
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4.0),
-                                topRight: Radius.circular(4.0),
-                              ),
-                            ),
-                            prefixIcon: Icon(
-                              Icons.send_sharp,
-                            ),
-                            suffixIcon: searchTextController!.text.isNotEmpty
-                                ? InkWell(
-                                    onTap: () async {
-                                      searchTextController?.clear();
-                                      setState(() {});
-                                    },
-                                    child: Icon(
-                                      Icons.clear,
-                                      color: Color(0xFF757575),
-                                      size: 22,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          style: Theme.of(context).textTheme.bodyText1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // Search bar\
+              SearchBar(),
+              SearchBody()
             ],
-          ),
-          ListView.builder(
-            itemCount: 1,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onVerticalDragEnd: (details) =>
-                    isDraggable ? _onMainCardDragEnd(details) : {},
-                child: FutureBuilder(
-                  future: context.read<FarmCardCubit>().getOwnedFarmsList(),
-                  builder: (context, snapshot) {
-                    var connectionState = snapshot.connectionState;
-                    // print(connectionState);
-                    switch (connectionState) {
-                      case ConnectionState.done:
-                        // print(snapshot.data);
-                        Map dataMap = Map.from(snapshot.data as Map);
-                        return FlipCard(
-                            controller: _controller,
-                            flipOnTouch: false,
-                            onFlipDone: (isFront) => print(isFront),
-                            front: BlocProvider(
-                              create: (_) => FrontOfCardCubit(),
-                              child: farmAsCard(context, dataMap["OwnedFarm"]),
-                            ),
-                            back: BlocProvider(
-                              create: (_) => BackOfCardCubit(),
-                              child: farmCardRear(),
-                            ));
-                      default:
-                        break;
-                    }
-                    return Container();
-                  },
-                ),
-              );
-            },
-          )
-        ],
-      ),
+          )),
     );
   }
 
-  Widget farmAsCard(BuildContext context, dynamic data) {
+  Widget SearchBody() {
+    return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+      builder: (context, state) {
+        if (state is SearchStateEmpty) {
+          return normalCard();
+        }
+        if (state is SearchStateLoading) {
+          return const CircularProgressIndicator();
+        }
+        if (state is SearchWidgetError) {
+          print("Not found: ${state.error}");
+          return Container(
+            child: Text("Not Found"),
+          );
+        }
+        if (state is SearchWidgetSuccess) {
+          print("Searched ${state.items}");
+          return state.items.isEmpty ? normalCard() : normalCard(state.items);
+        }
+        print("Out of condition");
+        return Container();
+      },
+    );
+  }
+
+  Widget normalCard([List? items]) {
+    return ListView.builder(
+      itemCount: 1,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          child: FutureBuilder(
+            future: context.read<FarmCardCubit>().getOwnedFarmsList(),
+            builder: (context, snapshot) {
+              var connectionState = snapshot.connectionState;
+              // print(connectionState);
+              switch (connectionState) {
+                case ConnectionState.done:
+                  // print(snapshot.data);
+                  Map dataMap = Map.from(snapshot.data as Map);
+                  return FlipCard(
+                      controller: _controller,
+                      flipOnTouch: false,
+                      onFlipDone: (isFront) => print(isFront),
+                      front: BlocProvider(
+                        create: (_) => FrontOfCardCubit(),
+                        child: farmAsCard(context, dataMap["OwnedFarm"], items),
+                      ),
+                      back: BlocProvider(
+                        create: (_) => BackOfCardCubit(),
+                        child: farmCardRear(),
+                      ));
+                default:
+                  break;
+              }
+              return Container();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget farmAsCard(BuildContext context, dynamic data, [List? searched]) {
     return BlocBuilder<FrontOfCardCubit, CardState>(
       builder: (context, state) {
         print("[Device] $devices");
@@ -380,6 +276,7 @@ class _farmCardViewState extends State<farmCardView> {
                     print(
                         "state index: ${state.farmIndex} , farm index: $farmIndex");
                     print("[Response] $dataResponse");
+                    print("Get search list ${searched?[0].deviceName}");
                     if (widget.overrideFarmIndex != null) {
                       // onIndexSelection(widget.overrideFarmIndex);
                       var farmTarget = context
@@ -387,6 +284,9 @@ class _farmCardViewState extends State<farmCardView> {
                           .decodeAndRemovePadding(
                               data[widget.overrideFarmIndex]);
                       devicesToList(farmTarget);
+                      context
+                          .read<SearchWidgetBloc>()
+                          .add(BaseListChanged(devices));
                       // if (state.farmIndex != widget.overrideFarmIndex) {
                       //   dataResponse.removeWhere(
                       //       (element) => !devices.contains(element));
@@ -402,6 +302,10 @@ class _farmCardViewState extends State<farmCardView> {
                       // print(devices);
                       tempLoc = FarmCardCubit()
                           .decodeAndRemovePadding(data[state.farmIndex]);
+                      context
+                          .read<SearchWidgetBloc>()
+                          .searchDev
+                          .addDeviceList(devices);
                       return Text(
                           context
                               .read<FarmCardCubit>()
@@ -416,6 +320,10 @@ class _farmCardViewState extends State<farmCardView> {
                     // print(devices);
                     tempLoc =
                         FarmCardCubit().decodeAndRemovePadding(data[farmIndex]);
+                    context
+                        .read<SearchWidgetBloc>()
+                        .searchDev
+                        .addDeviceList(devices);
                     return Text(
                         context
                             .read<FarmCardCubit>()
@@ -482,11 +390,23 @@ class _farmCardViewState extends State<farmCardView> {
                                   .toList();
                               return BlocProvider(
                                 create: (_) => LiveDataCubit(selectedResponse),
-                                child: numberCard(
-                                    inputData: selectedResponse,
-                                    whichFarm: tempLoc,
-                                    existedCli: client,
-                                    devicesData: devices),
+                                child: BlocBuilder<SearchWidgetBloc,
+                                    SearchWidgetState>(
+                                  builder: (context, state) {
+                                    if (state is SearchWidgetSuccess) {
+                                      return numberCard(
+                                          inputData: selectedResponse,
+                                          whichFarm: tempLoc,
+                                          existedCli: client,
+                                          devicesData: searched);
+                                    }
+                                    return numberCard(
+                                        inputData: selectedResponse,
+                                        whichFarm: tempLoc,
+                                        existedCli: client,
+                                        devicesData: devices);
+                                  },
+                                ),
                               );
                             },
                           )
