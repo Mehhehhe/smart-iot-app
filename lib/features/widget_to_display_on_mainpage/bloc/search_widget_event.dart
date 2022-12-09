@@ -12,3 +12,11 @@ class TextChanged extends SearchWidgetEvent {
   @override
   List<Object> get props => [text];
 }
+
+class BaseListChanged extends SearchWidgetEvent {
+  List dev;
+  BaseListChanged(this.dev);
+
+  @override
+  List<Object> get props => [dev];
+}
