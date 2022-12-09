@@ -5,10 +5,12 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card_view.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
 class MainPage extends StatefulWidget {
@@ -26,7 +28,7 @@ class _MainPageState extends State<MainPage> {
   Map<String, dynamic> account = {"name": "name", "email": "email"};
   String accountName = "";
   late String accountEmail;
-  late var ownedFarm;
+  var ownedFarm = [];
   // Farm variables
   Map<String, dynamic> farm = {
     "farm": [
@@ -61,7 +63,10 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       account = userInf;
       accountName = res.username.toString();
-      ownedFarm = userInf["ownedFarm"];
+      // ownedFarm = userInf["ownedFarm"];
+      for (var farm in userInf["ownedFarm"]) {
+        ownedFarm.add(farm);
+      }
     });
     return userInf;
   }
@@ -123,15 +128,11 @@ class _MainPageState extends State<MainPage> {
                 body: BlocBuilder<FarmCardCubit, FarmCardInitial>(
                   bloc: context.read<FarmCardCubit>(),
                   builder: (context, state) {
-                    if (state.farmIndex == farmInd) {
-                      return farmCardView(
-                        username: accountName,
-                        overrideFarmIndex: state.farmIndex,
-                      );
-                    }
                     return farmCardView(
                       username: accountName,
-                      overrideFarmIndex: farmInd,
+                      overrideFarmIndex: state.farmIndex == farmInd
+                          ? state.farmIndex
+                          : farmInd,
                     );
                   },
                 ),
