@@ -86,9 +86,9 @@ class _LiveChartState extends State<LiveChart> {
           activationMode: ActivationMode.singleTap,
           shared: true,
           header: "Sensor Value",
-          format: '@ point.x, point.y',
+          format: 'ณ point.x, ค่า: point.y',
           decimalPlaces: 2,
-          textStyle: const TextStyle(fontSize: 20.0)),
+          textStyle: const TextStyle(fontSize: 16.0)),
       trackballBehavior: TrackballBehavior(
           activationMode: ActivationMode.singleTap,
           enable: true,
