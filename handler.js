@@ -728,11 +728,11 @@ module.exports.createFarmAsTable = (event, context, callback) => {
 };
 
 module.exports.writeDataFromIOT = async (event, context, callback) => {
-  // const DeviceName = event.device;
-  // const DeviceType = event.type;
-  // const DeviceSerial = event.serialNumber;
+  const DeviceName = event.device;
+  const DeviceType = event.type;
+  const DeviceSerial = event.serialNumber;
   
-  // const FarmName = event.farmName;
+  const FarmName = event.farmName;
 
   // Separate a topic to get farm name and device
   let splitStr = event.topic.split("/");
