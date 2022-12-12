@@ -3,14 +3,20 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import '../services/lambdaCaller.dart';
 
 class ResultItem {
-  const ResultItem({required this.deviceName, required this.whichFarm});
+  const ResultItem(
+      {required this.deviceName,
+      required this.whichFarm,
+      required this.details});
 
   final String deviceName;
   final String whichFarm;
+  final dynamic details;
 
   factory ResultItem.fromJSON(dynamic json) {
     return ResultItem(
-        deviceName: json["deviceName"], whichFarm: json["whichFarm"]);
+        deviceName: json["deviceName"],
+        whichFarm: json["whichFarm"],
+        details: json["details"]);
   }
 
   toMap() {
@@ -66,8 +72,10 @@ class SearchDevice {
     print("Search on devices list : => $dev");
     final result = dev
         .where((element) => element["SerialNumber"] == term)
-        .map((e) =>
-            ResultItem(deviceName: e["SerialNumber"], whichFarm: e["Location"]))
+        .map((e) => ResultItem(
+            deviceName: e["SerialNumber"],
+            whichFarm: e["Location"],
+            details: e))
         .toList();
     cache.set(term, SearchResult(items: result));
     return SearchResult(items: result);
