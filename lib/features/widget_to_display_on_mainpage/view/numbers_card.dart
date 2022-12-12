@@ -61,10 +61,7 @@ class _numberCardState extends State<numberCard> {
   getDetailOfDevice(String serial) {
     Map target = {};
     if (widget.devicesData![0].runtimeType == ResultItem) {
-      for (var i in data) {
-        target = i[serial] ?? {};
-      }
-      return target;
+      return widget.devicesData![0].details;
     }
     for (Map i in widget.devicesData!) {
       target = i["SerialNumber"] == serial ? i : {};
@@ -108,6 +105,7 @@ class _numberCardState extends State<numberCard> {
               print("Query get : $currmap");
               var currentValue = currmap[name]["Value"];
               var details = getDetailOfDevice(name);
+              print("Target searched details: $details");
               return Card(
                 child: InkWell(
                   onTap: () => Navigator.push(
@@ -120,6 +118,8 @@ class _numberCardState extends State<numberCard> {
                                 location: widget.whichFarm),
                             child: DeviceDetail(
                                 detail: details,
+                                serial: name,
+                                location: widget.whichFarm,
                                 latestDatePlaceholder: [currmap])),
                       )),
                   child: Container(
@@ -146,17 +146,30 @@ class _numberCardState extends State<numberCard> {
                                     color: Colors.greenAccent,
                                   ),
                                 ],
+                                annotations: [
+                                  GaugeAnnotation(
+                                      widget: Text(
+                                    double.parse(currentValue).toString(),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ))
+                                ],
                               )
                             ],
                           ),
                         ),
-                        Switch(
-                          value: currmap[name]!["State"],
-                          onChanged: (value) {
-                            widget.existedCli.publishToSetDeviceState(
-                                widget.whichFarm, name, value);
-                          },
-                        )
+                        Center(
+                            child: Padding(
+                          padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
+                          child: Switch(
+                            value: currmap[name]!["State"],
+                            onChanged: (value) {
+                              widget.existedCli.publishToSetDeviceState(
+                                  widget.whichFarm, name, value);
+                            },
+                          ),
+                        ))
                       ],
                     ),
                   ),
@@ -179,6 +192,8 @@ class _numberCardState extends State<numberCard> {
                                 location: widget.whichFarm),
                             child: DeviceDetail(
                                 detail: details,
+                                serial: name,
+                                location: widget.whichFarm,
                                 latestDatePlaceholder: [currmap])),
                       )),
                   child: Container(
@@ -205,17 +220,30 @@ class _numberCardState extends State<numberCard> {
                                     color: Colors.greenAccent,
                                   ),
                                 ],
+                                annotations: [
+                                  GaugeAnnotation(
+                                      widget: Text(
+                                    double.parse(currentValue).toString(),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ))
+                                ],
                               )
                             ],
                           ),
                         ),
-                        Switch(
-                          value: currmap[name]!["State"],
-                          onChanged: (value) {
-                            widget.existedCli.publishToSetDeviceState(
-                                widget.whichFarm, name, value);
-                          },
-                        )
+                        Center(
+                            child: Padding(
+                          padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
+                          child: Switch(
+                            value: currmap[name]!["State"],
+                            onChanged: (value) {
+                              widget.existedCli.publishToSetDeviceState(
+                                  widget.whichFarm, name, value);
+                            },
+                          ),
+                        )),
                       ],
                     ),
                   ),
