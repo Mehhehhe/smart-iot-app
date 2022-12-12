@@ -12,18 +12,30 @@ class DeviceDetail extends StatelessWidget {
   List<Map> liveData = [];
   List<Map> latestDatePlaceholder = [];
   List<ChartData> dataToPlot = [];
+  String serial;
+  String location;
 
   DeviceDetail(
-      {Key? key, required this.detail, required this.latestDatePlaceholder})
+      {Key? key,
+      required this.detail,
+      required this.serial,
+      required this.location,
+      required this.latestDatePlaceholder})
       : super(key: key);
 
   void insertChartData(String data) {
+    print("Inserting $data");
     var temp = json.decode(data);
+    print("${temp["State"]}, ${temp["TimeStamp"]}, ${temp["Value"]}");
     bool deviceState = temp["State"];
     DateTime deviceTimeStamp =
-        DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toLocal();
+        DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toUtc();
+    print(deviceTimeStamp);
     double value = double.parse(temp["Value"]);
-    dataToPlot.add(ChartData(deviceTimeStamp, value, detail["Location"]));
+    print(value);
+    dataToPlot
+        .add(ChartData(deviceTimeStamp, value, detail["Location"] ?? location));
+    print("Added plot");
   }
 
   @override
@@ -32,7 +44,7 @@ class DeviceDetail extends StatelessWidget {
         appBar: AppBar(
             elevation: 5,
             centerTitle: true,
-            title: Text("${detail["DeviceName"]}",
+            title: Text("${detail["DeviceName"] ?? serial}",
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontSize: 20, fontWeight: FontWeight.bold))),
@@ -48,12 +60,15 @@ class DeviceDetail extends StatelessWidget {
                       print(
                           "[CheckLength] length = ${state.data.length}, [Details] : $detail");
                       if (state.data != "" || state.data != null) {
-                        print("[CheckDetail] .${state.data}.");
+                        print(
+                            "[CheckDetail] .${state.data}. ${latestDatePlaceholder[0]}, device: ${state.location}");
                         if (state.data.length == 0) {
-                          liveData.add(
-                              latestDatePlaceholder[0][detail["SerialNumber"]]);
+                          print(latestDatePlaceholder[0]
+                              [detail["SerialNumber"] ?? serial]);
+                          liveData.add(latestDatePlaceholder[0]
+                              [detail["SerialNumber"] ?? serial]);
                           insertChartData(json.encode(latestDatePlaceholder[0]
-                              [detail["SerialNumber"]]));
+                              [detail["SerialNumber"] ?? serial]));
                         } else {
                           String trimmedData =
                               state.data.substring(1, state.data.length - 1);
@@ -133,7 +148,7 @@ class DeviceDetail extends StatelessWidget {
                               ),
                             ),
                             // Text("Graph"),
-                            Text(state.data),
+                            // Text(state.data),
                             if (dataToPlot != null && liveData != null)
                               Container(
                                 height: 300,
