@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,9 +15,10 @@ class ReportCard {
   List<Map<String, String>> devicesWithType;
   String location;
   Widget generatedChart;
+  List<Map> dataResponse;
 
   ReportCard(this.farmName, this.devicesWithType, this.generatedChart,
-      this.location, this.whoGenerated);
+      this.location, this.whoGenerated, this.dataResponse);
 
   _mapDevicesToTableRow() {
     List<pdf.TableRow> tb = [];
@@ -77,9 +79,86 @@ class ReportCard {
                         pdf.Text("Location",
                             style:
                                 pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
-                        pdf.Text(location),
+                        pdf.Text(farmName),
                       ])
                     ]),
+                pdf.Divider(),
+                pdf.Column(children: [
+                  // pdf.Row(
+                  //     mainAxisAlignment: pdf.MainAxisAlignment.spaceEvenly,
+                  //     children: [
+                  //       pdf.Column(children: [
+                  //         pdf.Row(
+                  //             mainAxisAlignment:
+                  //                 pdf.MainAxisAlignment.spaceEvenly,
+                  //             children: [
+                  //               pdf.Text("Value",
+                  //                   style: pdf.TextStyle(fontSize: 16)),
+                  //               pdf.Text("Timestamp",
+                  //                   style: pdf.TextStyle(fontSize: 16)),
+                  //               pdf.Text("State",
+                  //                   style: pdf.TextStyle(fontSize: 16)),
+                  //             ])
+                  //       ]),
+                  //       pdf.Text("Device", style: pdf.TextStyle(fontSize: 16))
+                  //     ]),
+                  pdf.ListView.builder(
+                      itemBuilder: (context, index) {
+                        var data = dataResponse.elementAt(index)["Data"];
+                        // print(
+                        //     "${json.decode(data)}, ${json.decode(data).runtimeType}");
+                        var dataTrimmed = json.decode(data);
+                        // List<Map> dt = [];
+                        // for (var strMap in dataTrimmed) {
+                        //   dt.add(json.decode(strMap));
+                        // }
+                        var source =
+                            dataResponse.elementAt(index)["FromDevice"];
+                        print("Build pdf data: $data, ${data.runtimeType}");
+                        return pdf.Column(children: [
+                          pdf.Row(
+                              mainAxisAlignment:
+                                  pdf.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pdf.ListView.builder(
+                                    itemBuilder: (context, index2) {
+                                      return pdf.Row(
+                                          mainAxisAlignment: pdf
+                                              .MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            pdf.Padding(
+                                              padding: pdf.EdgeInsets.fromLTRB(
+                                                  5, 5, 70, 0),
+                                              child: pdf.Text(DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          dataTrimmed[index2]
+                                                              ["TimeStamp"])
+                                                  .toLocal()
+                                                  .toString()),
+                                            ),
+                                            pdf.Padding(
+                                              padding: pdf.EdgeInsets.fromLTRB(
+                                                  5, 5, 70, 0),
+                                              child: pdf.Text(
+                                                  dataTrimmed[index2]["Value"]),
+                                            ),
+                                            pdf.Padding(
+                                              padding: pdf.EdgeInsets.fromLTRB(
+                                                  5, 5, 70, 0),
+                                              child: pdf.Text(
+                                                  dataTrimmed[index2]["State"]
+                                                      .toString()),
+                                            ),
+                                          ]);
+                                    },
+                                    itemCount: dataTrimmed.length),
+                                pdf.Text(source)
+                              ]),
+                          pdf.Divider()
+                        ]);
+                      },
+                      itemCount: dataResponse.length)
+                ])
               ])),
     );
     return pf.save();
