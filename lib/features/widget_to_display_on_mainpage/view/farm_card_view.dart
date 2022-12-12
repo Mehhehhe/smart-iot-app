@@ -292,7 +292,9 @@ class _farmCardViewState extends State<farmCardView> {
                       //       (element) => !devices.contains(element));
                       // }
                       tempLoc = farmTarget;
-                      return Text(farmTarget);
+                      return Text(farmTarget,
+                          style: const TextStyle(
+                              fontSize: 28, fontWeight: FontWeight.bold));
                     }
                     if (state.farmIndex == farmIndex) {
                       // print("Created within condition");
@@ -332,22 +334,22 @@ class _farmCardViewState extends State<farmCardView> {
                             fontSize: 28, fontWeight: FontWeight.bold));
                   },
                 ),
-                TextButton(
-                    onPressed: () async {
-                      // _displayFarmEditor(context, data);
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FarmEditor(farm: data),
-                          )).then((value) => onIndexSelection(value));
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.edit),
-                        Text("Change to another farm")
-                      ],
-                    )),
+                // TextButton(
+                //     onPressed: () async {
+                //       // _displayFarmEditor(context, data);
+                //       await Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => FarmEditor(farm: data),
+                //           )).then((value) => onIndexSelection(value));
+                //     },
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: const [
+                //         Icon(Icons.edit),
+                //         Text("Change to another farm")
+                //       ],
+                //     )),
                 // if (state.widgetIndex == 0)
                 //   Container(
                 //     height: 300,
@@ -369,9 +371,10 @@ class _farmCardViewState extends State<farmCardView> {
                 //         )
                 //     ]),
                 //   )
+                Divider(),
                 if (state.widgetIndex == 1)
                   Container(
-                    height: 300,
+                    height: 400,
                     width: MediaQuery.of(context).size.width,
                     child: Stack(
                       children: [
@@ -413,19 +416,19 @@ class _farmCardViewState extends State<farmCardView> {
                       ],
                     ),
                   ),
-                const Text("What to be display ?"),
+                // const Text("What to be display ?"),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Column(
-                      children: [
-                        IconButton(
-                            onPressed: () =>
-                                context.read<FrontOfCardCubit>().chooseIndex(0),
-                            icon: const Icon(Icons.auto_graph)),
-                        const Text("Graph"),
-                      ],
-                    ),
+                    // Column(
+                    //   children: [
+                    //     IconButton(
+                    //         onPressed: () =>
+                    //             context.read<FrontOfCardCubit>().chooseIndex(0),
+                    //         icon: const Icon(Icons.auto_graph)),
+                    //     const Text("Graph"),
+                    //   ],
+                    // ),
                     Column(
                       children: [
                         IconButton(
@@ -449,7 +452,8 @@ class _farmCardViewState extends State<farmCardView> {
                                           deviceAndType,
                                           const Text(""),
                                           "-",
-                                          widget.username)),
+                                          widget.username,
+                                          dataResponse)),
                                 )),
                             icon: const Icon(Icons.description_outlined)),
                         const Text("Status Report"),
@@ -466,16 +470,17 @@ class _farmCardViewState extends State<farmCardView> {
                     ),
                   ],
                 ),
-                TextButton(
-                    onPressed: () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DeviceSelector(devices: devices),
-                          )).then((value) => onDeviceSelection(value));
-                    },
-                    child: const Text("Choose devices ..."))
+                Padding(padding: EdgeInsets.fromLTRB(0, 25, 0, 0))
+                // TextButton(
+                //     onPressed: () async {
+                //       await Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) =>
+                //                 DeviceSelector(devices: devices),
+                //           )).then((value) => onDeviceSelection(value));
+                //     },
+                //     child: const Text("Choose devices ..."))
               ]),
         );
         ;
@@ -493,11 +498,11 @@ class _farmCardViewState extends State<farmCardView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text("Rear"),
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: const Text("Value History"),
-                    ),
+                    // const Text("Rear"),
+                    // Container(
+                    //   width: MediaQuery.of(context).size.width,
+                    //   child: const Text("Value History"),
+                    // ),
                     const Divider(),
                     if (state.widgetIndex == 0)
                       Builder(
@@ -628,32 +633,32 @@ class _farmCardViewState extends State<farmCardView> {
                             ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () => context
-                                      .read<BackOfCardCubit>()
-                                      .chooseIndex(0),
-                                  icon: const Icon(Icons.settings)),
-                              const Text("Device State Settings"),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () => context
-                                      .read<BackOfCardCubit>()
-                                      .chooseIndex(1),
-                                  icon: const Icon(Icons.history)),
-                              const Text("Logs"),
-                            ],
-                          ),
-                        ),
+                        // Padding(
+                        //   padding: const EdgeInsets.all(20),
+                        //   child: Column(
+                        //     children: [
+                        //       IconButton(
+                        //           onPressed: () => context
+                        //               .read<BackOfCardCubit>()
+                        //               .chooseIndex(0),
+                        //           icon: const Icon(Icons.settings)),
+                        //       const Text("Device State Settings"),
+                        //     ],
+                        //   ),
+                        // ),
+                        // Padding(
+                        //   padding: const EdgeInsets.all(20),
+                        //   child: Column(
+                        //     children: [
+                        //       IconButton(
+                        //           onPressed: () => context
+                        //               .read<BackOfCardCubit>()
+                        //               .chooseIndex(1),
+                        //           icon: const Icon(Icons.history)),
+                        //       const Text("Logs"),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     )
                   ]),
