@@ -292,6 +292,7 @@ class _farmCardViewState extends State<farmCardView> {
                       //       (element) => !devices.contains(element));
                       // }
                       tempLoc = farmTarget;
+
                       return Text(farmTarget,
                           style: const TextStyle(
                               fontSize: 28, fontWeight: FontWeight.bold));
@@ -391,6 +392,7 @@ class _farmCardViewState extends State<farmCardView> {
                                   .where((element) =>
                                       element["FromFarm"] == tempLoc)
                                   .toList();
+                              print("Select $selectedResponse");
                               return BlocProvider(
                                 create: (_) => LiveDataCubit(selectedResponse),
                                 child: BlocBuilder<SearchWidgetBloc,
