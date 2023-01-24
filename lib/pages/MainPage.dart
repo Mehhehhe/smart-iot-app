@@ -11,6 +11,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_c
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card_view.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
+import 'package:smart_iot_app/pages/settings.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
 class MainPage extends StatefulWidget {
@@ -235,7 +236,9 @@ class _MainPageState extends State<MainPage> {
                             isThreeLine: true,
                             subtitle: const Text("การตั้งค่าภายในแอพและอื่นๆ"),
                             hoverColor: Colors.white70,
-                            onTap: () {},
+                            onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (context) => SettingPage())),
                           ),
                         ],
                       ),
