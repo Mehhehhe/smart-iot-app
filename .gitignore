@@ -72,3 +72,4 @@ amplifytools.xcconfig
 .serverless/cloudformation-template-update-stack.json
 .serverless/smart-iot-app.zip
 .serverless/serverless-state.json
+flutter_01.png
