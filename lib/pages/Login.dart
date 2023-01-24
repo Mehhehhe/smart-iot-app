@@ -4,6 +4,7 @@ import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/user_data_stream_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 import 'package:smart_iot_app/pages/MainPage.dart';
@@ -16,6 +17,7 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 // Generated in previous step
 import '../amplifyconfiguration.dart';
+import 'onboard.dart';
 
 // Initialize AWS Auth in authentication page instead.
 Future<void> _configureAmplify() async {
@@ -113,7 +115,16 @@ class _LogIn extends State<LogIn> {
           builder: Authenticator.builder(),
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            body: farmCard(),
+            body: FutureBuilder(
+              future: _isOnboardingCompleted(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data == true) {
+                  return farmCard();
+                } else {
+                  return OnboardingPage();
+                }
+              },
+            ),
           ),
         ));
   }
@@ -167,48 +178,67 @@ class _LogIn extends State<LogIn> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Container(
-                height: 600,
-                color: Colors.amber,
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Center(
-                      child: FlutterLogo(
-                        size: 100,
-                      ),
-                    ),
-                    SignInForm.custom(fields: [
-                      SignInFormField.username(),
-                      SignInFormField.password()
-                    ]),
-                    const Divider(
-                      color: Colors.black,
-                      height: 30,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              Stack(
+                children: [
+                  Container(
+                    height: 450,
+                    padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                    margin: const EdgeInsets.only(top: 70),
+                    decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          const BoxShadow(
+                            blurRadius: 4,
+                            color: Color(0x33000000),
+                            offset: Offset(0, 5),
+                          )
+                        ]),
+                    child: Column(
                       children: [
-                        const Text(
-                          "Don't have an account? ",
-                          style: TextStyle(fontSize: 18),
+                        SignInForm.custom(fields: [
+                          SignInFormField.username(),
+                          SignInFormField.password()
+                        ]),
+                        const Divider(
+                          color: Colors.black,
+                          height: 30,
                         ),
-                        TextButton(
-                            onPressed: () =>
-                                state.changeStep(AuthenticatorStep.signUp),
-                            child: const Text(
-                              "Sign up",
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Don't have an account? ",
                               style: TextStyle(fontSize: 18),
-                            ))
+                            ),
+                            TextButton(
+                                onPressed: () =>
+                                    state.changeStep(AuthenticatorStep.signUp),
+                                child: const Text(
+                                  "Sign up",
+                                  style: TextStyle(fontSize: 18),
+                                ))
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
+                    ),
+                  ),
+                  const Center(
+                    child: FlutterLogo(
+                      size: 100,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  _isOnboardingCompleted() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('onboarding') ?? false;
   }
 }
