@@ -1,42 +1,29 @@
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// class NotifyUser {
-//   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+class Threshold {
+  late SharedPreferences prefs;
 
-//   String message;
-//   final String _channelId = "1000";
-//   final String _channelName = "SMART_IOT_APP_NOTIFICATION_CHANNEL";
-//   final String _channelDescription =
-//       "SMART_IOT_APP_NOTIFICATION_CHANNEL_DETAIL";
+  init() async {
+    prefs = await SharedPreferences.getInstance();
+  }
 
-//   NotifyUser() {
-//     message = "No message";
-//     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-//   }
+  void save(Map data) {
+    for (var d in data.entries) {
+      switch (d.value.runtimeType) {
+        case double:
+          prefs.setDouble(d.key, d.value);
+          break;
+        case bool:
+          prefs.setBool(d.key, d.value);
+          break;
+        case String:
+          prefs.setString(d.key, d.value);
+          break;
+        default:
+          throw ("Unknown Type. Please check the value.");
+      }
+    }
+  }
 
-//   String initialize() {
-//     var initializationSettings = const InitializationSettings(
-//       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-//       //iOS: ,
-//     );
-//     flutterLocalNotificationsPlugin.initialize(
-//       initializationSettings,
-//       onSelectNotification: (payload) {
-//         message = payload;
-//       },
-//     );
-//     return message ?? "notFound";
-//   }
-
-//   pushNotification(Importance im, Priority pr,
-//       [String title, String message, String details]) async {
-//     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-//         '10000', _channelName,
-//         channelDescription: details ?? "", importance: im, priority: pr);
-//     var platformChannelSpecifics =
-//         NotificationDetails(android: androidPlatformChannelSpecifics);
-//     await flutterLocalNotificationsPlugin.show(122, title ?? "Notification",
-//         message ?? "Notification message", platformChannelSpecifics,
-//         payload: "userPressedNoti");
-//   }
-// }
+  getThresh(String item) => prefs.get(item);
+}
