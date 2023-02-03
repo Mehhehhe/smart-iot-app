@@ -92,9 +92,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
     prefs.setBool('onboarding', true);
   }
 
+// Introduction & First time settings
+
   Widget OnboardingPage1() {
     return Container(
       color: Colors.red,
+      child: Center(
+          child: Column(
+        children: [
+          Text("Welcome to"),
+          Text("KaerIot"),
+          Padding(padding: const EdgeInsets.only(top: 50.0)),
+          Text(
+              "This will guide you how you can use our application, you can follow along by pressing next"),
+        ],
+      )),
     );
   }
 
