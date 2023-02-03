@@ -24,7 +24,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   // Screen variables
   int index = 0;
-  late List<Widget> _screen;
+  // late List<Widget> _screen;
   // User variables
   Map<String, dynamic> account = {"name": "name", "email": "email"};
   String accountName = "";
@@ -89,17 +89,8 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
-    // Test if farm table is interable
-    fetchFarmList();
-
     // Fetch user's name & email for drawer
     getUserInfo();
-    // ignore: todo
-    // TODO: fetch this user's farms and set to farm vars.
-    // use getUserList() first to get all users.
-    // select a user where name is matched then return id.
-    // using this id in parameter of `get_farm_by_id`
-    // _screen = [farmCard(username: accountName), const Text("Second")];
     super.initState();
   }
 
@@ -126,8 +117,21 @@ class _MainPageState extends State<MainPage> {
                   leadingWidth: 80,
                   toolbarHeight: 80,
                 ),
-                body: BlocBuilder<FarmCardCubit, FarmCardInitial>(
+                // body: BlocBuilder<FarmCardCubit, FarmCardInitial>(
+                //   bloc: context.read<FarmCardCubit>(),
+                //   builder: (context, state) {
+                //     return farmCardView(
+                //       username: accountName,
+                //       overrideFarmIndex: state.farmIndex == farmInd
+                //           ? state.farmIndex
+                //           : farmInd,
+                //     );
+                //   },
+                // ),
+
+                body: BlocConsumer<FarmCardCubit, FarmCardInitial>(
                   bloc: context.read<FarmCardCubit>(),
+                  listener: (context, state) {},
                   builder: (context, state) {
                     return farmCardView(
                       username: accountName,
@@ -137,6 +141,7 @@ class _MainPageState extends State<MainPage> {
                     );
                   },
                 ),
+
                 // bottomNavigationBar: NavigationBarTheme(
                 //   data: NavigationBarThemeData(
                 //       indicatorColor: Colors.white,
