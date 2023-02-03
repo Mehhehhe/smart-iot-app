@@ -7,6 +7,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
 class LiveChart extends StatefulWidget {
   String type;
@@ -43,7 +44,9 @@ class _LiveChartState extends State<LiveChart> {
           case "line":
             return _buildLineChart(state.chartData!);
           case "bar":
-            return Container();
+            return _buildBarChart(state.chartData!);
+          case "pie":
+            return _buildPieChart(state.chartData!);
         }
         return Container();
       },
@@ -130,6 +133,31 @@ class _LiveChartState extends State<LiveChart> {
       ));
       temp_arr = [];
     }
+    return temp;
+  }
+
+  SfSparkBarChart _buildBarChart(List<ChartData> data) {
+    return SfSparkBarChart(
+      data: _barSeries(data),
+    );
+  }
+
+  _barSeries(List<ChartData> data) {
+    List<num> newBar = [];
+    for (var cd in data) {
+      newBar.add(cd.values);
+    }
+    return newBar;
+  }
+
+  SfCircularChart _buildPieChart(List<ChartData> data) {
+    return SfCircularChart(
+      series: _circularSeries(data),
+    );
+  }
+
+  _circularSeries(List<ChartData> data) {
+    List<CircularSeries<ChartData, dynamic>> temp = [];
     return temp;
   }
 
