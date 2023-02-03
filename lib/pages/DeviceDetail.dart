@@ -15,6 +15,8 @@ class DeviceDetail extends StatelessWidget {
   String serial;
   String location;
 
+  List graphTypes = ["line", "bar", "pie"];
+
   DeviceDetail(
       {Key? key,
       required this.detail,
@@ -57,14 +59,14 @@ class DeviceDetail extends StatelessWidget {
                 children: [
                   BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
                     builder: (context, state) {
-                      print(
-                          "[CheckLength] length = ${state.data.length}, [Details] : $detail");
+                      // print(
+                      //     "[CheckLength] length = ${state.data.length}, [Details] : $detail");
                       if (state.data != "" || state.data != null) {
-                        print(
-                            "[CheckDetail] .${state.data}. ${latestDatePlaceholder[0]}, device: ${state.location}");
+                        // print(
+                        //     "[CheckDetail] .${state.data}. ${latestDatePlaceholder[0]}, device: ${state.location}");
                         if (state.data.length == 0) {
-                          print(latestDatePlaceholder[0]
-                              [detail["SerialNumber"] ?? serial]);
+                          // print(latestDatePlaceholder[0]
+                          //     [detail["SerialNumber"] ?? serial]);
                           liveData.add(latestDatePlaceholder[0]
                               [detail["SerialNumber"] ?? serial]);
                           insertChartData(json.encode(latestDatePlaceholder[0]
@@ -149,6 +151,14 @@ class DeviceDetail extends StatelessWidget {
                             ),
                             // Text("Graph"),
                             // Text(state.data),
+                            DropdownButton(
+                                items: graphTypes
+                                    .map((e) => DropdownMenuItem(
+                                          child: Text(e),
+                                          value: e,
+                                        ))
+                                    .toList(),
+                                onChanged: (value) => print(value),),
                             if (dataToPlot != null && liveData != null)
                               Container(
                                 height: 300,
