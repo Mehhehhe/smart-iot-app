@@ -64,12 +64,12 @@ getFarmById(String id) async {
       : Exception('Failed to load target id');
 }
 
-createFarm(Map farmInfo) async {
-  var response = await http.post(_urlMap["create_farm"], body: farmInfo);
-  return response.statusCode == 200
-      ? jsonDecode(response.body)
-      : Exception(response.body);
-}
+// createFarm(Map farmInfo) async {
+//   var response = await http.post(_urlMap["create_farm"], body: farmInfo);
+//   return response.statusCode == 200
+//       ? jsonDecode(response.body)
+//       : Exception(response.body);
+// }
 
 /// ## `getUserById(String id)`
 ///
@@ -81,6 +81,7 @@ getUserById(String id) async {
   for (var user in users) {
     if (user["FarmUser"] == id) {
       targetId = user["ID"];
+      break;
     }
   }
   if (targetId == "") return {};
