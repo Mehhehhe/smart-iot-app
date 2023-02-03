@@ -72,6 +72,10 @@ dependencies:
   flutter_email_sender:
   easy_debounce:
 
+  # Firebase for notification
+  # firebase_messaging:
+  # firebase_core:
+
 dev_dependencies:
 
   # The "flutter_lints" package below contains a set of recommended lints to
