@@ -72,6 +72,9 @@ dependencies:
   flutter_email_sender:
   easy_debounce:
 
+  google_sign_in:
+  smooth_page_indicator: ^1.0.1
+
   # Firebase for notification
   # firebase_messaging:
   # firebase_core:
@@ -85,6 +88,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.1
   build_runner: ^2.1.0
+  dart_code_metrics: ^5.5.1
   flutter_test:
     sdk: flutter
 
@@ -107,6 +111,8 @@ flutter:
     - assets/images/bg_profile.jpg
     - assets/images/bg_setting.jpg
     - assets/images/bg_contact.jpg
+    - assets/images/onboarding0.png
+    - assets/images/onboarding2.png
     - assets/saves/history.txt
     - assets/certificates/
     # An image asset can refer to one or more resolution-specific "variants", see
