@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:crypto/crypto.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:smart_iot_app/services/AuthExceptionHandler.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
@@ -165,4 +166,8 @@ class Auth {
     }
     return false;
   }
+// Draft google login
+  // Future loginWithGoogle() async {
+  //   GoogleSignIn _googleSignIn = GoogleSignIn();
+  // }
 }
