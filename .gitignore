@@ -73,3 +73,6 @@ amplifytools.xcconfig
 .serverless/smart-iot-app.zip
 .serverless/serverless-state.json
 flutter_01.png
+
+# Analytic
+reports/
