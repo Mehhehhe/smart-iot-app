@@ -75,6 +75,8 @@ dependencies:
   google_sign_in:
   smooth_page_indicator: ^1.0.1
 
+  sqflite: ^2.2.4+1
+
   # Firebase for notification
   # firebase_messaging:
   # firebase_core:
