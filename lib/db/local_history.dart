@@ -19,7 +19,8 @@ class LocalHistoryDatabase {
 
   Future<Database> _initDB(String filepath) async {
     final dbpath = await getDatabasesPath();
-    final path = dbpath + filepath;
+    final path = '$dbpath/$filepath';
+    print(path);
 
     return await openDatabase(path, version: 1, onCreate: _createDB);
   }
@@ -27,19 +28,21 @@ class LocalHistoryDatabase {
   Future _createDB(Database db, int version) async {
     final textType = "TEXT NOT NULL";
     await db.execute('''
-    CREATE TABLE $table (
-      ${LocalHistFields.dateUnixAsId} TEXT PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS $table(
+      ${LocalHistFields.dateUnixAsId} TEXT NOT NULL PRIMARY KEY,
       ${LocalHistFields.device} $textType,
       ${LocalHistFields.farm} $textType,
       ${LocalHistFields.value} $textType,
-      ${LocalHistFields.comment} $textType,
-    )
-    ''');
+      ${LocalHistFields.comment} $textType)''');
   }
 
   Future<LocalHist> add(LocalHist local) async {
     final db = await instance.database;
-    final id = await db.insert(table, local.toJson());
+    final id = await db.insert(
+      table,
+      local.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
 
     return local.response(id: id.toString());
   }
