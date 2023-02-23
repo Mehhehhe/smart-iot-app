@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
@@ -17,6 +18,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/number
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
+import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/modules/pipe.dart';
@@ -51,6 +53,7 @@ class _farmCardViewState extends State<farmCardView> {
   List<Map> dataResponse = [];
   bool enableGraph = false;
   bool isRefreshed = false;
+  LocalHistoryDatabase lc = LocalHistoryDatabase.instance;
 
   // Boolean for control widgets
   bool isDraggable = true;
@@ -97,10 +100,30 @@ class _farmCardViewState extends State<farmCardView> {
         // print("Fetch pt := $pt, base data array := $dataResponse");
         if (!dataResponse.contains(pt)) {
           dataResponse.add(
-              {"Data": pt, "FromDevice": originalPos, "FromFarm": originFarm});
+            {"Data": pt, "FromDevice": originalPos, "FromFarm": originFarm},
+          );
+          autoSaveLocal(pt, originalPos, originFarm);
         }
       });
     });
+  }
+
+  Future<void> autoSaveLocal(histVals, dev, farm) async {
+    var h = json.decode(histVals).cast().toList();
+    for (var v = 0; v < h.length; v++) {
+      LocalHist tempForSav = LocalHist(
+        h[v]["TimeStamp"].toString(),
+        dev,
+        farm,
+        h[v]["Value"],
+        "",
+      );
+      // print("[ID] ${h[v]["TimeStamp"].toString()}");
+      var res = await lc.add(tempForSav);
+      // print(res.toJson());
+      // var allHist = await lc.getAllHistory();
+      // print("[Hist] ${}");
+    }
   }
 
   void periodicallyFetch() {
@@ -155,6 +178,7 @@ class _farmCardViewState extends State<farmCardView> {
         }
       });
     }
+
     return newDataArray;
   }
 
@@ -208,7 +232,7 @@ class _farmCardViewState extends State<farmCardView> {
         if (state is SearchWidgetError) {
           print("Not found: ${state.error}");
           return Container(
-            child: Text("Not Found"),
+            child: const Text("Not Found"),
           );
         }
         if (state is SearchWidgetSuccess) {
@@ -372,7 +396,7 @@ class _farmCardViewState extends State<farmCardView> {
                 //         )
                 //     ]),
                 //   )
-                Divider(),
+                const Divider(),
                 if (state.widgetIndex == 1)
                   Container(
                     height: 400,
@@ -472,7 +496,7 @@ class _farmCardViewState extends State<farmCardView> {
                     ),
                   ],
                 ),
-                Padding(padding: EdgeInsets.fromLTRB(0, 25, 0, 0))
+                const Padding(padding: EdgeInsets.fromLTRB(0, 25, 0, 0))
                 // TextButton(
                 //     onPressed: () async {
                 //       await Navigator.push(
