@@ -75,6 +75,7 @@ package:
     - handler.js
     - node_modules/uuid
     - node_modules/bluebird
+    - serverless/TableFunctions/handler.js
 
 functions:
 #  hello:
@@ -210,6 +211,14 @@ functions:
       - http:
           path: /farm/device/changeState
           method: POST
+  updateValue:
+    handler: serverless/TableFunctions/handler.updateValue
+    description: Update value(s) of one table.
+    events:
+      - http:
+          path: /any/targetTable/update
+          method: POST
+          cors: true
 
 resources:
   Resources:
