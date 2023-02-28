@@ -13,12 +13,14 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 // import 'package:smart_iot_app/services/PostRequest.dart';
 
+import './services/notification.dart';
 import 'Theme/ThemeManager.dart';
 
-void main(List list) async {
+Future<void> main(List list) async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MainPageWidgetObserver();
+  await initializeService();
   return runApp(ChangeNotifierProvider(
     create: (_) => ThemeNotifier(),
     child: SmartIOTApp(),
