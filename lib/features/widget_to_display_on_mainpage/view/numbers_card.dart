@@ -158,7 +158,7 @@ class _numberCardState extends State<numberCard> {
 
           return _createCardDetailIfFound(name, currMap, currentValue, details);
         } else {
-          return const CircularProgressIndicator();
+          return Container();
         }
       },
     );
