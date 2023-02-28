@@ -26,14 +26,18 @@ class SearchWidgetBloc extends Bloc<SearchWidgetEvent, SearchWidgetState> {
         // emit(SearchStateEmpty());
       },
     );
-    on<TextChanged>(_onTextChanged,
-        transformer: debounce(const Duration(microseconds: 300)));
+    on<TextChanged>(
+      _onTextChanged,
+      transformer: debounce(const Duration(microseconds: 300)),
+    );
   }
 
   SearchDevice searchDev;
 
   void _onTextChanged(
-      TextChanged event, Emitter<SearchWidgetState> emit) async {
+    TextChanged event,
+    Emitter<SearchWidgetState> emit,
+  ) async {
     final searchTerm = event.text;
     if (searchTerm.isEmpty) return emit(SearchStateEmpty());
     emit(SearchStateLoading());
