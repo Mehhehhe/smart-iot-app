@@ -1,19 +1,32 @@
-FROM dart:stable AS build
+FROM ubuntu:18.04
 
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y curl unzip openjdk-8-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up Android SDK
+ARG ANDROID_SDK_VERSION=6858069
+ENV ANDROID_SDK_ROOT /opt/android-sdk
+RUN curl -o sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip && \
+    mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
+    unzip sdk.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools && \
+    rm sdk.zip && \
+    yes | ${ANDROID_SDK_ROOT}/cmdline-tools/bin/sdkmanager --licenses && \
+    ${ANDROID_SDK_ROOT}/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-31" "system-images;android-31;google_apis_playstore;armeabi-v7a" && \
+    echo no | ${ANDROID_SDK_ROOT}/cmdline-tools/bin/avdmanager create avd --force --name test --abi armeabi-v7a --package "system-images;android-31;google_apis_playstore;armeabi-v7a"
+
+# Install Flutter
+ARG FLUTTER_VERSION=3.3.1
+ENV PATH "$PATH:/flutter/bin"
+
+RUN curl -o flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_S{FLUTTER_VERSION}-stable.tar.xz && \
+    tar xf flutter.tar.xz && \
+    rm flutter.tar.xz
+
+# Set up working directory and copy files
 WORKDIR /app
+COPY . .
 
-ADD pubspec.* /app/
-RUN dart pub get
-
-RUN which dart
-
-ADD . /app
-RUN dart pub get --offline
-RUN dart compile exe lib/main.dart -o lib/main
-
-FROM scratch
-COPY --from=build /runtime/ /
-COPY --from=build /app/lib/main /app/lib
-
-CMD []
-ENTRYPOINT [ "/usr/lib/dart/bin/dart", "main.dart" ]
+# Start emulator and run Flutter app
+CMD ["emulator", "-avd", "test", "-no-window", "-no-boot-anim", "&", "flutter", "run", "-d", "emulator-5554"]
