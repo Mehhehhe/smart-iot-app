@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -120,10 +122,20 @@ class _farmCardViewState extends State<farmCardView> {
       );
       // print("[ID] ${h[v]["TimeStamp"].toString()}");
       var res = await lc.add(tempForSav);
+      triggerThreshCheck(dev, h[v]["Value"]);
       // print(res.toJson());
       // var allHist = await lc.getAllHistory();
       // print("[Hist] ${}");
     }
+  }
+
+  void triggerThreshCheck(String dev, value) {
+    var enc = sha1.convert(utf8.encode(dev)).toString();
+    FlutterBackgroundService().invoke('threshDiff', {
+      "encryptedKey": enc,
+      "name": dev,
+      "value": value,
+    });
   }
 
   void periodicallyFetch() {
