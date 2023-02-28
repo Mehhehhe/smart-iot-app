@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.smart_iot_app">
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -9,6 +10,7 @@
 <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
 <uses-permission android:name="android.permission.STORAGE_INTERNAL" />
    <application
+        tools:replace="android:label"
         android:label="smart_iot_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
