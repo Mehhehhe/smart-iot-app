@@ -54,4 +54,10 @@ class LocalHistoryDatabase {
 
     return result.map((e) => LocalHist.fromJson(e)).toList();
   }
+
+  Future close() async {
+    final db = await instance.database;
+
+    db.close();
+  }
 }
