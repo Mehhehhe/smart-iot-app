@@ -117,7 +117,7 @@ class _farmCardViewState extends State<farmCardView> {
         h[v]["TimeStamp"].toString(),
         dev,
         farm,
-        h[v]["Value"],
+        h[v]["Value"].toString(),
         "",
       );
       // print("[ID] ${h[v]["TimeStamp"].toString()}");
@@ -602,6 +602,7 @@ class _farmCardViewState extends State<farmCardView> {
                           builder: (context) {
                             // Transform into single array
                             var newDataArray = localizedResponse();
+                            print("[Hist] $newDataArray");
                             newDataArray.sort((a, b) =>
                                 DateTime.parse(b["TimeStamp"])
                                     .millisecondsSinceEpoch -
@@ -639,10 +640,10 @@ class _farmCardViewState extends State<farmCardView> {
                                                       .spaceBetween,
                                               children: [
                                                 Text(
-                                                    newDataArray[index]
-                                                        ["Value"],
+                                                    newDataArray[index]["Value"]
+                                                        .toString(),
                                                     style: const TextStyle(
-                                                        fontSize: 20,
+                                                        fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.bold)),
                                                 Text(newDataArray[index]
