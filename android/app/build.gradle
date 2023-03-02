@@ -54,6 +54,12 @@ android {
         multiDexEnabled true
     }
 
+    configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core-ktx:1.7.0'
+    }
+}
+
     buildTypes {
         release {
             lintOptions {
@@ -86,4 +92,7 @@ dependencies {
     
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation "androidx.core:core:1.7.0"
 }

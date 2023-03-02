@@ -1,5 +1,14 @@
 buildscript {
     ext.kotlin_version = '1.7.10'
+    ext {
+        buildToolsVersion = "33.0.1"
+        minSdkVersion = 21
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        androidXCore = "1.7.0"
+        appCompatVersion    = "1.5.1"
+    }
+
     repositories {
         google()
         mavenCentral()
@@ -33,4 +42,11 @@ subprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "androidx.core:core:1.7.0"
+        force 'androidx.core:core-ktx:1.7.0'
+    }
 }
