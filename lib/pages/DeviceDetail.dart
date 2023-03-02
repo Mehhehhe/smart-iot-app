@@ -13,6 +13,10 @@ class DeviceDetail extends StatelessWidget {
   List<Map> liveData = [];
   List<Map> latestDatePlaceholder = [];
   List<ChartData> dataToPlot = [];
+  List<ChartData> NToPlot = [];
+  List<ChartData> PToPlot = [];
+  List<ChartData> KToPlot = [];
+
   String serial;
   String location;
 
@@ -31,9 +35,48 @@ class DeviceDetail extends StatelessWidget {
     bool deviceState = temp["State"];
     DateTime deviceTimeStamp =
         DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toUtc();
-    double value = double.parse(temp["Value"]);
-    dataToPlot
-        .add(ChartData(deviceTimeStamp, value, detail["Location"] ?? location));
+    print("[ValueCheckType] ${temp} ${temp["Value"].runtimeType}");
+    if (temp["Value"].runtimeType == double) {
+      // humid
+      double value = temp["Value"];
+      dataToPlot.add(ChartData(
+        deviceTimeStamp,
+        value,
+        detail["Location"] ?? location,
+      ));
+    } else {
+      print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");
+      var valueN = temp["Value"]["N"];
+      var valueP = temp["Value"]["P"];
+      var valueK = temp["Value"]["K"];
+      print("[AccessInnerMap] $valueN , $valueK , $valueP");
+      NToPlot.add(
+        ChartData(
+          deviceTimeStamp,
+          valueN,
+          detail["Location"] ?? location,
+          name: "N",
+        ),
+      );
+      PToPlot.add(
+        ChartData(
+          deviceTimeStamp,
+          valueP,
+          detail["Location"] ?? location,
+          name: "P",
+        ),
+      );
+      KToPlot.add(
+        ChartData(
+          deviceTimeStamp,
+          valueK,
+          detail["Location"] ?? location,
+          name: "K",
+        ),
+      );
+    }
+    // dataToPlot
+    //     .add(ChartData(deviceTimeStamp, value, detail["Location"] ?? location));
   }
 
   @override
@@ -60,8 +103,8 @@ class DeviceDetail extends StatelessWidget {
               children: [
                 BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
                   builder: (context, state) {
-                    // print(
-                    //     "[CheckLength] length = ${state.data.length}, [Details] : $detail");
+                    print(
+                        "[CheckLength] length = ${state.data.length}, [Details] : $detail");
                     if (state.data != "" || state.data != null) {
                       // print(
                       //     "[CheckDetail] .${state.data}. ${latestDatePlaceholder[0]}, device: ${state.location}");
@@ -162,7 +205,7 @@ class DeviceDetail extends StatelessWidget {
                                 .toList(),
                             onChanged: (value) => print(value),
                           ),
-                          if (dataToPlot != null && liveData != null)
+                          if (detail["Type"] == "MOISTURE" && liveData != null)
                             Container(
                               height: 300,
                               width: MediaQuery.of(context).size.width,
@@ -172,8 +215,74 @@ class DeviceDetail extends StatelessWidget {
                                 child: LiveChart(
                                   type: 'line',
                                   devices: liveData,
+                                  detail: detail,
                                 ),
                               ),
+                            )
+                          else if (detail["Type"] == "NPKSENSOR" &&
+                              liveData != null)
+                            ExpansionTile(
+                              title: Text("NPK graph"),
+                              initiallyExpanded: false,
+                              children: [
+                                ExpansionTile(
+                                  title: Text("Nitrogen"),
+                                  initiallyExpanded: false,
+                                  children: [
+                                    Container(
+                                      height: 300,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: BlocProvider(
+                                        create: (_) =>
+                                            LiveDataCubit(liveData, NToPlot),
+                                        child: LiveChart(
+                                          type: 'line',
+                                          devices: liveData,
+                                          detail: detail,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ExpansionTile(
+                                  title: Text("Phosphorus"),
+                                  initiallyExpanded: false,
+                                  children: [
+                                    Container(
+                                      height: 300,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: BlocProvider(
+                                        create: (_) =>
+                                            LiveDataCubit(liveData, PToPlot),
+                                        child: LiveChart(
+                                          type: 'line',
+                                          devices: liveData,
+                                          detail: detail,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ExpansionTile(
+                                  title: Text("Potassium"),
+                                  initiallyExpanded: false,
+                                  children: [
+                                    Container(
+                                      height: 300,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: BlocProvider(
+                                        create: (_) =>
+                                            LiveDataCubit(liveData, KToPlot),
+                                        child: LiveChart(
+                                          type: 'line',
+                                          devices: liveData,
+                                          detail: detail,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             )
                           else
                             const CircularProgressIndicator(),
