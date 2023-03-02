@@ -156,14 +156,14 @@ class _LogIn extends State<LogIn> {
                     style: TextStyle(fontSize: 18),
                   ),
                   TextButton(
-                      onPressed: () =>
-                          state.changeStep(AuthenticatorStep.signIn),
-                      child: const Text(
-                        "Sign in",
-                        style: TextStyle(fontSize: 18),
-                      ))
+                    onPressed: () => state.changeStep(AuthenticatorStep.signIn),
+                    child: const Text(
+                      "Sign in",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -184,16 +184,16 @@ class _LogIn extends State<LogIn> {
                     height: 450,
                     padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
                     margin: const EdgeInsets.only(top: 70),
-                    decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          const BoxShadow(
-                            blurRadius: 4,
-                            color: Color(0x33000000),
-                            offset: Offset(0, 5),
-                          )
-                        ]),
+                    // decoration: BoxDecoration(
+                    //     color: Colors.amber,
+                    //     borderRadius: BorderRadius.circular(25),
+                    //     boxShadow: const [
+                    //       BoxShadow(
+                    //         blurRadius: 4,
+                    //         color: Color(0x33000000),
+                    //         offset: Offset(0, 5),
+                    //       )
+                    //     ]),
                     child: Column(
                       children: [
                         SignInForm.custom(fields: [
@@ -228,6 +228,31 @@ class _LogIn extends State<LogIn> {
                       size: 100,
                     ),
                   ),
+                  // Center(
+                  //   child: CircleAvatar(
+                  //     radius: 80,
+                  //     backgroundColor: Colors.black87,
+                  //     child: Container(
+                  //       height: 110,
+                  //       width: 110,
+                  //       decoration: BoxDecoration(
+                  //         shape: BoxShape.circle,
+                  //         color: Colors.white,
+                  //         boxShadow: [
+                  //           BoxShadow(
+                  //             color: Colors.black26,
+                  //             offset: Offset(0, 2),
+                  //             blurRadius: 6,
+                  //           ),
+                  //         ],
+                  //       ),
+                  //       child: Image.network(
+                  //         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBwvh_i0UMh_LTBJ17Ct47fqBSwLVy142SgYa7QpZxbIuV_6Mn_UKLvObmWvzvJw0r92c&usqp=CAU",
+                  //         fit: BoxFit.cover,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ],
