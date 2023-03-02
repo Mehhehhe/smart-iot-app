@@ -1,15 +1,19 @@
 import 'package:flutter/animation.dart';
 
 class ChartData {
-  ChartData(this.date, this.values, this.place);
+  ChartData(this.date, this.values, this.place, {this.name});
   final DateTime date;
-  final double values;
+  final dynamic values;
   final String place;
-  final List<Color> palette = [
-    Color.fromRGBO(208, 31, 49, 1.0),
-    Color.fromRGBO(246, 129, 33, 1.0),
-    Color.fromRGBO(251, 221, 11, 1.0),
-    Color.fromRGBO(0, 123, 97, 1.0),
-    Color.fromRGBO(0, 114, 185, 1.0),
-  ];
+
+  final String? name;
 }
+
+// class ChartDataNPK {
+//   ChartDataNPK(this.date, this.place, this.valueN, this.valueP, this.valueK);
+//   final DateTime date;
+//   final double valueN;
+//   final double valueP;
+//   final double valueK;
+//   final String place;
+// }
