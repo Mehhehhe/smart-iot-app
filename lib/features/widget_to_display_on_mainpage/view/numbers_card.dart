@@ -62,13 +62,21 @@ class _numberCardState extends State<numberCard> {
 
   getDetailOfDevice(String serial) {
     Map target = {};
+    if (widget.devicesData == null) {
+      return target;
+    }
+    print("[getDetailOfDevice] ${widget.devicesData!} , serial = $serial");
     if (widget.devicesData![0].runtimeType == ResultItem) {
       return widget.devicesData![0].details;
     }
     for (Map i in widget.devicesData!) {
-      target = i["SerialNumber"] == serial ? i : {};
+      print("[InDetailLoop] $i , ${i["SerialNumber"] == serial}");
+      if (i["SerialNumber"] == serial) {
+        target = i;
+        break;
+      }
     }
-
+    print("[DetailFetched] $target");
     return target;
   }
 
@@ -110,16 +118,26 @@ class _numberCardState extends State<numberCard> {
         crossAxisCount: widget.devicesData == null ? 1 : 2,
       ),
       shrinkWrap: true,
-      itemCount: (widget.devicesData == null || data.isEmpty)
-          ? 1
-          : widget.devicesData!.length,
+      itemCount: (data.isEmpty)
+          ? 0
+          : widget.devicesData![0].runtimeType == ResultItem
+              ? 1
+              : data.length,
       itemBuilder: (context, index) {
-        return Stack(
-          children: [
-            buildSearchError(contextP),
-            buildSearchFound(contextP),
-            buildSearchEmpty(contextP, index),
-          ],
+        if (widget.devicesData == null) {
+          return Container();
+        }
+
+        return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+          builder: (context, state) {
+            if (state is SearchWidgetSuccess) {
+              return buildSearchFound(contextP);
+            } else if (state is SearchWidgetError) {
+              return buildSearchError(contextP);
+            }
+
+            return buildSearchEmpty(contextP, index);
+          },
         );
       },
     );
@@ -129,15 +147,23 @@ class _numberCardState extends State<numberCard> {
   Widget buildSearchEmpty(BuildContext contextP, index) {
     return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
       bloc: contextP.read<SearchWidgetBloc>(),
-      buildWhen: (previous, current) =>
-          previous != current && current is SearchStateEmpty,
+      buildWhen: (previous, current) => current is SearchStateEmpty,
       builder: (context, state) {
+        print("[BuildBloc] $data");
         Map<String, dynamic> currMap = Map<String, dynamic>.from(data[index]);
         String name = currMap.keys.first;
+        print("[CheckBuildCard] $name");
         var currentValue = data[index][name]["Value"];
         var details = getDetailOfDevice(name);
+        bool isIntVal = currentValue.runtimeType == double;
 
-        return _createCardDetailIfFound(name, currMap, currentValue, details);
+        return _createCardDetailIfFound(
+          name,
+          currMap,
+          currentValue,
+          details,
+          isIntVal,
+        );
       },
     );
   }
@@ -155,8 +181,15 @@ class _numberCardState extends State<numberCard> {
               .toList()[0]);
           var currentValue = currMap[name]["Value"];
           var details = getDetailOfDevice(name);
+          bool isIntVal = currentValue.runtimeType == double;
 
-          return _createCardDetailIfFound(name, currMap, currentValue, details);
+          return _createCardDetailIfFound(
+            name,
+            currMap,
+            currentValue,
+            details,
+            isIntVal,
+          );
         } else {
           return Container();
         }
@@ -164,7 +197,8 @@ class _numberCardState extends State<numberCard> {
     );
   }
 
-  Widget _createCardDetailIfFound(name, currMap, currentValue, details) {
+  Widget _createCardDetailIfFound(
+      name, currMap, currentValue, details, bool isMultiVal) {
     return Card(
       child: InkWell(
         onTap: () => Navigator.push(
@@ -190,7 +224,10 @@ class _numberCardState extends State<numberCard> {
           child: Stack(
             children: [
               // gauge here!
-              _gaugeInCard(name, currentValue),
+              if (isMultiVal)
+                _gaugeInCard(name, currentValue)
+              else
+                _multigaugeInCard(name, currentValue),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
@@ -214,6 +251,7 @@ class _numberCardState extends State<numberCard> {
   }
 
   Widget _gaugeInCard(name, currentValue) {
+    print("[CurrentValue] $currentValue , ${currentValue.runtimeType}");
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.2,
       child: SfRadialGauge(
@@ -228,7 +266,9 @@ class _numberCardState extends State<numberCard> {
             showTicks: false,
             pointers: <GaugePointer>[
               RangePointer(
-                value: double.parse(currentValue),
+                value: currentValue.runtimeType == String
+                    ? double.parse(currentValue)
+                    : currentValue,
                 width: 18,
                 color: Colors.greenAccent,
               ),
@@ -236,7 +276,7 @@ class _numberCardState extends State<numberCard> {
             annotations: [
               GaugeAnnotation(
                 widget: Text(
-                  double.parse(currentValue).toString(),
+                  "$currentValue",
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -244,6 +284,54 @@ class _numberCardState extends State<numberCard> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _multigaugeInCard(name, currentValue) {
+    print("[NPK] ${currentValue["N"].runtimeType}");
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.2,
+      child: SfRadialGauge(
+        enableLoadingAnimation: true,
+        title: GaugeTitle(text: name),
+        axes: <RadialAxis>[
+          RadialAxis(
+            minimum: 0,
+            maximum: 1000,
+            radiusFactor: 0.8,
+            showLabels: false,
+            showTicks: false,
+            pointers: <GaugePointer>[
+              RangePointer(
+                value: double.parse(currentValue["N"].toString()),
+                width: 26,
+                color: Colors.greenAccent,
+              ),
+              RangePointer(
+                value: double.parse(currentValue["P"].toString()),
+                width: 22,
+                color: Colors.yellowAccent,
+              ),
+              RangePointer(
+                value: double.parse(currentValue["K"].toString()),
+                width: 18,
+                color: Colors.redAccent,
+              ),
+            ],
+            // annotations: [
+            //   GaugeAnnotation(
+            //     widget: Text(
+            //       double.parse(currentValue).toString(),
+            //       style: const TextStyle(
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+            //   ),
+            // ],
           ),
         ],
       ),
