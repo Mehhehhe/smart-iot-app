@@ -15,9 +15,14 @@ const ALLOWED_ORIGIN = [
 module.exports.updateValue = (event, context, callback) => {
     var headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true
+        'Access-Control-Allow-Credentials': true,
+        'Content-Type': 'application/json'
     };
-    let table = event.targetTable;
+    let bodyFromWebInput = {};
+    if(event.body != undefined){
+        bodyFromWebInput = JSON.parse(event.body);
+    }
+    let table = event.targetTable == undefined ? bodyFromWebInput.targetTable : event.targetTable;
     // format : [UpdateMap01, UpdateMap02]
     // Update map
     // {"ID":"001", "UpdateItems": {"1":"0.0","2":"0.0"}}
@@ -43,7 +48,8 @@ module.exports.updateValue = (event, context, callback) => {
             break;
     }
     console.log(table);
-    for(let item of event.updateList){
+    let updateList = event.updateList == undefined ? bodyFromWebInput.updateList : event.updateList;
+    for(let item of updateList){
         console.info(["Enter first loop", item, typeof item.UpdateItems])
         for(const key of Object.keys(item.UpdateItems)){
             let params = {
