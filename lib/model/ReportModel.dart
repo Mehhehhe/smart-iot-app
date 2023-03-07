@@ -107,7 +107,7 @@ class ReportCard {
                         var data = dataResponse.elementAt(index)["Data"];
                         // print(
                         //     "${json.decode(data)}, ${json.decode(data).runtimeType}");
-                        var dataTrimmed = json.decode(data);
+                        var dataTrimmed = json.decode(data.toString());
                         // List<Map> dt = [];
                         // for (var strMap in dataTrimmed) {
                         //   dt.add(json.decode(strMap));
@@ -140,7 +140,8 @@ class ReportCard {
                                               padding: pdf.EdgeInsets.fromLTRB(
                                                   5, 5, 70, 0),
                                               child: pdf.Text(
-                                                  dataTrimmed[index2]["Value"]),
+                                                  dataTrimmed[index2]["Value"]
+                                                      .toString()),
                                             ),
                                             pdf.Padding(
                                               padding: pdf.EdgeInsets.fromLTRB(
