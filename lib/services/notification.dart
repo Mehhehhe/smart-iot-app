@@ -153,9 +153,11 @@ void onStart(ServiceInstance service) async {
     print("[AllTHDB] $thAll");
     int activationTh = await threshdb.getThresh(currId);
 
-    if (service is AndroidServiceInstance) {
+    if (service is AndroidServiceInstance &&
+        event["Value"].runtimeType == String) {
       if (await service.isForegroundService() &&
-          int.parse(event["value"]) > activationTh) {
+          num.parse(event["value"]) > activationTh &&
+          event["isMap"] == false) {
         flutterLocalNotificationsPlugin.show(
           888,
           'KarrIoT',
@@ -174,23 +176,4 @@ void onStart(ServiceInstance service) async {
       }
     }
   });
-  // Timer.periodic(const Duration(seconds: 10), (timer) async {
-  //   final threshdb = ThresholdDatabase.instance;
-  //   List activationTh = await threshdb.getAllAvailableThresh();
-
-  //   for(var i = 0; i < activationTh.length; i++){
-  //     var currId = activationTh[i]["_id"];
-  //     var currTh = activationTh[i]["_threshVal"];
-  //     bool diff = false;
-  //     // Wait for incoming values,
-
-  //     if (service is AndroidServiceInstance) {
-  //       if (await service.isForegroundService()) {
-  //       flutterLocalNotificationsPlugin.show(
-  //           888, 'KarrIoT', ,);
-  //       }
-  //     }
-  //   }
-
-  // });
 }
