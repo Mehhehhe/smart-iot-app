@@ -180,6 +180,9 @@ class _numberCardState extends State<numberCard> {
               .where((element) => element.keys.toString() == "($name)")
               .toList()[0]);
           var currentValue = currMap[name]["Value"];
+          if (currentValue == null) {
+            return Container();
+          }
           var details = getDetailOfDevice(name);
           bool isIntVal = currentValue.runtimeType == double;
 
@@ -291,7 +294,13 @@ class _numberCardState extends State<numberCard> {
   }
 
   Widget _multigaugeInCard(name, currentValue) {
-    print("[NPK] ${currentValue["N"].runtimeType}");
+    // print("[NPK] ${currentValue["N"].runtimeType}");
+    if (currentValue["N"] == null ||
+        currentValue["P"] == null ||
+        currentValue["K"] == null) {
+      return Container();
+    }
+
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.2,
       child: SfRadialGauge(
@@ -300,7 +309,7 @@ class _numberCardState extends State<numberCard> {
         axes: <RadialAxis>[
           RadialAxis(
             minimum: 0,
-            maximum: 1000,
+            maximum: 100,
             radiusFactor: 0.8,
             showLabels: false,
             showTicks: false,
