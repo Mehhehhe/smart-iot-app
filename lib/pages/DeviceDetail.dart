@@ -45,6 +45,12 @@ class DeviceDetail extends StatelessWidget {
         detail["Location"] ?? location,
       ));
     } else {
+      if (temp["Value"]["N"] == null ||
+          temp["Value"]["P"] == null ||
+          temp["Value"]["K"] == null ||
+          temp["Value"] == null) {
+        return;
+      }
       print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");
       var valueN = temp["Value"]["N"];
       var valueP = temp["Value"]["P"];
