@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+// import 'package:flutter/cupertino.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
@@ -42,7 +43,8 @@ class UserDataStreamBloc
           MqttPublishPayload.bytesToStringAsString(recMsg.payload.message);
       data = pt;
       print("[FindPt] $pt");
-      if (data.length > 0) {
+      if (data.isNotEmpty &&
+          client.connectionState != MqttConnectionState.disconnected) {
         add(_OnUserDataStreaming(data: data, pos: location));
       }
     });
