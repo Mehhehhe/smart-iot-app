@@ -16,6 +16,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
@@ -122,6 +123,7 @@ class _farmCardViewState extends State<farmCardView> {
       );
       // print("[ID] ${h[v]["TimeStamp"].toString()}");
       var res = await lc.add(tempForSav);
+
       triggerThreshCheck(dev, h[v]["Value"]);
       // print(res.toJson());
       // var allHist = await lc.getAllHistory();
@@ -131,10 +133,12 @@ class _farmCardViewState extends State<farmCardView> {
 
   void triggerThreshCheck(String dev, value) {
     var enc = sha1.convert(utf8.encode(dev)).toString();
+    print("[BFonstart] $value , ${value.runtimeType}");
     FlutterBackgroundService().invoke('threshDiff', {
       "encryptedKey": enc,
       "name": dev,
-      "value": value,
+      "value": value.runtimeType == double ? value.toString() : value,
+      "isMap": value.runtimeType == double ? false : true,
     });
   }
 
@@ -596,65 +600,66 @@ class _farmCardViewState extends State<farmCardView> {
                         },
                       )
                     else if (state.widgetIndex == 1)
-                      Container(
-                        height: 400,
-                        child: Builder(
-                          builder: (context) {
-                            // Transform into single array
-                            var newDataArray = localizedResponse();
-                            print("[Hist] $newDataArray");
-                            newDataArray.sort((a, b) =>
-                                DateTime.parse(b["TimeStamp"])
-                                    .millisecondsSinceEpoch -
-                                DateTime.parse(a["TimeStamp"])
-                                    .millisecondsSinceEpoch);
-                            return Scrollbar(
-                                thumbVisibility: true,
-                                controller: historyScroll,
-                                thickness: 8.0,
-                                interactive: true,
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: newDataArray.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      margin: const EdgeInsets.fromLTRB(
-                                          0.0, 5.0, 0.0, 0.0),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            newDataArray[index]["State"] == true
-                                                ? Colors.lightGreen
-                                                : Colors.redAccent,
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(5)),
-                                      ),
-                                      child: ListTile(
-                                          title: Text(
-                                            newDataArray[index]["FromDevice"],
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          subtitle: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                    newDataArray[index]["Value"]
-                                                        .toString(),
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Text(newDataArray[index]
-                                                    ["TimeStamp"])
-                                              ])),
-                                    );
-                                  },
-                                ));
-                          },
-                        ),
-                      ),
+                      // Container(
+                      //   height: 400,
+                      //   child: Builder(
+                      //     builder: (context) {
+                      //       // Transform into single array
+                      //       var newDataArray = localizedResponse();
+                      //       print("[Hist] $newDataArray");
+                      //       newDataArray.sort((a, b) =>
+                      //           DateTime.parse(b["TimeStamp"])
+                      //               .millisecondsSinceEpoch -
+                      //           DateTime.parse(a["TimeStamp"])
+                      //               .millisecondsSinceEpoch);
+                      //       return Scrollbar(
+                      //           thumbVisibility: true,
+                      //           controller: historyScroll,
+                      //           thickness: 8.0,
+                      //           interactive: true,
+                      //           child: ListView.builder(
+                      //             shrinkWrap: true,
+                      //             itemCount: newDataArray.length,
+                      //             itemBuilder: (context, index) {
+                      //               return Container(
+                      //                 margin: const EdgeInsets.fromLTRB(
+                      //                     0.0, 5.0, 0.0, 0.0),
+                      //                 decoration: BoxDecoration(
+                      //                   color:
+                      //                       newDataArray[index]["State"] == true
+                      //                           ? Colors.lightGreen
+                      //                           : Colors.redAccent,
+                      //                   borderRadius: const BorderRadius.all(
+                      //                       Radius.circular(5)),
+                      //                 ),
+                      //                 child: ListTile(
+                      //                     title: Text(
+                      //                       newDataArray[index]["FromDevice"],
+                      //                       style: const TextStyle(
+                      //                           fontWeight: FontWeight.bold),
+                      //                     ),
+                      //                     subtitle: Row(
+                      //                         mainAxisAlignment:
+                      //                             MainAxisAlignment
+                      //                                 .spaceBetween,
+                      //                         children: [
+                      //                           Text(
+                      //                               newDataArray[index]["Value"]
+                      //                                   .toString(),
+                      //                               style: const TextStyle(
+                      //                                   fontSize: 14,
+                      //                                   fontWeight:
+                      //                                       FontWeight.bold)),
+                      //                           Text(newDataArray[index]
+                      //                               ["TimeStamp"])
+                      //                         ])),
+                      //               );
+                      //             },
+                      //           ));
+                      //     },
+                      //   ),
+                      // ),
+                      historyLog(),
                     // TextButton(
                     //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
                     // Bottom buttons for choosing widget
