@@ -219,6 +219,14 @@ functions:
           path: /any/targetTable/update
           method: POST
           cors: true
+  deleteValue:
+    handler: serverless/TableFunctions/handler.deleteValue
+    description: Delete value(s) of one table
+    events:
+      - http:
+          path: /any/targetTable/delete
+          method: POST
+          cors: true
 
 resources:
   Resources:

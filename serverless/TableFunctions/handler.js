@@ -85,3 +85,63 @@ module.exports.updateValue = (event, context, callback) => {
         body: JSON.stringify({message: "Updated successfully!"})
     });
 };
+
+module.exports.deleteVal = (event, context, callback) => {
+    var headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+        'Content-Type': 'application/json'
+    };
+    let bodyFromWebInput = {};
+    if(event.body != undefined){
+        bodyFromWebInput = JSON.parse(event.body);
+    }
+    let table = event.targetTable == undefined ? bodyFromWebInput.targetTable : event.targetTable;
+    // format : [DeleteMap01, DeleteMap02]
+    // Delete map
+    // {"ID":"001", "DelteItems": {"1":"0.0","2":"0.0"}}
+    // 
+    switch (table) {
+        case 'farm':
+            table = FarmTable;
+            break;
+        case 'user':
+            table = FarmUserTable;
+            break;
+        case 'device':
+            table = FarmDeviceTable;
+            break;
+        default:
+            callback(null, {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                    message: "Unknown table. Please provides a correct table name."
+                })
+            });
+            break;
+    }
+    console.log(table);
+    let deleteList = event.deleteList == undefined ? bodyFromWebInput.deleteList : event.deleteList;
+    for(let item of deleteList){
+        let params = {
+            TableName: table,
+            Key: {
+                ID: item["ID"]
+            },
+
+        }
+        dynamoDB.delete(params).promise().then((res) => console.log(res)).catch((e) => callback(null, {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                message: "Unable to update."
+            })
+        }));
+    }
+    callback(null, {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({message: "Deletion completed!"})
+    })
+};
