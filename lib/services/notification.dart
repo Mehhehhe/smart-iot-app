@@ -148,9 +148,9 @@ void onStart(ServiceInstance service) async {
     // Compare to thresh
     final threshdb = ThresholdDatabase.instance;
     String currId = event!["encryptedKey"];
-    print("[Background] $currId , ${event["name"]}");
+    // print("[Background] $currId , ${event["name"]}");
     List thAll = await threshdb.getAllAvailableThresh();
-    print("[AllTHDB] $thAll");
+    // print("[AllTHDB] $thAll");
     int activationTh = await threshdb.getThresh(currId);
 
     if (service is AndroidServiceInstance &&
