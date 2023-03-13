@@ -65,7 +65,7 @@ class _MainPageState extends State<MainPage> {
       account = userInf;
       accountName = res.username.toString();
       // ownedFarm = userInf["ownedFarm"];
-      for (var farm in userInf["ownedFarm"]) {
+      for (var farm in userInf["ownedFarm"]!) {
         ownedFarm.add(farm);
       }
     });
