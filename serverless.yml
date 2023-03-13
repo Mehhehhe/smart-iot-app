@@ -26,6 +26,7 @@ provider:
   lambdaHashingVersion: 20201221
 
 # you can overwrite defaults here
+  # stage: dev
   stage: dev
   region: ap-southeast-1
 
@@ -63,6 +64,7 @@ provider:
             - dynamodb:GetItem
             - dynamodb:PutItem
             - dynamodb:CreateTable
+            - dynamodb:DeleteItem
           Resource: 
             - "Fn::GetAtt": [FarmDynamoDbTable, Arn]
             - "Fn::GetAtt": [FarmUserDynamoDbTable, Arn]
