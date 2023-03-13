@@ -16,5 +16,23 @@
         "smartiotapp213f93eb": {}
       }
     }
+  },
+  "devbeta": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-smartiotapp-devbeta-94640-authRole",
+      "UnauthRoleArn": "arn:aws:iam::610416162482:role/amplify-smartiotapp-devbeta-94640-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::610416162482:role/amplify-smartiotapp-devbeta-94640-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-smartiotapp-devbeta-94640-deployment",
+      "UnauthRoleName": "amplify-smartiotapp-devbeta-94640-unauthRole",
+      "StackName": "amplify-smartiotapp-devbeta-94640",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:610416162482:stack/amplify-smartiotapp-devbeta-94640/4925a290-c149-11ed-a24a-0adb6b8dd746",
+      "AmplifyAppId": "d3gtw8znlbrxwb"
+    },
+    "categories": {
+      "auth": {
+        "smartiotapp213f93eb": {}
+      }
+    }
   }
 }
