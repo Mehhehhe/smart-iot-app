@@ -71,7 +71,7 @@ class SearchDevice {
     if (cachedResult != null) return cachedResult;
     print("Search on devices list : => $dev");
     final result = dev
-        .where((element) => element["SerialNumber"] == term)
+        .where((element) => element["SerialNumber"].toString().contains(term))
         .map((e) => ResultItem(
             deviceName: e["SerialNumber"],
             whichFarm: e["Location"],
