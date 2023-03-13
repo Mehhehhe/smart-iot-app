@@ -116,7 +116,7 @@ class MQTTClientWrapper {
   Future<void> _setupMqttClient() async {
     String randomUser = UUID.getUUID();
     client = MqttServerClient.withPort(
-        'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', randomUser, 8883)
+        'a2ym69b60cuwbt-ats.iot.ap-southeast-1.amazonaws.com', randomUser, 8883)
       // the next 2 lines are necessary to connect with tls, which is used by HiveMQ Cloud
       ..secure = true
       ..setProtocolV311()
@@ -132,14 +132,14 @@ class MQTTClientWrapper {
         (await rootBundle.load('assets/certificates/AmazonRootCA1.pem'))
             .buffer
             .asInt8List();
-    final List<int> certificateChainBytes = (await rootBundle.load(
-            'assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-certificate.pem.crt'))
-        .buffer
-        .asInt8List();
-    final List<int> privateKeyBytes = (await rootBundle.load(
-            'assets/certificates/c84a84b0239b17ea158fea7fa01e7e4612cc649eacd2b07a41cc3db5e489241e-private.pem.key'))
-        .buffer
-        .asInt8List();
+    final List<int> certificateChainBytes =
+        (await rootBundle.load('assets/certificates/certificate.pem.crt'))
+            .buffer
+            .asInt8List();
+    final List<int> privateKeyBytes =
+        (await rootBundle.load('assets/certificates/private.pem.key'))
+            .buffer
+            .asInt8List();
 
     final securityContext = SecurityContext.defaultContext;
     securityContext.setTrustedCertificatesBytes(trustedCertificateBytes);

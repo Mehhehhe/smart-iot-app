@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
-const _farmApi = "d62mrahbok.execute-api.ap-southeast-1.amazonaws.com";
+const _farmApi = "ho612i5e3e.execute-api.ap-southeast-1.amazonaws.com";
 const _myNamespace = '578c1580-f296-4fef-8ecf-dc5b1bc31586';
 
 Map<String, dynamic> _urlMap = {

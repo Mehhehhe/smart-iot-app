@@ -7,12 +7,12 @@ const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
-var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
+var iotdata = new AWS.IotData({endpoint: 'a2ym69b60cuwbt-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
 const ALLOWED_ORIGIN = [
   "https://project-three-dun.vercel.app"
 ];
 
-module.exports.updateValue = (event, context, callback) => {
+module.exports.updateValue = async (event, context, callback) => {
     var headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
@@ -70,7 +70,7 @@ module.exports.updateValue = (event, context, callback) => {
                 params.UpdateExpression = "SET #attrName = list_append(#attrName, :attrValue)";
             }
             console.info(["params", params]);
-            dynamoDB.update(params).promise().then((res) => console.log(res)).catch((e) => callback(null, {
+            await dynamoDB.update(params).promise().then((res) => console.log(res)).catch((e) => callback(null, {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({
@@ -86,7 +86,7 @@ module.exports.updateValue = (event, context, callback) => {
     });
 };
 
-module.exports.deleteVal = (event, context, callback) => {
+module.exports.deleteValue = async (event, context, callback) => {
     var headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
@@ -131,7 +131,7 @@ module.exports.deleteVal = (event, context, callback) => {
             },
 
         }
-        dynamoDB.delete(params).promise().then((res) => console.log(res)).catch((e) => callback(null, {
+        await dynamoDB.delete(params).promise().then((res) => console.log(res)).catch((e) => callback(null, {
             statusCode: 500,
             headers,
             body: JSON.stringify({
