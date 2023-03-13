@@ -13,7 +13,7 @@ const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
-var iotdata = new AWS.IotData({endpoint: 'a3aez1ultxd7kc-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
+var iotdata = new AWS.IotData({endpoint: 'a2ym69b60cuwbt-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
 const ALLOWED_ORIGIN = [
   "https://project-three-dun.vercel.app"
 ];
@@ -299,7 +299,8 @@ module.exports.createUserToTable = async (event, context, callback) => {
 
   var headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true
+    'Access-Control-Allow-Credentials': true,
+    'Content-Type': 'application/json'
   };
 
   if(typeof User !== 'string' || !Array.isArray(owned_farm)){
@@ -337,30 +338,20 @@ module.exports.createUserToTable = async (event, context, callback) => {
     };
   };
 
-  const submitUser = user => {
+  const submitUser = async user => {
     console.log("Submitting User Info");
     const userInfo = {
       TableName: process.env.FARM_USER_TABLE,
       Item: user
     };
-    return dynamoDb.put(userInfo).promise().then(res => user);
+    return await dynamoDb.put(userInfo).promise().then(res => {
+      console.log(res);
+      return res
+    });
   };
 
-  await submitUser(userInfo(User, UserID, owned_farm)).then(res => {
-    callback(null, {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({message: "registered user to table successfully"})
-    })
-  }).catch(err => {
-    console.log(err);
-    callback(null, {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Unable to create user"
-      })
-    });
-  });
+  await submitUser(userInfo(User, UserID, owned_farm));
+  return event;
 };
 
 module.exports.getUserList = (event, context, callback) => {
