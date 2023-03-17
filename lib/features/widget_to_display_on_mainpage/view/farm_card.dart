@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/screen_index_change_cubit.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/screen_index_change_cubit.dart';
 import 'package:smart_iot_app/pages/MainPage.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
@@ -20,10 +20,7 @@ class farmCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => FarmCardReBloc(cli),
-      child: BlocProvider(
-        create: (_) => ScreenIndexChangeCubit(),
-        child: MainPage(cli),
-      ),
+      child: MainPage(cli),
     );
   }
 }
