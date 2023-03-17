@@ -12,7 +12,7 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/farm_card_re_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
 // import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
