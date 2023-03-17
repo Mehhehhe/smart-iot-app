@@ -34,12 +34,14 @@ class _numberCardState extends State<numberCard> {
 
   void _setLatest(List<Map> target) {
     var latestList = <Map>[];
+    print("[LatestLoop] $target");
     for (var data_map in target) {
       var tempMap = {};
       final cardName = data_map["FromDevice"];
       final latestData = json.decode(data_map["Data"]);
       final lat = latestData[0];
-      print("{$cardName: ${latestData[latestData.length - 1]}}");
+      print(
+          "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
       tempMap = {cardName: latestData[latestData.length - 1]};
       if (!latestList.contains(tempMap)) {
         print("[LatestList] $tempMap");
@@ -55,9 +57,12 @@ class _numberCardState extends State<numberCard> {
 
       tempMap = {};
     }
+
     setState(() {
       data = latestList;
     });
+
+    print("[NumbCard] $data");
   }
 
   getDetailOfDevice(String serial) {
@@ -65,35 +70,37 @@ class _numberCardState extends State<numberCard> {
     if (widget.devicesData == null) {
       return target;
     }
-    print("[getDetailOfDevice] ${widget.devicesData!} , serial = $serial");
-    if (widget.devicesData![0].runtimeType == ResultItem) {
+    // print("[getDetailOfDevice] ${widget.devicesData!} , serial = $serial");
+    if (widget.devicesData.runtimeType.toString() == "List<ResultItem>") {
       return widget.devicesData![0].details;
     }
     for (Map i in widget.devicesData!) {
-      print("[InDetailLoop] $i , ${i["SerialNumber"] == serial}");
+      // print("[InDetailLoop] $i , ${i["SerialNumber"] == serial}");
       if (i["SerialNumber"] == serial) {
         target = i;
         break;
       }
     }
-    print("[DetailFetched] $target");
+    // print("[DetailFetched] $target");
+
     return target;
   }
 
   @override
   void initState() {
     super.initState();
+
     setState(() {
       data = widget.inputData;
       _setLatest(data);
     });
   }
 
-  @override
-  void dispose() {
-    data.clear();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   data.clear();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -113,33 +120,33 @@ class _numberCardState extends State<numberCard> {
   }
 
   Widget buildSearchable(BuildContext contextP) {
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: widget.devicesData == null ? 1 : 2,
+    return Container(
+      height: 150,
+      width: double.infinity,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        physics: const BouncingScrollPhysics(),
+        itemCount: (data.isEmpty) ? 1 : data.length,
+        itemBuilder: (context, index) {
+          print(data.length);
+          if (widget.devicesData == null || data.isEmpty) {
+            return Container();
+          }
+
+          return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+            builder: (context, state) {
+              if (state is SearchWidgetSuccess) {
+                return buildSearchFound(contextP);
+              } else if (state is SearchWidgetError) {
+                return buildSearchError(contextP);
+              }
+
+              return buildSearchEmpty(contextP, index);
+            },
+          );
+        },
       ),
-      shrinkWrap: true,
-      itemCount: (data.isEmpty)
-          ? 0
-          : widget.devicesData![0].runtimeType == ResultItem
-              ? 1
-              : data.length,
-      itemBuilder: (context, index) {
-        if (widget.devicesData == null) {
-          return Container();
-        }
-
-        return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
-          builder: (context, state) {
-            if (state is SearchWidgetSuccess) {
-              return buildSearchFound(contextP);
-            } else if (state is SearchWidgetError) {
-              return buildSearchError(contextP);
-            }
-
-            return buildSearchEmpty(contextP, index);
-          },
-        );
-      },
     );
   }
 
@@ -149,10 +156,10 @@ class _numberCardState extends State<numberCard> {
       bloc: contextP.read<SearchWidgetBloc>(),
       buildWhen: (previous, current) => current is SearchStateEmpty,
       builder: (context, state) {
-        print("[BuildBloc] $data");
+        // print("[BuildBloc] $data");
         Map<String, dynamic> currMap = Map<String, dynamic>.from(data[index]);
         String name = currMap.keys.first;
-        print("[CheckBuildCard] $name");
+        // print("[CheckBuildCard] $name");
         var currentValue = data[index][name]["Value"];
         var details = getDetailOfDevice(name);
         bool isIntVal = currentValue.runtimeType == double;
@@ -202,51 +209,72 @@ class _numberCardState extends State<numberCard> {
 
   Widget _createCardDetailIfFound(
       name, currMap, currentValue, details, bool isMultiVal) {
-    return Card(
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BlocProvider(
-              create: (_) => UserDataStreamBloc(
-                client: widget.existedCli,
-                device: name,
-                location: widget.whichFarm,
-              ),
-              child: DeviceDetail(
-                detail: details,
-                serial: name,
-                location: widget.whichFarm,
-                latestDatePlaceholder: [currMap],
+    return Container(
+      width: 250,
+      child: Card(
+        elevation: 5.0,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                create: (_) => UserDataStreamBloc(
+                  client: widget.existedCli,
+                  device: name,
+                  location: widget.whichFarm,
+                ),
+                child: DeviceDetail(
+                  detail: details,
+                  serial: name,
+                  location: widget.whichFarm,
+                  latestDatePlaceholder: [currMap],
+                ),
               ),
             ),
           ),
-        ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.3,
-          child: Stack(
-            children: [
-              // gauge here!
-              if (isMultiVal)
-                _gaugeInCard(name, currentValue)
-              else
-                _multigaugeInCard(name, currentValue),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                  child: Switch(
-                    value: currMap[name]!["State"],
-                    onChanged: (value) {
-                      widget.existedCli.publishToSetDeviceState(
-                        widget.whichFarm,
-                        name,
-                        value,
-                      );
-                    },
+          onLongPress: () => showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Container(
+                height: 200,
+                color: Colors.greenAccent,
+                child: ListView(children: [
+                  Container(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+                      child: Column(
+                        children: [
+                          const Text("Toggle state"),
+                          Switch(
+                            value: currMap[name]!["State"],
+                            onChanged: (value) {
+                              widget.existedCli.publishToSetDeviceState(
+                                widget.whichFarm,
+                                name,
+                                value,
+                              );
+                            },
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ]),
+              );
+            },
+          ),
+          child: Container(
+            // margin: const EdgeInsets.fromLTRB(50, 0.0, 0.0, 0.0),
+            height: 100,
+            child: Stack(
+              children: [
+                // gauge here!
+                if (isMultiVal)
+                  _gaugeInCard(name, currentValue)
+                else
+                  _multigaugeInCard(name, currentValue),
+              ],
+            ),
           ),
         ),
       ),
@@ -254,7 +282,7 @@ class _numberCardState extends State<numberCard> {
   }
 
   Widget _gaugeInCard(name, currentValue) {
-    print("[CurrentValue] $currentValue , ${currentValue.runtimeType}");
+    // print("[CurrentValue] $currentValue , ${currentValue.runtimeType}");
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.2,
       child: SfRadialGauge(
