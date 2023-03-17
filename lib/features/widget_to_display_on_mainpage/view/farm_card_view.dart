@@ -2,29 +2,31 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:easy_debounce/easy_debounce.dart';
-import 'package:flip_card/flip_card_controller.dart';
+// import 'package:easy_debounce/easy_debounce.dart';
+// import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flip_card/flip_card.dart';
+// import 'package:flip_card/flip_card.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_iot_app/db/local_history.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/farm_card_re_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
-import 'package:smart_iot_app/model/ChartDataModel.dart';
+// import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
-import 'package:smart_iot_app/modules/pipe.dart';
+// import 'package:smart_iot_app/modules/pipe.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
@@ -39,14 +41,19 @@ int displayRearIndex = 0;
 class farmCardView extends StatefulWidget {
   String username;
   int? overrideFarmIndex;
-  farmCardView({Key? key, required this.username, this.overrideFarmIndex})
-      : super(key: key);
+  MQTTClientWrapper cli;
+  farmCardView({
+    Key? key,
+    required this.username,
+    this.overrideFarmIndex,
+    required this.cli,
+  }) : super(key: key);
   @override
   State<StatefulWidget> createState() => _farmCardViewState();
 }
 
 class _farmCardViewState extends State<farmCardView> {
-  MQTTClientWrapper client = MQTTClientWrapper();
+  late MQTTClientWrapper client;
   List devices = [];
   List devList = [];
   List<Map<String, String>> deviceAndType = [];
@@ -63,14 +70,9 @@ class _farmCardViewState extends State<farmCardView> {
   late Timer timer;
   ScrollController historyScroll = ScrollController(initialScrollOffset: 0.0);
 
-  FlipCardController _controller = FlipCardController();
+  // FlipCardController _controller = FlipCardController();
   late TextEditingController searchTextController;
   String searchedText = "";
-
-  _farmCardViewState() {
-    // Fetch for initialize
-    Future.delayed(const Duration(seconds: 10), () => periodicallyFetch());
-  }
 
   void onIndexSelection(dynamic index) {
     setState(() {
@@ -87,78 +89,10 @@ class _farmCardViewState extends State<farmCardView> {
     });
   }
 
-  void setDataListener() {
-    client
-        .getMessageStream()!
-        .listen((List<MqttReceivedMessage<MqttMessage>>? c) {
-      final recMess = c![0].payload as MqttPublishMessage;
-      // print("PAYLOAD INSPECT: ${c[0].topic}");
-      final splitTop = c[0].topic.split("/");
-      final originFarm = splitTop.elementAt(0);
-      final originalPos = splitTop.elementAt(1);
-      // print("Topic type:${originalPos.runtimeType}.$originalPos.");
-      final pt =
-          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      setState(() {
-        // print("Fetch pt := $pt, base data array := $dataResponse");
-        if (!dataResponse.contains(pt)) {
-          dataResponse.add(
-            {"Data": pt, "FromDevice": originalPos, "FromFarm": originFarm},
-          );
-          autoSaveLocal(pt, originalPos, originFarm);
-        }
-      });
-    });
-  }
-
-  Future<void> autoSaveLocal(histVals, dev, farm) async {
-    var h = json.decode(histVals).cast().toList();
-    for (var v = 0; v < h.length; v++) {
-      LocalHist tempForSav = LocalHist(
-        h[v]["TimeStamp"].toString(),
-        dev,
-        farm,
-        h[v]["Value"].toString(),
-        "",
-      );
-      // print("[ID] ${h[v]["TimeStamp"].toString()}");
-      var res = await lc.add(tempForSav);
-
-      triggerThreshCheck(dev, h[v]["Value"]);
-      // print(res.toJson());
-      // var allHist = await lc.getAllHistory();
-      // print("[Hist] ${}");
-    }
-  }
-
-  void triggerThreshCheck(String dev, value) {
-    var enc = sha1.convert(utf8.encode(dev)).toString();
-    print("[BFonstart] $value , ${value.runtimeType}");
-    FlutterBackgroundService().invoke('threshDiff', {
-      "encryptedKey": enc,
-      "name": dev,
-      "value": value.runtimeType == double ? value.toString() : value,
-      "isMap": value.runtimeType == double ? false : true,
-    });
-  }
-
-  void periodicallyFetch() {
-    // print("\nStatusperiodicallyFetch sub: $tempLoc, $devices\n");
-    setState(() {
-      if (mounted) {
-        dataResponse.clear();
-        client.subscribeToOneResponse(exposedLoc == "" ? tempLoc : exposedLoc,
-            devList.isEmpty ? devices : devList, false);
-        devicesToTypeMap(List<Map>.from(devices));
-      }
-      isRefreshed = false;
-    });
-  }
-
   // var devicesToList = (farm) async => await getDevicesByFarmName(farm);
   devicesToList(farm) async {
-    var temp_devices = await getDevicesByFarmName(farm);
-    devices = temp_devices;
+    var tempDevices = await getDevicesByFarmName(farm);
+    devices = tempDevices;
   }
 
   devicesToTypeMap(List<Map> devs) {
@@ -186,7 +120,7 @@ class _farmCardViewState extends State<farmCardView> {
                   DateTime.fromMillisecondsSinceEpoch(element["TimeStamp"])
                       .toLocal()
                       .toString(),
-              "FromDevice": m["FromDevice"]
+              "FromDevice": m["FromDevice"],
             };
             newDataArray.add(temp);
             temp = {};
@@ -200,39 +134,48 @@ class _farmCardViewState extends State<farmCardView> {
 
   @override
   void initState() {
-    client.prepareMqttClient();
-    setDataListener();
+    // client.prepareMqttClient();
+    client = widget.cli;
+    // setDataListener();
     searchTextController = TextEditingController();
     super.initState();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    client.disconnect();
-    devices.clear();
-    enableGraph = false;
-    dataResponse.clear();
-    devList.clear();
-    tempLoc = "";
-    exposedLoc = "";
-    // timer.cancel();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   // client.disconnect();
+  //   // devices.clear();
+  //   enableGraph = false;
+  //   // dataResponse.clear();
+  //   devList.clear();
+  //   tempLoc = "";
+  //   exposedLoc = "";
+  //   // timer.cancel();
+  // }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return SingleChildScrollView(
       child: BlocProvider(
-          create: (_) =>
-              SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
-          child: Column(
-            children: [
-              // Search bar\
-              SearchBar(),
-              SearchBody()
-            ],
-          )),
+        create: (_) =>
+            SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
+        child: Column(
+          children: [
+            // Search bar\
+            SearchBar(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                analysisWidget(),
+                historyWidget(),
+              ],
+            ),
+            SearchBody(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -246,466 +189,209 @@ class _farmCardViewState extends State<farmCardView> {
           return const CircularProgressIndicator();
         }
         if (state is SearchWidgetError) {
-          print("Not found: ${state.error}");
-          return Container(
-            child: const Text("Not Found"),
-          );
+          // print("Not found: ${state.error}");
+          return const Text("Not Found");
         }
         if (state is SearchWidgetSuccess) {
-          print("Searched ${state.items}");
+          // print("Searched ${state.items}");
           return state.items.isEmpty ? normalCard() : normalCard(state.items);
         }
-        print("Out of condition");
+        // print("Out of condition");
+
         return Container();
       },
     );
   }
 
-  Widget normalCard([List? items]) {
+  Widget normalCard([List<ResultItem>? items]) {
     return ListView.builder(
       itemCount: 1,
       shrinkWrap: true,
+      // ignore: body_might_complete_normally_nullable
+      // ignore: no-empty-block
       itemBuilder: (context, index) {
-        return GestureDetector(
-          child: FutureBuilder(
-            future: context.read<FarmCardCubit>().getOwnedFarmsList(),
-            builder: (context, snapshot) {
-              var connectionState = snapshot.connectionState;
-              // print(connectionState);
-              switch (connectionState) {
-                case ConnectionState.done:
-                  // print(snapshot.data);
-                  Map dataMap = Map.from(snapshot.data as Map);
-                  return FlipCard(
-                      controller: _controller,
-                      flipOnTouch: false,
-                      onFlipDone: (isFront) => print(isFront),
-                      front: BlocProvider(
-                        create: (_) => FrontOfCardCubit(),
-                        child: farmAsCard(context, dataMap["OwnedFarm"], items),
-                      ),
-                      back: BlocProvider(
-                        create: (_) => BackOfCardCubit(),
-                        child: farmCardRear(),
-                      ));
-                default:
-                  break;
+        return BlocBuilder<FarmCardReBloc, FarmCardReState>(
+          buildWhen: (previous, current) =>
+              previous != current && current.farms.isNotEmpty,
+          builder: (context, state) {
+            // Data is init
+            if (state.farms.isNotEmpty) {
+              return farmAsCard(context, state.farms, items);
+            }
+
+            return const Card(
+              elevation: 5.0,
+              margin: EdgeInsets.all(20),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget farmAsCard(
+    BuildContext context,
+    dynamic data, [
+    List<ResultItem>? searched,
+  ]) {
+    return Card(
+      margin: const EdgeInsets.all(20),
+      elevation: 5.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          BlocBuilder<FarmCardReBloc, FarmCardReState>(
+            builder: (context, state) {
+              if (state.data != "") {
+                if (!dataResponse.contains(state.data)) {
+                  dataResponse.add(state.pt);
+                }
               }
-              return Container();
+              // print("[Response] $dataResponse");
+              if (widget.overrideFarmIndex != null && state.farms.isNotEmpty) {
+                var farmTarget = state.farms[state.farmIndex];
+                // print("[SetBase] ${state.devices}");
+                context
+                    .read<SearchWidgetBloc>()
+                    .add(BaseListChanged(state.devices));
+                devices = state.devices;
+                tempLoc = farmTarget;
+                // print("In farm target, [devices] $devices");
+
+                return Text(
+                  farmTarget,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }
+
+              return const Text(
+                "Loading ... ",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
             },
           ),
-        );
-      },
+          // const Divider(),
+          // if (state.widgetIndex == 1)
+          generateNumberCards(searched),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 25, 0, 0),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget farmAsCard(BuildContext context, dynamic data, [List? searched]) {
-    return BlocBuilder<FrontOfCardCubit, CardState>(
-      builder: (context, state) {
-        print("[Device] $devices");
-        return Card(
-          key: const ValueKey(true),
-          margin: const EdgeInsets.all(20),
-          elevation: 5.0,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                BlocBuilder<FarmCardCubit, FarmCardInitial>(
-                  builder: (context, state) {
-                    print(
-                        "state index: ${state.farmIndex} , farm index: $farmIndex");
-                    print("[Response] $dataResponse");
-                    print("Get search list ${searched?[0].deviceName}");
-                    if (widget.overrideFarmIndex != null) {
-                      // onIndexSelection(widget.overrideFarmIndex);
-                      var farmTarget = context
-                          .read<FarmCardCubit>()
-                          .decodeAndRemovePadding(
-                              data[widget.overrideFarmIndex]);
-                      devicesToList(farmTarget);
-                      context
-                          .read<SearchWidgetBloc>()
-                          .add(BaseListChanged(devices));
-                      // if (state.farmIndex != widget.overrideFarmIndex) {
-                      //   dataResponse.removeWhere(
-                      //       (element) => !devices.contains(element));
-                      // }
-                      tempLoc = farmTarget;
+  Widget generateNumberCards([List<ResultItem>? searched]) {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      child: Stack(
+        children: [
+          if (dataResponse.isNotEmpty)
+            BlocBuilder<FarmCardReBloc, FarmCardReState>(
+              bloc: context.read<FarmCardReBloc>(),
+              builder: (context, stateFarm) {
+                // print("Respond To Change: ${stateFarm.devices}");
+                var selectedResponse = dataResponse
+                    .where((element) => element["FromFarm"] == tempLoc)
+                    .toList();
+                // print("Select $selectedResponse");
+                // Main generator
+                // Caution: dataResponse, selectedResponse
 
-                      return Text(farmTarget,
-                          style: const TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold));
-                    }
-                    if (state.farmIndex == farmIndex) {
-                      // print("Created within condition");
-                      devicesToList(context
-                          .read<FarmCardCubit>()
-                          .decodeAndRemovePadding(data[state.farmIndex]));
-                      // print(devices);
-                      tempLoc = FarmCardCubit()
-                          .decodeAndRemovePadding(data[state.farmIndex]);
-                      context
-                          .read<SearchWidgetBloc>()
-                          .searchDev
-                          .addDeviceList(devices);
-                      return Text(
-                          context
-                              .read<FarmCardCubit>()
-                              .decodeAndRemovePadding(data[state.farmIndex]),
-                          style: const TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold));
-                    }
-                    // print("Created out of condition");
-                    devicesToList(context
-                        .read<FarmCardCubit>()
-                        .decodeAndRemovePadding(data[farmIndex]));
-                    // print(devices);
-                    tempLoc =
-                        FarmCardCubit().decodeAndRemovePadding(data[farmIndex]);
-                    context
-                        .read<SearchWidgetBloc>()
-                        .searchDev
-                        .addDeviceList(devices);
-                    return Text(
-                        context
-                            .read<FarmCardCubit>()
-                            .decodeAndRemovePadding(data[farmIndex]),
-                        style: const TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.bold));
-                  },
-                ),
-                // TextButton(
-                //     onPressed: () async {
-                //       // _displayFarmEditor(context, data);
-                //       await Navigator.push(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder: (context) => FarmEditor(farm: data),
-                //           )).then((value) => onIndexSelection(value));
-                //     },
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: const [
-                //         Icon(Icons.edit),
-                //         Text("Change to another farm")
-                //       ],
-                //     )),
-                // if (state.widgetIndex == 0)
-                //   Container(
-                //     height: 300,
-                //     width: MediaQuery.of(context).size.width,
-                //     margin: const EdgeInsets.all(10),
-                //     child: Stack(children: [
-                //       if (dataResponse.isEmpty)
-                //         const Center(
-                //           child: CircularProgressIndicator(),
-                //         )
-                //       else
-                //         BlocProvider(
-                //           create: (_) => LiveDataCubit(
-                //               dataResponse, transformFromRawData(dataResponse)),
-                //           child: LiveChart(
-                //             devices: dataResponse,
-                //             type: 'line',
-                //           ),
-                //         )
-                //     ]),
-                //   )
-                const Divider(),
-                if (state.widgetIndex == 1)
-                  Container(
-                    height: 400,
-                    width: MediaQuery.of(context).size.width,
-                    child: Stack(
-                      children: [
-                        if (dataResponse.isEmpty)
-                          const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        else
-                          BlocBuilder<FarmCardCubit, FarmCardInitial>(
-                            bloc: context.read<FarmCardCubit>(),
-                            builder: (context, state) {
-                              print("Respond To Change: ${state.farmIndex}");
-                              var selectedResponse = dataResponse
-                                  .where((element) =>
-                                      element["FromFarm"] == tempLoc)
-                                  .toList();
-                              print("Select $selectedResponse");
-                              return BlocProvider(
-                                create: (_) => LiveDataCubit(selectedResponse),
-                                child: BlocBuilder<SearchWidgetBloc,
-                                    SearchWidgetState>(
-                                  builder: (context, state) {
-                                    if (state is SearchWidgetSuccess) {
-                                      return numberCard(
-                                          inputData: selectedResponse,
-                                          whichFarm: tempLoc,
-                                          existedCli: client,
-                                          devicesData: searched);
-                                    }
-                                    return numberCard(
-                                        inputData: selectedResponse,
-                                        whichFarm: tempLoc,
-                                        existedCli: client,
-                                        devicesData: devices);
-                                  },
-                                ),
-                              );
-                            },
-                          )
-                      ],
-                    ),
+                return BlocProvider(
+                  create: (_) => LiveDataCubit(selectedResponse),
+                  child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+                    builder: (context, state) {
+                      if (state is SearchWidgetSuccess) {
+                        // print("Was searched $searched");
+
+                        return numberCard(
+                          inputData: selectedResponse,
+                          whichFarm: tempLoc,
+                          existedCli: client,
+                          devicesData: searched,
+                        );
+                      }
+                      print(
+                          "Check on number card data, $selectedResponse, \n$tempLoc, \n$devices");
+
+                      return numberCard(
+                        inputData: selectedResponse,
+                        whichFarm: tempLoc,
+                        existedCli: client,
+                        devicesData: devices,
+                      );
+                    },
                   ),
-                // const Text("What to be display ?"),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Column(
-                    //   children: [
-                    //     IconButton(
-                    //         onPressed: () =>
-                    //             context.read<FrontOfCardCubit>().chooseIndex(0),
-                    //         icon: const Icon(Icons.auto_graph)),
-                    //     const Text("Graph"),
-                    //   ],
-                    // ),
-                    Column(
-                      children: [
-                        IconButton(
-                            onPressed: () =>
-                                context.read<FrontOfCardCubit>().chooseIndex(1),
-                            icon: const Icon(Icons.numbers)),
-                        const Text("Numbers"),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        IconButton(
-                            onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ReportPreview(
-                                      reportCard: ReportCard(
-                                          exposedLoc == ""
-                                              ? tempLoc
-                                              : exposedLoc,
-                                          deviceAndType,
-                                          const Text(""),
-                                          "-",
-                                          widget.username,
-                                          dataResponse)),
-                                )),
-                            icon: const Icon(Icons.description_outlined)),
-                        const Text("Status Report"),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        IconButton(
-                            onPressed: () => _controller.toggleCard(),
-                            icon:
-                                const Icon(Icons.keyboard_double_arrow_right)),
-                        const Text("More"),
-                      ],
-                    ),
-                  ],
-                ),
-                const Padding(padding: EdgeInsets.fromLTRB(0, 25, 0, 0))
-                // TextButton(
-                //     onPressed: () async {
-                //       await Navigator.push(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder: (context) =>
-                //                 DeviceSelector(devices: devices),
-                //           )).then((value) => onDeviceSelection(value));
-                //     },
-                //     child: const Text("Choose devices ..."))
-              ]),
-        );
-        ;
-      },
+                );
+              },
+            )
+          else
+            Center(
+              child: Row(
+                children: const [
+                  CircularProgressIndicator(),
+                  Text(
+                    "Loading ... ",
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget farmCardRear() {
-    return BlocBuilder<BackOfCardCubit, CardState>(
-        builder: (context, state) => Card(
-              key: const ValueKey(false),
-              margin: const EdgeInsets.all(20),
-              elevation: 5.0,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // const Text("Rear"),
-                    // Container(
-                    //   width: MediaQuery.of(context).size.width,
-                    //   child: const Text("Value History"),
-                    // ),
-                    const Divider(),
-                    if (state.widgetIndex == 0)
-                      Builder(
-                        builder: (context) {
-                          var tempArr = <Map>[];
-                          for (var data in dataResponse) {
-                            var tempMap = {};
-                            final t_device = data["FromDevice"];
-                            final lt_data = json.decode(data["Data"]);
-                            tempMap = {
-                              t_device.toString(): lt_data[lt_data.length - 1]
-                            };
-                            tempArr.add(tempMap);
-                            tempMap = {};
-                          }
+  Widget analysisWidget() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
+      color: Colors.white,
+      height: 120,
+      alignment: Alignment.centerLeft,
+      width: MediaQuery.of(context).size.width * 0.45,
+      child: Column(
+        children: const [
+          Padding(
+            padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
+            child: Text(
+              "Analysis",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                          return Container(
-                            child: GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2),
-                                itemBuilder: (context, index) {
-                                  var currMap =
-                                      Map<String, dynamic>.from(tempArr[index]);
-                                  var currName = currMap.keys.first;
-                                  print(
-                                      "$currMap State Check: ${currMap[currName]["State"]}");
-                                  Iterable chainCode = const Iterable.empty();
-                                  return Column(
-                                    children: [
-                                      Text(currName),
-                                      // Text(tempArr[index][""]),
-                                      Switch(
-                                        value: currMap[currName]["State"],
-                                        onChanged: (value) {
-                                          client.publishToSetDeviceState(
-                                              exposedLoc == ""
-                                                  ? tempLoc
-                                                  : exposedLoc,
-                                              currName,
-                                              value);
-                                          Future.delayed(
-                                              const Duration(seconds: 5),
-                                              periodicallyFetch);
-                                        },
-                                      )
-                                    ],
-                                  );
-                                },
-                                shrinkWrap: true,
-                                itemCount: tempArr.length),
-                          );
-                        },
-                      )
-                    else if (state.widgetIndex == 1)
-                      // Container(
-                      //   height: 400,
-                      //   child: Builder(
-                      //     builder: (context) {
-                      //       // Transform into single array
-                      //       var newDataArray = localizedResponse();
-                      //       print("[Hist] $newDataArray");
-                      //       newDataArray.sort((a, b) =>
-                      //           DateTime.parse(b["TimeStamp"])
-                      //               .millisecondsSinceEpoch -
-                      //           DateTime.parse(a["TimeStamp"])
-                      //               .millisecondsSinceEpoch);
-                      //       return Scrollbar(
-                      //           thumbVisibility: true,
-                      //           controller: historyScroll,
-                      //           thickness: 8.0,
-                      //           interactive: true,
-                      //           child: ListView.builder(
-                      //             shrinkWrap: true,
-                      //             itemCount: newDataArray.length,
-                      //             itemBuilder: (context, index) {
-                      //               return Container(
-                      //                 margin: const EdgeInsets.fromLTRB(
-                      //                     0.0, 5.0, 0.0, 0.0),
-                      //                 decoration: BoxDecoration(
-                      //                   color:
-                      //                       newDataArray[index]["State"] == true
-                      //                           ? Colors.lightGreen
-                      //                           : Colors.redAccent,
-                      //                   borderRadius: const BorderRadius.all(
-                      //                       Radius.circular(5)),
-                      //                 ),
-                      //                 child: ListTile(
-                      //                     title: Text(
-                      //                       newDataArray[index]["FromDevice"],
-                      //                       style: const TextStyle(
-                      //                           fontWeight: FontWeight.bold),
-                      //                     ),
-                      //                     subtitle: Row(
-                      //                         mainAxisAlignment:
-                      //                             MainAxisAlignment
-                      //                                 .spaceBetween,
-                      //                         children: [
-                      //                           Text(
-                      //                               newDataArray[index]["Value"]
-                      //                                   .toString(),
-                      //                               style: const TextStyle(
-                      //                                   fontSize: 14,
-                      //                                   fontWeight:
-                      //                                       FontWeight.bold)),
-                      //                           Text(newDataArray[index]
-                      //                               ["TimeStamp"])
-                      //                         ])),
-                      //               );
-                      //             },
-                      //           ));
-                      //     },
-                      //   ),
-                      // ),
-                      historyLog(),
-                    // TextButton(
-                    //     onPressed: () => getFarmExmaple(), child: Text("Test Example")),
-                    // Bottom buttons for choosing widget
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () => _controller.toggleCard(),
-                                  icon: const Icon(Icons.keyboard_return)),
-                              const Text("Return"),
-                            ],
-                          ),
-                        ),
-                        // Padding(
-                        //   padding: const EdgeInsets.all(20),
-                        //   child: Column(
-                        //     children: [
-                        //       IconButton(
-                        //           onPressed: () => context
-                        //               .read<BackOfCardCubit>()
-                        //               .chooseIndex(0),
-                        //           icon: const Icon(Icons.settings)),
-                        //       const Text("Device State Settings"),
-                        //     ],
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.all(20),
-                        //   child: Column(
-                        //     children: [
-                        //       IconButton(
-                        //           onPressed: () => context
-                        //               .read<BackOfCardCubit>()
-                        //               .chooseIndex(1),
-                        //           icon: const Icon(Icons.history)),
-                        //       const Text("Logs"),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    )
-                  ]),
-            ));
+  Widget historyWidget() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
+      height: 120,
+      width: MediaQuery.of(context).size.width * 0.45,
+      child: ElevatedButton(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.wysiwyg),
+            Text("History"),
+          ],
+        ),
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          builder: (context) => historyLog(),
+        ),
+      ),
+    );
   }
 }
