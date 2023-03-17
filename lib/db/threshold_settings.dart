@@ -56,7 +56,7 @@ class ThresholdDatabase {
     return result;
   }
 
-  Future<int> getThresh(String id) async {
+  Future<num> getThresh(String id) async {
     final db = await instance.database;
     // String enc = sha1.convert(utf8.encode(id)).toString();
     final result = await db.query(
@@ -69,7 +69,7 @@ class ThresholdDatabase {
     }
     print("[DB] $result , $id");
 
-    return result[0]["_threshVal"] as int;
+    return result[0]["_threshVal"] as num;
   }
 
   Future<Map> edit(Map<String, dynamic> map) async {
