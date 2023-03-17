@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/farm_card_re_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/screen_index_change_cubit.dart';
+// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/screen_index_change_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card_view.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
