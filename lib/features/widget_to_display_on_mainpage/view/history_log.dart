@@ -18,8 +18,8 @@ class _historyLog extends State<historyLog> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 400,
+    return Container(
+      color: Colors.white,
       child: FutureBuilder(
         future: instance.getAllHistory(),
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
