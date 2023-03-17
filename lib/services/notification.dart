@@ -151,7 +151,7 @@ void onStart(ServiceInstance service) async {
     // print("[Background] $currId , ${event["name"]}");
     List thAll = await threshdb.getAllAvailableThresh();
     // print("[AllTHDB] $thAll");
-    int activationTh = await threshdb.getThresh(currId);
+    num activationTh = await threshdb.getThresh(currId);
 
     if (service is AndroidServiceInstance &&
         event["Value"].runtimeType == String) {
