@@ -27,6 +27,11 @@ class MQTTClientWrapper {
 
   late Stream<List<MqttReceivedMessage<MqttMessage>>> subscription;
 
+  MQTTClientWrapper(String from) {
+    print("[Activate] from $from");
+    prepareMqttClient();
+  }
+
   // using async tasks, so the connection won't hinder the code flow
   void prepareMqttClient() async {
     _setupMqttClient();
@@ -172,8 +177,9 @@ class MQTTClientWrapper {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
     // topic = topic ?? 'Dart/Mqtt_client/testtopic';
-    // print('Publishing message "$message" to topic $topic');
+    print('Publishing message "$message" to topic $topic');
     client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
+    print("published ... ");
   }
 
   // callbacks for different events
