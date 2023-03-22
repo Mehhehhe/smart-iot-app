@@ -9,6 +9,13 @@
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
 <uses-permission android:name="android.permission.STORAGE_INTERNAL" />
+<!-- <uses-feature android:name="android.hardware.bluetooth" android:required="true" /> -->
+<queries>
+  <intent>
+      <action android:name=
+          "android.support.customtabs.action.CustomTabsService" />
+  </intent>
+</queries>
    <application
         tools:replace="android:label"
         android:label="smart_iot_app"
@@ -40,6 +47,16 @@
                 <action android:name="FLUTTER_NOTIFICATION_CLICK"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter> -->
+        </activity>
+        <activity
+            android:name="com.amplifyframework.auth.cognito.activities.HostedUIRedirectActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="karriot" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
