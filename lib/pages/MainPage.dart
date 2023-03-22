@@ -13,6 +13,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_c
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card_view.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
+import 'package:smart_iot_app/pages/Login.dart';
 import 'package:smart_iot_app/pages/settings.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -50,7 +51,14 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> signOutCurrentUser() async {
     try {
-      await Amplify.Auth.signOut();
+      await Amplify.Auth.signOut(
+        options: const SignOutOptions(
+          globalSignOut: false,
+        ),
+      );
+
+      // ignore: use_build_context_synchronously
+      // Navigator.pushNamed(context, 'logout');
     } on AuthException catch (e) {
       print(e.message);
     }
