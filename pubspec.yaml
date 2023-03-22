@@ -55,6 +55,7 @@ dependencies:
   amplify_auth_cognito: ^0.6.0
   amplify_authenticator: ^0.2.0
   aws_lambda_dart_runtime: ^1.1.0
+  amazon_cognito_identity_dart_2:
   sigv4:
   typed_data:
 
@@ -76,12 +77,16 @@ dependencies:
   smooth_page_indicator: ^1.0.1
 
   sqflite: ^2.2.4+1
+  webview_flutter:
 
   # Firebase for notification
   # firebase_messaging: ^11.2.7
   # firebase_core: ^1.12.0
   flutter_background_service: ^2.4.6
   background_fetch: ^1.1.5
+  url_launcher:
+  flutter_user_agentx:
+  flutter_inappwebview: ^5.7.2+3
 
 dev_dependencies:
 
