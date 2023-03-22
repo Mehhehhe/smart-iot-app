@@ -102,7 +102,7 @@ class _SearchBarState extends State<SearchBar> {
                       prefixIcon: const Icon(
                         Icons.send_sharp,
                       ),
-                      suffixIcon: _textController!.text.isNotEmpty
+                      suffixIcon: _textController.text.isNotEmpty
                           ? InkWell(
                               onTap: _onCleared,
                               child: const Icon(
