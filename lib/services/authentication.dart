@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:amazon_cognito_identity_dart_2/cognito.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'package:smart_iot_app/secrets/secrets.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:smart_iot_app/services/AuthExceptionHandler.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
@@ -160,14 +163,59 @@ class Auth {
     try {
       final result =
           await Amplify.Auth.signIn(username: username, password: password);
+
       return result.isSignedIn;
     } on AuthException catch (e) {
       print(e.message);
     }
+
     return false;
   }
+
 // Draft google login
   // Future loginWithGoogle() async {
   //   GoogleSignIn _googleSignIn = GoogleSignIn();
   // }
+  Future signInWithGoogle(String code) async {
+    var url = Secret().getAuthUrlWithAuthCode(code);
+    var tokenBody = Secret().getTokenBody(code);
+    print("Signed in to $url , $url");
+    final response = await http.post(
+      url,
+      body: {},
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    );
+    print("[AuthGoogleResponse] $response");
+    if (response.statusCode != 200) {
+      throw Exception("Bad status code: " +
+          response.statusCode.toString() +
+          ", body: " +
+          response.body);
+    }
+    final token = json.decode(response.body);
+    final idToken = CognitoIdToken(token['id_token']);
+    final accessToken = CognitoAccessToken(token['access_token']);
+    final refreshToken = CognitoRefreshToken(token['refresh_token']);
+    final session =
+        CognitoUserSession(idToken, accessToken, refreshToken: refreshToken);
+    final user = CognitoUser(
+      null,
+      Secret().getCognitoUserPool(),
+      signInUserSession: session,
+    );
+
+    final attributes = await user.getUserAttributes();
+    for (CognitoUserAttribute attribute in attributes!) {
+      if (attribute.getName() == "email") {
+        user.username = attribute.getValue();
+        break;
+      }
+    }
+
+    return user;
+  }
+
+  Future signOut() async {}
 }
