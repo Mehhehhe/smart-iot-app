@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_iot_app/features/mainpage_widget_observer.dart';
 import 'package:smart_iot_app/pages/Login.dart';
 
@@ -16,11 +17,17 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import './services/notification.dart';
 import 'Theme/ThemeManager.dart';
 
+bool onBoardDisable = false;
+
 Future<void> main(List list) async {
   // Check if app open properly
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MainPageWidgetObserver();
   await initializeService();
+  // Onboard check
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  onBoardDisable = prefs.getBool('onboarding') ?? false;
+
   return runApp(ChangeNotifierProvider(
     create: (_) => ThemeNotifier(),
     child: SmartIOTApp(),
@@ -50,13 +57,15 @@ class SmartIOTApp extends StatelessWidget {
   Widget build(BuildContext context) {
     //print(userClient);
     return Consumer<ThemeNotifier>(
-        builder: (context, theme, _) => MaterialApp(
-              title: 'Smart IOT',
-              debugShowCheckedModeBanner: false,
-              theme: theme.getTheme(),
-              //theme: themeState ? DarkTheme: lightTheme,
-              home:
-                  LogIn() /*RootPage(auth: Auth(), client: MQTTClientWrapper())*/,
-            ));
+      builder: (context, theme, _) => MaterialApp(
+        title: 'Smart IOT',
+        debugShowCheckedModeBanner: false,
+        theme: theme.getTheme(),
+        //theme: themeState ? DarkTheme: lightTheme,
+        home: LogIn(
+          onboard: onBoardDisable,
+        ) /*RootPage(auth: Auth(), client: MQTTClientWrapper())*/,
+      ),
+    );
   }
 }

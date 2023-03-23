@@ -44,10 +44,11 @@ class LogIn extends StatefulWidget {
   //const LogIn({Key? key, required this.auth, required this.loginCallback})
   //    : super(key: key);
   final InAppBrowser browser = InAppBrowser();
-  LogIn({Key? key}) : super(key: key);
+  LogIn({Key? key, required this.onboard}) : super(key: key);
 
   //final BaseAuth auth;
   //final VoidCallback loginCallback;
+  final bool onboard;
 
   @override
   State<LogIn> createState() => _LogIn();
@@ -56,6 +57,7 @@ class LogIn extends StatefulWidget {
 class _LogIn extends State<LogIn> {
   // User variables
   Map<String, dynamic> account = {"name": "", "id": ""};
+  late SharedPreferences prefs;
 
   @override
   void initState() {
@@ -78,54 +80,34 @@ class _LogIn extends State<LogIn> {
   }
 
   Widget _awsAuth() {
-    // return Scaffold(
-    //   appBar: AppBar(title: Text("Test Web Auth")),
-    //   body: Column(children: [
-    //     ElevatedButton(
-    //       onPressed: () => hostedUIWebView(),
-    //       child: const Text("Sign in"),
-    //     ),
-    //   ]),
-    // );
     return Authenticator(
       authenticatorBuilder: (p0, p1) {
         const padding =
             EdgeInsets.only(left: 16, right: 16, top: 48, bottom: 16);
         switch (p1.currentStep) {
           case AuthenticatorStep.loading:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.onboarding:
             break;
           case AuthenticatorStep.signUp:
             return _signUpForm(padding, p1);
-            break;
           case AuthenticatorStep.signIn:
             return _signInForm(padding, p1);
-            break;
           case AuthenticatorStep.confirmSignUp:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.confirmSignInCustomAuth:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.confirmSignInMfa:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.confirmSignInNewPassword:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.resetPassword:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.confirmResetPassword:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.verifyUser:
-            // TODO: Handle this case.
             break;
           case AuthenticatorStep.confirmVerifyUser:
-            // TODO: Handle this case.
             break;
         }
       },
@@ -139,14 +121,23 @@ class _LogIn extends State<LogIn> {
       builder: Authenticator.builder(),
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: FutureBuilder(
-          future: _isOnboardingCompleted(),
-          builder: (context, snapshot) {
-            return snapshot.hasData && snapshot.data == true
-                ? farmCard()
-                : OnboardingPage();
+        body: Builder(
+          builder: (context) {
+            if (widget.onboard) {
+              return farmCard();
+            }
+
+            return OnboardingPage();
           },
         ),
+        // FutureBuilder(
+        //   future: _isOnboardingCompleted(),
+        //   builder: (context, snapshot) {
+        //     return snapshot.hasData && snapshot.data == true
+        //         ? farmCard()
+        //         : OnboardingPage();
+        //   },
+        // ),
       ),
     );
   }
@@ -257,94 +248,6 @@ class _LogIn extends State<LogIn> {
           ),
         ),
       ),
-    );
-  }
-
-  _isOnboardingCompleted() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    return prefs.getBool('onboarding') ?? false;
-  }
-
-  _googleWebViewController(uri) {
-    print("[GoogleWebView] $uri");
-
-    return WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent("random")
-      ..setBackgroundColor(Colors.white)
-      ..setNavigationDelegate(NavigationDelegate(
-        onWebResourceError: (error) => print(
-            "[WebError] ${error.errorCode} :${error.description}, ${error.errorType}"),
-        onNavigationRequest: (request) async {
-          Map query = Uri.splitQueryString(request.url);
-          print("[RequestWebView] ${query}");
-          if (query.containsKey("karriot://?code")) {
-            String code = query["karriot://?code"];
-            CognitoUser user = await Auth().signInWithGoogle(code);
-            if (user.username != null) {
-              // ignore: use_build_context_synchronously
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FutureBuilder(
-                    future: _isOnboardingCompleted(),
-                    builder: (context, snapshot) {
-                      return snapshot.hasData && snapshot.data == true
-                          ? farmCard()
-                          : OnboardingPage();
-                    },
-                  ),
-                ),
-              );
-            }
-
-            return NavigationDecision.prevent;
-          }
-
-          return NavigationDecision.navigate;
-        },
-      ))
-      ..loadRequest(uri);
-  }
-
-  Widget getGoogleWebView() {
-    var url = Secret().getAuthUrl();
-    print(url);
-
-    return WebViewWidget(controller: _googleWebViewController(url));
-  }
-
-  Widget hostedUIWebView() {
-    var loginUrl = Secret().loginUrl();
-    print(loginUrl);
-    WebViewController wv = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent("random")
-      ..setBackgroundColor(Colors.white)
-      ..setNavigationDelegate(NavigationDelegate(
-        // onProgress: ,
-        onWebResourceError: (error) =>
-            print("[WebHostError] ${error.errorCode}:${error.description}"),
-        // onPageStarted: ,
-        // onPageFinished: ,
-        onNavigationRequest: (request) async {
-          print("[HostUI] ${request.url}");
-          Map query = Uri.splitQueryString(request.url);
-          if (query.containsKey("karriot://?code")) {
-            String code = query["karriot://?code"];
-            // post to token endpoint method
-
-            return NavigationDecision.prevent;
-          }
-
-          return NavigationDecision.navigate;
-        },
-      ))
-      ..loadRequest(loginUrl);
-
-    return WebViewWidget(
-      controller: wv,
     );
   }
 }
