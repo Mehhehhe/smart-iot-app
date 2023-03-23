@@ -10,12 +10,12 @@
 <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
 <uses-permission android:name="android.permission.STORAGE_INTERNAL" />
 <!-- <uses-feature android:name="android.hardware.bluetooth" android:required="true" /> -->
-<queries>
+<!-- <queries>
   <intent>
       <action android:name=
           "android.support.customtabs.action.CustomTabsService" />
   </intent>
-</queries>
+</queries> -->
    <application
         tools:replace="android:label"
         android:label="smart_iot_app"
