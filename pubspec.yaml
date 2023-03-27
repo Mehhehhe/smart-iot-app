@@ -38,8 +38,12 @@ dependencies:
   dropdown_button2: ^1.6.3
   crypto: ^3.0.2
   http: ^0.13.4
+  # Graphs
+  syncfusion_flutter_core:
   syncfusion_flutter_charts: ^20.2.36
   syncfusion_flutter_gauges: ^20.2.36
+  syncfusion_flutter_sliders: 
+
   mqtt_client: ^9.6.9
   flutter_local_notifications: ^13.0.0
 
