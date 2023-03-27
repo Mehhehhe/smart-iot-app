@@ -13,9 +13,7 @@ class DeviceDetail extends StatelessWidget {
   List<Map> liveData = [];
   List<Map> latestDatePlaceholder = [];
   List<ChartData> dataToPlot = [];
-  List<ChartData> NToPlot = [];
-  List<ChartData> PToPlot = [];
-  List<ChartData> KToPlot = [];
+  List<ChartData> multiDataToPlot = [];
 
   String serial;
   String location;
@@ -30,15 +28,23 @@ class DeviceDetail extends StatelessWidget {
     required this.latestDatePlaceholder,
   }) : super(key: key);
 
+  // Handle adding new data from the active device
+  // ignore: todo
+  // - TODO: add base data from the database,
+  //    so the plot is not empty and still can display some data.
   void insertChartData(String data) {
     var temp = json.decode(data);
     bool deviceState = temp["State"];
     DateTime deviceTimeStamp =
         DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toUtc();
-    print("[ValueCheckType] ${temp} ${temp["Value"].runtimeType}");
+    // print("[ValueCheckType] ${temp} ${temp["Value"].runtimeType}");
+
     if (temp["Value"].runtimeType == double) {
-      // humid
-      double value = temp["Value"];
+      // double
+      double v = temp["Value"];
+      // Although the value is single, the value must still pass on as List.
+      List value = [v];
+
       dataToPlot.add(ChartData(
         deviceTimeStamp,
         value,
@@ -51,33 +57,16 @@ class DeviceDetail extends StatelessWidget {
           temp["Value"] == null) {
         return;
       }
-      print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");
-      var valueN = temp["Value"]["N"];
-      var valueP = temp["Value"]["P"];
-      var valueK = temp["Value"]["K"];
-      print("[AccessInnerMap] $valueN , $valueK , $valueP");
-      NToPlot.add(
+      // print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");
+      // Loop through the values of nested Map
+      Map<String, dynamic> subMap = Map.castFrom(temp["Value"]);
+
+      multiDataToPlot.add(
         ChartData(
           deviceTimeStamp,
-          valueN,
+          [subMap],
           detail["Location"] ?? location,
-          name: "N",
-        ),
-      );
-      PToPlot.add(
-        ChartData(
-          deviceTimeStamp,
-          valueP,
-          detail["Location"] ?? location,
-          name: "P",
-        ),
-      );
-      KToPlot.add(
-        ChartData(
-          deviceTimeStamp,
-          valueK,
-          detail["Location"] ?? location,
-          name: "K",
+          name: "NPK",
         ),
       );
     }
@@ -212,18 +201,23 @@ class DeviceDetail extends StatelessWidget {
                             onChanged: (value) => print(value),
                           ),
                           if (detail["Type"] == "MOISTURE" && liveData != null)
-                            Container(
-                              height: 300,
-                              width: MediaQuery.of(context).size.width,
-                              child: BlocProvider(
-                                create: (_) =>
-                                    LiveDataCubit(liveData, dataToPlot),
-                                child: LiveChart(
-                                  type: 'line',
-                                  devices: liveData,
-                                  detail: detail,
+                            ExpansionTile(
+                              title: Text("Moisture Graph"),
+                              children: [
+                                Container(
+                                  height: 800,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: BlocProvider(
+                                    create: (_) =>
+                                        LiveDataCubit(liveData, dataToPlot),
+                                    child: LiveChart(
+                                      type: 'line',
+                                      devices: liveData,
+                                      detail: detail,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             )
                           else if (detail["Type"] == "NPKSENSOR" &&
                               liveData != null)
@@ -231,62 +225,20 @@ class DeviceDetail extends StatelessWidget {
                               title: Text("NPK graph"),
                               initiallyExpanded: false,
                               children: [
-                                ExpansionTile(
-                                  title: Text("Nitrogen"),
-                                  initiallyExpanded: false,
-                                  children: [
-                                    Container(
-                                      height: 300,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: BlocProvider(
-                                        create: (_) =>
-                                            LiveDataCubit(liveData, NToPlot),
-                                        child: LiveChart(
-                                          type: 'line',
-                                          devices: liveData,
-                                          detail: detail,
-                                        ),
-                                      ),
+                                Container(
+                                  height: 800,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: BlocProvider(
+                                    create: (_) => LiveDataCubit(
+                                      liveData,
+                                      multiDataToPlot,
                                     ),
-                                  ],
-                                ),
-                                ExpansionTile(
-                                  title: Text("Phosphorus"),
-                                  initiallyExpanded: false,
-                                  children: [
-                                    Container(
-                                      height: 300,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: BlocProvider(
-                                        create: (_) =>
-                                            LiveDataCubit(liveData, PToPlot),
-                                        child: LiveChart(
-                                          type: 'line',
-                                          devices: liveData,
-                                          detail: detail,
-                                        ),
-                                      ),
+                                    child: LiveChart(
+                                      type: 'line',
+                                      devices: liveData,
+                                      detail: detail,
                                     ),
-                                  ],
-                                ),
-                                ExpansionTile(
-                                  title: Text("Potassium"),
-                                  initiallyExpanded: false,
-                                  children: [
-                                    Container(
-                                      height: 300,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: BlocProvider(
-                                        create: (_) =>
-                                            LiveDataCubit(liveData, KToPlot),
-                                        child: LiveChart(
-                                          type: 'line',
-                                          devices: liveData,
-                                          detail: detail,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             )
