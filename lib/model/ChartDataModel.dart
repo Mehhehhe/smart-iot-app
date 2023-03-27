@@ -3,7 +3,7 @@ import 'package:flutter/animation.dart';
 class ChartData {
   ChartData(this.date, this.values, this.place, {this.name});
   final DateTime date;
-  final dynamic values;
+  final List values;
   final String place;
 
   final String? name;
