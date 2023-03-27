@@ -1,13 +1,27 @@
 import 'dart:async';
 import 'dart:convert';
+// import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
+import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
+
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+import 'package:syncfusion_flutter_core/core.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
+
+List<Color> palette = [
+  const Color.fromRGBO(208, 31, 49, 1.0),
+  const Color.fromRGBO(246, 129, 33, 1.0),
+  const Color.fromRGBO(251, 221, 11, 1.0),
+  const Color.fromRGBO(0, 123, 97, 1.0),
+  const Color.fromRGBO(0, 114, 185, 1.0),
+];
 
 class LiveChart extends StatefulWidget {
   String type;
@@ -19,6 +33,7 @@ class LiveChart extends StatefulWidget {
     required this.devices,
     required this.detail,
   }) : super(key: key);
+  @override
   State<StatefulWidget> createState() => _LiveChartState();
 }
 
@@ -29,120 +44,255 @@ class _LiveChartState extends State<LiveChart> {
   late List<Map> dev;
   late String devType;
   late Timer timer;
+  List<String> typeList = [
+    "line",
+    "bar",
+    "pie",
+  ];
+  // Range Controller
+  late RangeController _rangeController;
+  DateTime? _start;
+  DateTime _end = DateTime.now();
+  // Base data
+  late LocalHistoryDatabase instance;
 
   @override
   void initState() {
     super.initState();
-
-    setState(() {
-      chartType = widget.type;
-      dev = widget.devices;
-      devType = widget.detail["Type"];
-    });
+    chartType = widget.type;
+    dev = widget.devices;
+    devType = widget.detail["Type"];
+    instance = LocalHistoryDatabase.instance;
   }
 
   Widget liveChart(String type, List<Map> dev) {
     final bloc = BlocProvider.of<LiveDataCubit>(context);
+
     return BlocBuilder<LiveDataCubit, LiveDataInitial>(
       builder: (context, state) {
-        // state.chartData = context.read<LiveDataCubit>().transformFromRawData();
-        // BlocProvider.of<LiveDataCubit>(context).createChartList();
-        switch (type) {
-          case "line":
-            return _buildLineChart(state.chartData!);
-          case "bar":
-            return _buildBarChart(state.chartData!);
-          case "pie":
-            return _buildPieChart(state.chartData!);
+        if (state.chartData == null || !typeList.contains(type)) {
+          return Container();
         }
-        return Container();
+
+        return _buildWithRangeSelector(
+          state.chartData!,
+          type,
+        );
       },
     );
   }
 
-  SfCartesianChart _buildLineChart(List<ChartData> data) {
+  Widget _buildWithRangeSelector(List<ChartData> list, String type) {
+    late Widget displayGraph;
+    late Widget noCallingGraph;
+    switch (type) {
+      case "line":
+        // LineSeries ls = await _lineSeries(list);
+        displayGraph = FutureBuilder(
+          future: _lineSeries(list),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              Map<String, dynamic> l = snapshot.data! as Map<String, dynamic>;
+              // print("[FutureMap] $l");
+              dynamic ls = l["series"];
+              noCallingGraph = _buildLineChart(
+                list,
+                ls: ls,
+              );
+
+              return _buildLineChart(
+                list,
+                ls: ls,
+              );
+            }
+
+            return Container();
+          },
+        );
+        // displayGraph = _buildLineChart(list);
+        break;
+      case "bar":
+        // displayGraph = _buildBarChart(list);
+        break;
+      case "pie":
+        // displayGraph = _buildPieChart(list);
+        break;
+    }
+
+    return Column(
+      children: [
+        displayGraph,
+      ],
+    );
+  }
+
+  SfCartesianChart _buildLineChart(
+    List<ChartData> data, {
+    required dynamic ls,
+  }) {
     return SfCartesianChart(
       plotAreaBorderWidth: 0,
       enableAxisAnimation: true,
       backgroundColor: Colors.white,
       plotAreaBackgroundColor: Colors.white54,
-      palette: [
-        Color.fromRGBO(208, 31, 49, 1.0),
-        Color.fromRGBO(246, 129, 33, 1.0),
-        Color.fromRGBO(251, 221, 11, 1.0),
-        Color.fromRGBO(0, 123, 97, 1.0),
-        Color.fromRGBO(0, 114, 185, 1.0),
-      ],
+      palette: palette,
       plotAreaBorderColor: Colors.grey,
       primaryXAxis: DateTimeAxis(
-          enableAutoIntervalOnZooming: true,
-          autoScrollingDelta: 3,
-          autoScrollingDeltaType: DateTimeIntervalType.hours,
-          title: AxisTitle(
-              text: data.length <= 170
-                  ? "Time in minute:seconds"
-                  : data.length <= 3000
-                      ? "Time in hours:minutes"
-                      : "Time in hours"),
-          visibleMaximum: null),
+        enableAutoIntervalOnZooming: true,
+        // autoScrollingDelta: 3,
+        // autoScrollingDeltaType: DateTimeIntervalType.hours,
+        visibleMaximum: null,
+      ),
       primaryYAxis: NumericAxis(
-          axisLine: const AxisLine(width: 0),
-          majorTickLines: const MajorTickLines(size: 0)),
-      series: _lineSeries(data),
+        axisLine: const AxisLine(width: 0),
+        majorTickLines: const MajorTickLines(size: 0),
+      ),
+      series: ls,
       tooltipBehavior: TooltipBehavior(
-          enable: true,
-          elevation: 5,
-          canShowMarker: false,
-          activationMode: ActivationMode.singleTap,
-          shared: true,
-          header: "Sensor Value",
-          format: 'ณ point.x, ค่า: point.y',
-          decimalPlaces: 2,
-          textStyle: const TextStyle(fontSize: 16.0)),
+        enable: true,
+        elevation: 5,
+        canShowMarker: false,
+        activationMode: ActivationMode.singleTap,
+        shared: true,
+        header: "Sensor Value",
+        format: 'ณ point.x, ค่า: point.y',
+        decimalPlaces: 2,
+        textStyle: const TextStyle(fontSize: 16.0),
+      ),
       trackballBehavior: TrackballBehavior(
-          activationMode: ActivationMode.singleTap,
-          enable: true,
-          shouldAlwaysShow: true,
-          tooltipDisplayMode: TrackballDisplayMode.floatAllPoints,
-          tooltipSettings: const InteractiveTooltip(enable: false),
-          markerSettings: const TrackballMarkerSettings(
-            markerVisibility: TrackballVisibilityMode.hidden,
-          )),
+        activationMode: ActivationMode.singleTap,
+        enable: true,
+        shouldAlwaysShow: true,
+        tooltipDisplayMode: TrackballDisplayMode.floatAllPoints,
+        tooltipSettings: const InteractiveTooltip(enable: false),
+        markerSettings: const TrackballMarkerSettings(
+          markerVisibility: TrackballVisibilityMode.hidden,
+        ),
+      ),
     );
   }
 
-  _lineSeries(List<ChartData> data) {
+  Future<Map<String, dynamic>> _lineSeries(List<ChartData> data) async {
     List<LineSeries<ChartData, DateTime>> temp =
         <LineSeries<ChartData, DateTime>>[];
     List<String> places = [];
+    // add base here
+    List<ChartData> base = await _addBase();
+    List<ChartData> newDataList = [];
+    newDataList.addAll(base);
+    newDataList.addAll(data);
+    newDataList.sort(
+      (a, b) => b.date.compareTo(a.date),
+    );
+    // print("[base] $base");
     // Find all devices
-    for (var elm in data) {
-      print("Prepare data ${elm.place}, ${elm.values}");
+    for (var elm in newDataList) {
+      // print("Prepare data ${elm.place}, ${elm.values}");
       if (!places.contains(elm.place)) {
         places.add(elm.place);
       }
     }
     // Seperate data for each devices
     for (var plc in places) {
-      List<ChartData> temp_arr = [];
-      for (var chrt in data) {
+      List<ChartData> tempArr = [];
+      for (var chrt in newDataList) {
         if (chrt.place == plc) {
-          temp_arr.add(chrt);
+          tempArr.add(chrt);
         }
       }
-      temp.add(LineSeries(
-        onRendererCreated: (controller) => _chartSeriesController = controller,
-        name: plc,
-        dataSource: temp_arr,
-        enableTooltip: true,
-        xValueMapper: (datum, index) => datum.date,
-        yValueMapper: (datum, index) => datum.values,
-      ));
-      temp_arr = [];
+      if (newDataList[0].name == null) {
+        temp.add(_createSeries(tempArr, ""));
+      } else if (newDataList[0].name!.contains("NPK")) {
+        // single device, multi values
+        temp.add(_createSeries(tempArr, "N"));
+        temp.add(_createSeries(tempArr, "P"));
+        temp.add(_createSeries(tempArr, "K"));
+      }
+
+      tempArr = [];
     }
-    return temp;
+    // print("[AddAll map] $temp");
+    // print("[TestEx] ${temp[0].dataSource[0]}");
+
+    return {
+      "series": temp,
+      "start": newDataList.first.date.toLocal(),
+      "end": newDataList.last.date.toLocal(),
+    };
   }
 
+  LineSeries<ChartData, DateTime> _createSeries(
+    List<ChartData> tempArr,
+    String name,
+  ) {
+    // print("[create] $name");
+
+    return LineSeries(
+      onRendererCreated: (controller) => _chartSeriesController = controller,
+      name: name,
+      dataSource: tempArr,
+      enableTooltip: true,
+      xValueMapper: (datum, index) => datum.date,
+      yValueMapper: (datum, index) {
+        // print("datum accesses ${datum.date}, ${datum.values[0].keys}");
+        if (name == "") {
+          return datum.values[0];
+        }
+
+        return datum.values[0][name];
+      },
+    );
+  }
+
+  Future<List<ChartData>> _addBase() async {
+    List<LocalHist> base =
+        await instance.getHistoryOf(device: widget.detail["SerialNumber"]);
+    // create List<ChartData>
+
+    // replace this with device type checker.
+    Type baseVal = base[0].device.contains("MOIST")
+        ? num
+        : base[0].device.contains("NPK")
+            ? Map
+            : String;
+    List<ChartData> temp = [];
+    dynamic valueToSet;
+    for (var b in base) {
+      // print("State: ${b.value}, ${b.value.runtimeType}");
+      switch (baseVal) {
+        case Map:
+          // print("[BaseVal] map case:=> ${b.value}, ${b.value.runtimeType}");
+          if (!b.value.contains('"')) {
+            final modifiedString = b.value.replaceAllMapped(
+              RegExp(r'([A-Za-z]+)(\s*:)', multiLine: true),
+              (match) => '"${match.group(1)}"${match.group(2)}',
+            );
+            valueToSet = jsonDecode(modifiedString);
+            // print("Modified and get $valueToSet");
+          } else {
+            valueToSet = json.decode(b.value);
+          }
+
+          break;
+        case num:
+          // print("[BaseVal] double case:=> ${b.value}, ${b.value.runtimeType}");
+          valueToSet = num.parse(b.value == "null" ? "-1.0" : b.value);
+          // print("Num parsed and get $valueToSet");
+          break;
+        default:
+          break;
+      }
+      temp.add(ChartData(
+        DateTime.fromMillisecondsSinceEpoch(int.parse(b.dateUnixAsId)),
+        [valueToSet],
+        b.farm,
+        name: baseVal == Map ? "NPK" : null,
+      ));
+    }
+    // print("Cleaned & get $temp");
+
+    return temp;
+  }
   // _lineSeriesNPK(List<ChartData> data) {
   //   List<LineSeries<ChartData, DateTime>> temp =
   //       <LineSeries<ChartData, DateTime>>[];
@@ -175,33 +325,37 @@ class _LiveChartState extends State<LiveChart> {
   //   return temp;
   // }
 
-  SfSparkBarChart _buildBarChart(List<ChartData> data) {
-    return SfSparkBarChart(
-      data: _barSeries(data),
-    );
-  }
+  // SfSparkBarChart _buildBarChart(List<ChartData> data) {
+  //   return SfSparkBarChart(
+  //     data: _barSeries(data),
+  //   );
+  // }
 
-  _barSeries(List<ChartData> data) {
-    List<num> newBar = [];
-    for (var cd in data) {
-      newBar.add(cd.values);
-    }
-    return newBar;
-  }
+  // _barSeries(List<ChartData> data) {
+  //   List<num> newBar = [];
+  //   for (var cd in data) {
+  //     newBar.add(cd.values);
+  //   }
 
-  SfCircularChart _buildPieChart(List<ChartData> data) {
-    return SfCircularChart(
-      series: _circularSeries(data),
-    );
-  }
+  //   return newBar;
+  // }
 
-  _circularSeries(List<ChartData> data) {
-    List<CircularSeries<ChartData, dynamic>> temp = [];
-    return temp;
-  }
+  // SfCircularChart _buildPieChart(List<ChartData> data) {
+  //   return SfCircularChart(
+  //     series: _circularSeries(data),
+  //   );
+  // }
+
+  // _circularSeries(List<ChartData> data) {
+  //   List<CircularSeries<ChartData, dynamic>> temp = [];
+
+  //   return temp;
+  // }
 
   @override
   Widget build(BuildContext context) {
     return liveChart(chartType, dev);
   }
+
+  // Range & Query
 }
