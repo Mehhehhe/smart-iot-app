@@ -50,17 +50,17 @@ class _LiveChartState extends State<LiveChart> {
     "pie",
   ];
   // Range Controller
-  late RangeController _rangeController;
-  DateTime? _start;
+  // late RangeController _rangeController;
+  DateTime _start = DateTime.now().subtract(const Duration(days: 1));
   DateTime _end = DateTime.now();
   // Base data
   late LocalHistoryDatabase instance;
 
   // Graph range config
-  // bool _days3 = true;
-  // bool _week = false;
-  // bool _month = false;
-  // bool _halfYear = false;
+  //  _days3 = true;
+  //  _week = false;
+  //  _month = false;
+  //  _halfYear = false;
   // 1 day, 3 days, 1 week, 1 month,
   List<bool> selectedInterval = <bool>[
     true,
@@ -152,8 +152,34 @@ class _LiveChartState extends State<LiveChart> {
       direction: Axis.horizontal,
       onPressed: (int index) {
         setState(() {
+          // print(intervalTexts[index].hashCode);
           for (int i = 0; i < selectedInterval.length; i++) {
             selectedInterval[i] = i == index;
+          }
+          print(intervalTexts[index]
+              .toString()
+              .substring(6, intervalTexts[index].toString().length - 2));
+          switch (intervalTexts[index]
+              .toString()
+              .substring(6, intervalTexts[index].toString().length - 2)) {
+            // today
+            case "Today":
+              _start = _end.subtract(const Duration(days: 1));
+              break;
+            // 3 days
+            case "3 days":
+              _start = _end.subtract(const Duration(days: 3));
+              break;
+            // 1 week
+            case "1 week":
+              _start = _end.subtract(const Duration(days: 7));
+              break;
+            // 1 month
+            case "1 month":
+              _start = _end.subtract(const Duration(days: 30));
+              break;
+            default:
+              break;
           }
         });
       },
@@ -187,7 +213,8 @@ class _LiveChartState extends State<LiveChart> {
         // intervalType: DateTimeIntervalType.hours,
         // autoScrollingDelta: 3,
         // autoScrollingDeltaType: DateTimeIntervalType.hours,
-        visibleMaximum: null,
+        minimum: _start,
+        visibleMaximum: _end,
       ),
       primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
