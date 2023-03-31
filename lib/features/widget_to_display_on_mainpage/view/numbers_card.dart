@@ -6,6 +6,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/user_data_stream_bloc.dart';
 // import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
+import 'package:smart_iot_app/model/DeviceType.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/pages/DeviceDetail.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
@@ -123,26 +124,30 @@ class _numberCardState extends State<numberCard> {
     return Container(
       height: 150,
       width: double.infinity,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        itemCount: (data.isEmpty) ? 1 : data.length,
-        itemBuilder: (context, index) {
-          print(data.length);
-          if (widget.devicesData == null || data.isEmpty) {
-            return Container();
+      child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+        builder: (context, state) {
+          print("[SearchState] $state");
+          if (state is SearchWidgetSuccess) {
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: state.items.length,
+              itemBuilder: (context, index) {
+                return buildSearchFound(context);
+              },
+            );
+          } else if (state is SearchWidgetError) {
+            return buildSearchError(context);
           }
 
-          return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
-            builder: (context, state) {
-              if (state is SearchWidgetSuccess) {
-                return buildSearchFound(contextP);
-              } else if (state is SearchWidgetError) {
-                return buildSearchError(contextP);
-              }
-
-              return buildSearchEmpty(contextP, index);
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: (data.isEmpty) ? 1 : data.length,
+            itemBuilder: (context, index) {
+              return buildSearchEmpty(context, index);
             },
           );
         },
@@ -162,14 +167,12 @@ class _numberCardState extends State<numberCard> {
         // print("[CheckBuildCard] $name");
         var currentValue = data[index][name]["Value"];
         var details = getDetailOfDevice(name);
-        bool isIntVal = currentValue.runtimeType == double;
 
         return _createCardDetailIfFound(
           name,
           currMap,
           currentValue,
           details,
-          isIntVal,
         );
       },
     );
@@ -191,14 +194,12 @@ class _numberCardState extends State<numberCard> {
             return Container();
           }
           var details = getDetailOfDevice(name);
-          bool isIntVal = currentValue.runtimeType == double;
 
           return _createCardDetailIfFound(
             name,
             currMap,
             currentValue,
             details,
-            isIntVal,
           );
         } else {
           return Container();
@@ -208,8 +209,12 @@ class _numberCardState extends State<numberCard> {
   }
 
   Widget _createCardDetailIfFound(
-      name, currMap, currentValue, details, bool isMultiVal) {
-    return Container(
+    name,
+    currMap,
+    currentValue,
+    details,
+  ) {
+    return SizedBox(
       width: 250,
       child: Card(
         elevation: 5.0,
@@ -234,46 +239,16 @@ class _numberCardState extends State<numberCard> {
           ),
           onLongPress: () => showModalBottomSheet(
             context: context,
-            builder: (context) {
-              return Container(
-                height: 200,
-                color: Colors.greenAccent,
-                child: ListView(children: [
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                      child: Column(
-                        children: [
-                          const Text("Toggle state"),
-                          Switch(
-                            value: currMap[name]!["State"],
-                            onChanged: (value) {
-                              widget.existedCli.publishToSetDeviceState(
-                                widget.whichFarm,
-                                name,
-                                value,
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ]),
-              );
-            },
+            builder: (context) =>
+                _MainpageCardModal(currMap: currMap, name: name),
           ),
-          child: Container(
+          child: SizedBox(
             // margin: const EdgeInsets.fromLTRB(50, 0.0, 0.0, 0.0),
             height: 100,
-            child: Stack(
-              children: [
-                // gauge here!
-                if (isMultiVal)
-                  _gaugeInCard(name, currentValue)
-                else
-                  _multigaugeInCard(name, currentValue),
-              ],
+            child: DeviceWidgetGenerator().buildMainpageCardDisplay(
+              deviceSerial: name,
+              currentValue: currentValue,
+              context: context,
             ),
           ),
         ),
@@ -281,97 +256,31 @@ class _numberCardState extends State<numberCard> {
     );
   }
 
-  Widget _gaugeInCard(name, currentValue) {
-    // print("[CurrentValue] $currentValue , ${currentValue.runtimeType}");
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.2,
-      child: SfRadialGauge(
-        enableLoadingAnimation: true,
-        title: GaugeTitle(text: name),
-        axes: <RadialAxis>[
-          RadialAxis(
-            minimum: 0,
-            maximum: 100,
-            radiusFactor: 0.8,
-            showLabels: false,
-            showTicks: false,
-            pointers: <GaugePointer>[
-              RangePointer(
-                value: currentValue.runtimeType == String
-                    ? double.parse(currentValue)
-                    : currentValue,
-                width: 18,
-                color: Colors.greenAccent,
-              ),
-            ],
-            annotations: [
-              GaugeAnnotation(
-                widget: Text(
-                  "$currentValue",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+  Widget _MainpageCardModal(
+      {required Map<String, dynamic> currMap, required String name}) {
+    return Container(
+      height: 200,
+      color: Colors.greenAccent,
+      child: ListView(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+          child: Column(
+            children: [
+              const Text("Toggle state"),
+              Switch(
+                value: currMap[name]!["State"],
+                onChanged: (value) {
+                  widget.existedCli.publishToSetDeviceState(
+                    widget.whichFarm,
+                    name,
+                    value,
+                  );
+                },
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _multigaugeInCard(name, currentValue) {
-    // print("[NPK] ${currentValue["N"].runtimeType}");
-    if (currentValue["N"] == null ||
-        currentValue["P"] == null ||
-        currentValue["K"] == null) {
-      return Container();
-    }
-
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.2,
-      child: SfRadialGauge(
-        enableLoadingAnimation: true,
-        title: GaugeTitle(text: name),
-        axes: <RadialAxis>[
-          RadialAxis(
-            minimum: 0,
-            maximum: 100,
-            radiusFactor: 0.8,
-            showLabels: false,
-            showTicks: false,
-            pointers: <GaugePointer>[
-              RangePointer(
-                value: double.parse(currentValue["N"].toString()),
-                width: 26,
-                color: Colors.greenAccent,
-              ),
-              RangePointer(
-                value: double.parse(currentValue["P"].toString()),
-                width: 22,
-                color: Colors.yellowAccent,
-              ),
-              RangePointer(
-                value: double.parse(currentValue["K"].toString()),
-                width: 18,
-                color: Colors.redAccent,
-              ),
-            ],
-            // annotations: [
-            //   GaugeAnnotation(
-            //     widget: Text(
-            //       double.parse(currentValue).toString(),
-            //       style: const TextStyle(
-            //         fontSize: 20,
-            //         fontWeight: FontWeight.bold,
-            //       ),
-            //     ),
-            //   ),
-            // ],
-          ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 
