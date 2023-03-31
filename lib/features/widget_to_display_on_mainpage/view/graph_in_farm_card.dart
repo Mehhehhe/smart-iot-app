@@ -56,6 +56,25 @@ class _LiveChartState extends State<LiveChart> {
   // Base data
   late LocalHistoryDatabase instance;
 
+  // Graph range config
+  // bool _days3 = true;
+  // bool _week = false;
+  // bool _month = false;
+  // bool _halfYear = false;
+  // 1 day, 3 days, 1 week, 1 month,
+  List<bool> selectedInterval = <bool>[
+    true,
+    false,
+    false,
+    false,
+  ];
+  static const List<Widget> intervalTexts = <Widget>[
+    Text("Today"),
+    Text("3 days"),
+    Text("1 week"),
+    Text("1 month"),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -121,8 +140,34 @@ class _LiveChartState extends State<LiveChart> {
 
     return Column(
       children: [
+        _toggleRangesRow(),
         displayGraph,
       ],
+    );
+  }
+
+  // Ensure that only one button is green, others must be grey
+  Widget _toggleRangesRow() {
+    return ToggleButtons(
+      direction: Axis.horizontal,
+      onPressed: (int index) {
+        setState(() {
+          for (int i = 0; i < selectedInterval.length; i++) {
+            selectedInterval[i] = i == index;
+          }
+        });
+      },
+      isSelected: selectedInterval,
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      selectedBorderColor: Colors.green[700],
+      selectedColor: Colors.white,
+      fillColor: Colors.green[200],
+      color: Colors.green[400],
+      constraints: const BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 80.0,
+      ),
+      children: intervalTexts,
     );
   }
 
@@ -139,6 +184,7 @@ class _LiveChartState extends State<LiveChart> {
       plotAreaBorderColor: Colors.grey,
       primaryXAxis: DateTimeAxis(
         enableAutoIntervalOnZooming: true,
+        // intervalType: DateTimeIntervalType.hours,
         // autoScrollingDelta: 3,
         // autoScrollingDeltaType: DateTimeIntervalType.hours,
         visibleMaximum: null,
@@ -168,6 +214,12 @@ class _LiveChartState extends State<LiveChart> {
         markerSettings: const TrackballMarkerSettings(
           markerVisibility: TrackballVisibilityMode.hidden,
         ),
+      ),
+      zoomPanBehavior: ZoomPanBehavior(
+        zoomMode: ZoomMode.x,
+        enablePinching: true,
+        maximumZoomLevel: 1,
+        enableDoubleTapZooming: true,
       ),
     );
   }
