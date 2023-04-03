@@ -389,7 +389,20 @@ class _farmCardViewState extends State<farmCardView> {
         ),
         onPressed: () => showModalBottomSheet(
           context: context,
-          builder: (context) => historyLog(),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            constraints: const BoxConstraints(),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+            ),
+            child: historyLog(),
+          ),
         ),
       ),
     );
