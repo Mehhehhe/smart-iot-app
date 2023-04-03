@@ -54,6 +54,10 @@ class _historyLog extends State<historyLog> {
                     List<ListTile> subTile = [];
                     value.forEach((element) {
                       Map tileData = element.toJson();
+                      DateTime temp = DateTime.fromMillisecondsSinceEpoch(
+                        int.parse(tileData["_id"]),
+                      ).toLocal();
+
                       subTile.add(ListTile(
                         title: Text(tileData["device"]),
                         subtitle: Row(
@@ -66,9 +70,9 @@ class _historyLog extends State<historyLog> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(DateTime.fromMillisecondsSinceEpoch(
-                              int.parse(tileData["_id"]),
-                            ).toLocal().toString()),
+                            Text(
+                              "${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}  ${temp.millisecond},${temp.microsecond}",
+                            ),
                           ],
                         ),
                       ));
@@ -101,6 +105,7 @@ class _historyLog extends State<historyLog> {
                             pinned: true,
                             forceElevated: innerBoxIsScrolled,
                             centerTitle: true,
+                            automaticallyImplyLeading: false,
                             foregroundColor: Colors.black,
                             backgroundColor: Colors.white,
                           ),
