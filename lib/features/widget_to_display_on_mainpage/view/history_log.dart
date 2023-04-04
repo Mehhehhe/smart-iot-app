@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+// import 'package:fpdart/fpdart.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 
@@ -11,6 +12,21 @@ class historyLog extends StatefulWidget {
 class _historyLog extends State<historyLog> {
   late LocalHistoryDatabase instance;
   String expIndex = "History";
+  // Filter range config
+  // List<bool> selectedFilter = [
+  //   true,
+  //   false,
+  //   false,
+  //   false,
+  // ];
+  static const List<Widget> filterTexts = <Widget>[
+    Text("Default"),
+    Text("Info"),
+    Text("Warning"),
+    Text("Error"),
+  ];
+  // String exposedFilter = "Default";
+  Map<String, dynamic> exposedFilterMap = {};
 
   @override
   void initState() {
@@ -22,13 +38,6 @@ class _historyLog extends State<historyLog> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // const Padding(
-        //   padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-        //   child: Text(
-        //     "History",
-        //     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        //   ),
-        // ),
         Expanded(
           child: Container(
             color: Colors.white,
@@ -52,7 +61,30 @@ class _historyLog extends State<historyLog> {
                   List<ExpansionTile> dayTile = [];
                   groupedData.forEach((key, value) {
                     List<ListTile> subTile = [];
-                    value.forEach((element) {
+                    // is sorting enabled?
+                    List<LocalHist> val = value.takeWhile((value) {
+                      String tempName = "${key.day}/${key.month}/${key.year}";
+                      if (exposedFilterMap.containsKey(tempName)) {
+                        if (exposedFilterMap[tempName]["filter"] == "Info") {
+                          return !(value.comment.contains("Warning") ||
+                              value.comment.contains("Error"));
+                        } else if (exposedFilterMap[tempName]["filter"] ==
+                            "Warning") {
+                          return value.comment.contains("Warning");
+                        } else if (exposedFilterMap[tempName]["filter"] ==
+                            "Error") {
+                          return value.comment.contains("Error");
+                        }
+                      }
+
+                      return value != null;
+                    }).toList();
+                    if (val.isEmpty) {
+                      subTile.add(const ListTile(
+                        title: Text("No data matched the filter"),
+                      ));
+                    }
+                    val.forEach((element) {
                       Map tileData = element.toJson();
                       DateTime temp = DateTime.fromMillisecondsSinceEpoch(
                         int.parse(tileData["_id"]),
@@ -81,12 +113,16 @@ class _historyLog extends State<historyLog> {
                       title: Text("${key.day}/${key.month}/${key.year}"),
                       onExpansionChanged: (value) {
                         setState(() {
-                          expIndex = value == true
+                          expIndex = value
                               ? "${key.day}/${key.month}/${key.year}"
                               : "History";
+                          // exposedFilter = value ? exposedFilter : "Default";
                         });
                       },
                       children: [
+                        _filterLogs(
+                          name: "${key.day}/${key.month}/${key.year}",
+                        ),
                         ...subTile,
                       ],
                     ));
@@ -141,6 +177,62 @@ class _historyLog extends State<historyLog> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _filterLogs({required String name}) {
+    Map<String, dynamic> temp = {
+      name: {
+        "filter": "Default",
+        "bool_list": [true, false, false, false],
+      },
+    };
+    if (!exposedFilterMap.keys.contains(name)) {
+      exposedFilterMap.addEntries(temp.entries);
+    }
+
+    return ToggleButtons(
+      direction: Axis.horizontal,
+      onPressed: (index) {
+        setState(() {
+          String filter = filterTexts[index]
+              .toString()
+              .substring(6, filterTexts[index].toString().length - 2);
+
+          for (int i = 0; i < exposedFilterMap[name]["bool_list"].length; i++) {
+            exposedFilterMap[name]["bool_list"][i] = i == index;
+          }
+
+          switch (filter) {
+            case "Default":
+              exposedFilterMap[name]["filter"] = "Default";
+              break;
+            case "Info":
+              exposedFilterMap[name]["filter"] = "Info";
+              break;
+            case "Warning":
+              exposedFilterMap[name]["filter"] = "Warning";
+              break;
+            case "Error":
+              exposedFilterMap[name]["filter"] = "Error";
+              break;
+            default:
+          }
+        });
+      },
+      isSelected: exposedFilterMap.containsKey(name)
+          ? exposedFilterMap[name]["bool_list"]
+          : temp[name]["bool_list"],
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      selectedBorderColor: Colors.green[700],
+      selectedColor: Colors.white,
+      fillColor: Colors.green[200],
+      color: Colors.green[400],
+      constraints: const BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 80.0,
+      ),
+      children: filterTexts,
     );
   }
 }
