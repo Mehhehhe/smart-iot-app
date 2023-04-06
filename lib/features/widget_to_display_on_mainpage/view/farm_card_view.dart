@@ -26,6 +26,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
+import 'package:smart_iot_app/modules/native_call.dart';
 // import 'package:smart_iot_app/modules/pipe.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -357,8 +358,8 @@ class _farmCardViewState extends State<farmCardView> {
       alignment: Alignment.centerLeft,
       width: MediaQuery.of(context).size.width * 0.45,
       child: Column(
-        children: const [
-          Padding(
+        children: [
+          const Padding(
             padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
             child: Text(
               "Analysis",
@@ -367,6 +368,16 @@ class _farmCardViewState extends State<farmCardView> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          FutureBuilder(
+            future: RustNativeCall().test,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data.toString());
+              }
+
+              return Container();
+            },
           ),
         ],
       ),
