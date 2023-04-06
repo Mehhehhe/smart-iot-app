@@ -78,3 +78,12 @@ flutter_01.png
 reports/
 
 secrets/
+
+# Rust Native
+/native/target
+/android/app/src/main/jniLibs
+/ios/Runner
+mason.yaml
+mason-lock.json
+justfile
+bricks.json
