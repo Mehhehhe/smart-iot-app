@@ -321,7 +321,8 @@ class _farmCardViewState extends State<farmCardView> {
                         );
                       }
                       print(
-                          "Check on number card data, $selectedResponse, \n$tempLoc, \n$devices");
+                        "Check on number card data, $selectedResponse, \n$tempLoc, \n$devices",
+                      );
 
                       return numberCard(
                         inputData: selectedResponse,
@@ -369,15 +370,49 @@ class _farmCardViewState extends State<farmCardView> {
               ),
             ),
           ),
-          FutureBuilder(
-            future: RustNativeCall().test,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data.toString());
-              }
+          ElevatedButton(
+            child: Text(""),
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                LocalHistoryDatabase instance = LocalHistoryDatabase.instance;
 
-              return Container();
-            },
+                return FutureBuilder(
+                  future: instance.getAllHistory(),
+                  builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                    if (snapshot.hasData) {
+                      List<LocalHist> hist = snapshot.data;
+                      var rtHist = RustNativeCall().generateVec(
+                        hist: hist,
+                      );
+                      var smaList = RustNativeCall().calculateSMA(hist: rtHist);
+
+                      return FutureBuilder(
+                        builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                          if (snapshot.hasData) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                print(
+                                    "[RsTypeCheck] ${snapshot.data[index].runtimeType}");
+
+                                return Text(snapshot.data![index].toString());
+                              },
+                            );
+                          }
+
+                          return Text("Calculating .. ");
+                        },
+                        future: smaList,
+                      );
+                    }
+
+                    return Text("Generating ... ");
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
