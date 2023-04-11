@@ -201,15 +201,6 @@ class _LogIn extends State<LogIn> {
                     child: Column(
                       children: [
                         SignInForm(includeDefaultSocialProviders: true),
-                        // ElevatedButton(
-                        //   child: Text("Test login"),
-                        //   onPressed: () => Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //       builder: (context) => getGoogleWebView(),
-                        //     ),
-                        //   ),
-                        // ),
                         const Divider(
                           color: Colors.black,
                         ),
