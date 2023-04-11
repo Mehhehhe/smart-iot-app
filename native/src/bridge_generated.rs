@@ -51,6 +51,24 @@ fn wire_test_impl(port_: MessagePort) {
         move || move |task_callback| Ok(test()),
     )
 }
+fn wire_calculate_sma_impl(
+    port_: MessagePort,
+    period: impl Wire2Api<usize> + UnwindSafe,
+    data: impl Wire2Api<Vec<RtDeviceVec>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "calculate_sma",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_period = period.wire2api();
+            let api_data = data.wire2api();
+            move |task_callback| Ok(calculate_sma(api_period, api_data))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks
@@ -73,8 +91,36 @@ where
         (!self.is_null()).then(|| self.wire2api())
     }
 }
+
+impl Wire2Api<f64> for f64 {
+    fn wire2api(self) -> f64 {
+        self
+    }
+}
+
+impl Wire2Api<u8> for u8 {
+    fn wire2api(self) -> u8 {
+        self
+    }
+}
+
+impl Wire2Api<usize> for usize {
+    fn wire2api(self) -> usize {
+        self
+    }
+}
 // Section: impl IntoDart
 
+impl support::IntoDart for MaReturnTypes {
+    fn into_dart(self) -> support::DartAbi {
+        match self {
+            Self::Single(field0) => vec![0.into_dart(), field0.into_dart()],
+            Self::Triple(field0) => vec![1.into_dart(), field0.into_dart()],
+        }
+        .into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for MaReturnTypes {}
 impl support::IntoDart for Platform {
     fn into_dart(self) -> support::DartAbi {
         match self {
@@ -91,6 +137,17 @@ impl support::IntoDart for Platform {
     }
 }
 impl support::IntoDartExceptPrimitive for Platform {}
+impl support::IntoDart for TripleVec {
+    fn into_dart(self) -> support::DartAbi {
+        vec![
+            self.n_vec.into_dart(),
+            self.p_vec.into_dart(),
+            self.k_vec.into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for TripleVec {}
 
 // Section: executor
 

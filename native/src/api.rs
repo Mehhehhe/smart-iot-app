@@ -1,3 +1,9 @@
+// pub use std::collections::HashMap;
+
+pub use serde::Deserialize;
+pub use serde::Serialize;
+// pub use serde_json::Value;
+
 // This is the entry point of your Rust library.
 // When adding new code to your project, note that only items used
 // here will be transformed to their Dart equivalents.
@@ -62,4 +68,110 @@ pub fn test() -> String {
     println!("Hello from native!");
 
     return "Hello Native!".to_owned();
+}
+
+// pub fn analyze() -> HashMap<String, serde_json::Value>{
+
+// }
+
+pub struct RtDeviceVec{
+    pub(crate) id: String,
+    pub(crate) device: String,
+    pub(crate) farm: String,
+    pub(crate) value: Box<DeviceVal>,
+    pub(crate) comment: String,
+}
+
+pub enum DeviceVal{
+    Single(f64),
+    Three(MultiVal),
+}
+
+pub struct MultiVal{
+    pub(crate) n_value: f64,
+    pub(crate) p_value: f64,
+    pub(crate) k_value: f64,
+}
+
+impl Default for DeviceVal{
+    fn default() -> Self {
+        Self::Single(0.0);
+        Self::Three(MultiVal { n_value: 0.0, p_value: 0.0, k_value: 0.0 })
+    }
+}
+
+pub enum MaReturnTypes{
+    Single(Vec<f64>),
+    Triple(TripleVec),
+}
+
+pub struct TripleVec{
+    pub(crate) n_vec: Vec<f64>,
+    pub(crate) p_vec: Vec<f64>,
+    pub(crate) k_vec: Vec<f64>
+}
+
+impl Default for MaReturnTypes{
+    fn default() -> Self {
+        Self::Single(vec![0.0]);
+        Self::Triple(TripleVec { n_vec: vec![0.0], p_vec: vec![0.0], k_vec: vec![0.0] })
+    }
+}
+
+pub fn calculate_sma(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes> {
+    let mut window = Vec::new();
+    let mut window3:Vec<f64> = Vec::new();
+    let mut res = Vec::new();
+
+    let mut single_vec = Vec::new();
+    let mut nvec = Vec::new();
+    let mut pvec = Vec::new();
+    let mut kvec = Vec::new();
+
+    for d in data {
+        match d.value.as_ref() {
+            DeviceVal::Single(s) => {
+                window.push(*s);
+                if window.len() > period {
+                    window.remove(0);
+                }
+    
+                if window.len() >= period {
+                    let sum: f64 = window.iter().take(period).sum();
+                    let sma_value = sum / period as f64;
+                    single_vec.push(sma_value);
+                }
+            },
+            DeviceVal::Three(t) => {
+                window3.push(t.n_value);
+                window3.push(t.p_value);
+                window3.push(t.k_value);
+                
+                if window3.len() > period * 3 {
+                    window3.remove(0);
+                    window3.remove(1);
+                    window3.remove(2);
+                }
+    
+                if window3.len() >= period * 3 {
+                    let nsum: f64 = window3[0] + window3[3] + window3[6];
+                    let psum: f64 = window3[1] + window3[4] + window3[7];
+                    let ksum: f64 = window3[2] + window3[5] + window3[8];
+
+                    let nsma_value = nsum / period as f64;
+                    let psma_value = psum / period as f64;
+                    let ksma_value = ksum / period as f64;
+
+                    nvec.push(nsma_value);
+                    pvec.push(psma_value);
+                    kvec.push(ksma_value);
+                }
+            },
+        };
+    }
+
+    res.push(MaReturnTypes::Single(single_vec));
+    res.push(MaReturnTypes::Triple(TripleVec { n_vec: nvec, p_vec: pvec, k_vec: kvec }));
+
+    return res;
 }
