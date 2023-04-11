@@ -7,6 +7,9 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:uuid/uuid.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+
+part 'bridge_definitions.freezed.dart';
 
 abstract class Native {
   Future<Platform> platform({dynamic hint});
@@ -20,6 +23,42 @@ abstract class Native {
   Future<String> test({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kTestConstMeta;
+
+  Future<List<MaReturnTypes>> calculateSma({required int period, required List<RtDeviceVec> data, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCalculateSmaConstMeta;
+}
+
+@freezed
+class DeviceVal with _$DeviceVal {
+  const factory DeviceVal.single(
+    double field0,
+  ) = DeviceVal_Single;
+  const factory DeviceVal.three(
+    MultiVal field0,
+  ) = DeviceVal_Three;
+}
+
+@freezed
+class MaReturnTypes with _$MaReturnTypes {
+  const factory MaReturnTypes.single(
+    Float64List field0,
+  ) = MaReturnTypes_Single;
+  const factory MaReturnTypes.triple(
+    TripleVec field0,
+  ) = MaReturnTypes_Triple;
+}
+
+class MultiVal {
+  final double nValue;
+  final double pValue;
+  final double kValue;
+
+  const MultiVal({
+    required this.nValue,
+    required this.pValue,
+    required this.kValue,
+  });
 }
 
 enum Platform {
@@ -31,4 +70,32 @@ enum Platform {
   MacIntel,
   MacApple,
   Wasm,
+}
+
+class RtDeviceVec {
+  final String id;
+  final String device;
+  final String farm;
+  final DeviceVal value;
+  final String comment;
+
+  const RtDeviceVec({
+    required this.id,
+    required this.device,
+    required this.farm,
+    required this.value,
+    required this.comment,
+  });
+}
+
+class TripleVec {
+  final Float64List nVec;
+  final Float64List pVec;
+  final Float64List kVec;
+
+  const TripleVec({
+    required this.nVec,
+    required this.pVec,
+    required this.kVec,
+  });
 }
