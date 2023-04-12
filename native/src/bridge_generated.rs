@@ -69,6 +69,24 @@ fn wire_calculate_sma_impl(
         },
     )
 }
+fn wire_calculate_ema_impl(
+    port_: MessagePort,
+    period: impl Wire2Api<usize> + UnwindSafe,
+    data: impl Wire2Api<Vec<RtDeviceVec>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "calculate_ema",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_period = period.wire2api();
+            let api_data = data.wire2api();
+            move |task_callback| Ok(calculate_ema(api_period, api_data))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks

@@ -175,3 +175,64 @@ pub fn calculate_sma(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes
 
     return res;
 }
+
+pub fn calculate_ema(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes>{
+    // init vars
+    let multiplier = 2.0 / ((period + 1) as f64);
+    let mut prev_ema_single = 0.0;
+    let mut prev_ema_n = 0.0;
+    let mut prev_ema_p = 0.0;
+    let mut prev_ema_k = 0.0;
+    let mut count_single = 0;
+    let mut count_multi = 0;
+    // sum
+    let mut sum_s = 0.0;
+    let mut sum_n = 0.0;
+    let mut sum_p = 0.0;
+    let mut sum_k = 0.0;
+    // To return
+    let mut single_vec = Vec::new();
+    let mut nvec = Vec::new();
+    let mut pvec = Vec::new();
+    let mut kvec = Vec::new();
+    let mut res:Vec<MaReturnTypes> = Vec::new();
+
+    for d in data{
+        match d.value.as_ref(){
+            DeviceVal::Single(s) => {
+                sum_s += s;
+                count_single += 1;
+
+                if count_single < period{
+                    prev_ema_single = sum_s / (count_single as f64);
+                } else {
+                    prev_ema_single = (s - prev_ema_single) * multiplier + prev_ema_single;
+                }
+                single_vec.push(prev_ema_single);
+            },
+            DeviceVal::Three(t) => {
+                sum_n += t.n_value;
+                sum_p += t.p_value;
+                sum_k += t.k_value;
+                count_multi += 1;
+
+                if count_multi < period{
+                    prev_ema_n = sum_n / (count_multi as f64);
+                    prev_ema_p = sum_p / (count_multi as f64);
+                    prev_ema_k = sum_k / (count_multi as f64);
+                } else {
+                    prev_ema_n = (t.n_value - prev_ema_n) * multiplier + prev_ema_n;
+                    prev_ema_p = (t.p_value - prev_ema_p) * multiplier + prev_ema_p;
+                    prev_ema_k = (t.k_value - prev_ema_k) * multiplier + prev_ema_k;
+                }
+                nvec.push(prev_ema_n);
+                pvec.push(prev_ema_p);
+                kvec.push(prev_ema_k);
+            },
+        }
+    }
+    res.push(MaReturnTypes::Single(single_vec));
+    res.push(MaReturnTypes::Triple(TripleVec { n_vec: nvec, p_vec: pvec, k_vec: kvec }));
+
+    return res;
+}

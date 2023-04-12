@@ -25,6 +25,15 @@ pub extern "C" fn wire_calculate_sma(
     wire_calculate_sma_impl(port_, period, data)
 }
 
+#[no_mangle]
+pub extern "C" fn wire_calculate_ema(
+    port_: i64,
+    period: usize,
+    data: *mut wire_list_rt_device_vec,
+) {
+    wire_calculate_ema_impl(port_, period, data)
+}
+
 // Section: allocate functions
 
 #[no_mangle]
