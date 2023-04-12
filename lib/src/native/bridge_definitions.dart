@@ -27,6 +27,10 @@ abstract class Native {
   Future<List<MaReturnTypes>> calculateSma({required int period, required List<RtDeviceVec> data, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kCalculateSmaConstMeta;
+
+  Future<List<MaReturnTypes>> calculateEma({required int period, required List<RtDeviceVec> data, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCalculateEmaConstMeta;
 }
 
 @freezed

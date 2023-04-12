@@ -92,6 +92,29 @@ class NativeImpl implements Native {
         ],
       );
 
+  Future<List<MaReturnTypes>> calculateEma({required int period, required List<RtDeviceVec> data, dynamic hint}) {
+    var arg0 = api2wire_usize(period);
+    var arg1 = _platform.api2wire_list_rt_device_vec(data);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_calculate_ema(port_, arg0, arg1),
+      parseSuccessData: _wire2api_list_ma_return_types,
+      constMeta: kCalculateEmaConstMeta,
+      argValues: [
+        period,
+        data
+      ],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCalculateEmaConstMeta => const FlutterRustBridgeTaskConstMeta(
+        debugName: "calculate_ema",
+        argNames: [
+          "period",
+          "data"
+        ],
+      );
+
   void dispose() {
     _platform.dispose();
   }
@@ -388,6 +411,21 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   late final _wire_calculate_smaPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Pointer<wire_list_rt_device_vec>)>>('wire_calculate_sma');
   late final _wire_calculate_sma = _wire_calculate_smaPtr.asFunction<void Function(int, int, ffi.Pointer<wire_list_rt_device_vec>)>();
+
+  void wire_calculate_ema(
+    int port_,
+    int period,
+    ffi.Pointer<wire_list_rt_device_vec> data,
+  ) {
+    return _wire_calculate_ema(
+      port_,
+      period,
+      data,
+    );
+  }
+
+  late final _wire_calculate_emaPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Pointer<wire_list_rt_device_vec>)>>('wire_calculate_ema');
+  late final _wire_calculate_ema = _wire_calculate_emaPtr.asFunction<void Function(int, int, ffi.Pointer<wire_list_rt_device_vec>)>();
 
   ffi.Pointer<wire_MultiVal> new_box_autoadd_multi_val_0() {
     return _new_box_autoadd_multi_val_0();
