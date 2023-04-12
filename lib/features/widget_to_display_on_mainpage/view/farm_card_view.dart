@@ -1,37 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
-// import 'package:easy_debounce/easy_debounce.dart';
-// import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:flip_card/flip_card.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/farm_card_re_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
-// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/farm_card_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
-// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/widget_in_flip_card_cubit.dart';
-// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/device_selector_for_graph.dart';
-// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_editor.dart';
-// import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
-import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
-// import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
-import 'package:smart_iot_app/model/ReportModel.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/modules/native_call.dart';
-// import 'package:smart_iot_app/modules/pipe.dart';
+import 'package:smart_iot_app/pages/CommandPage.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
-
-import 'graph_in_farm_card.dart';
 
 int farmIndex = 0;
 List mainWidgetDisplay = ["graph", "numbers", "report"];
@@ -100,7 +84,7 @@ class _farmCardViewState extends State<farmCardView> {
     for (var sub in devs) {
       var temp = {
         "Name": sub["DeviceName"].toString(),
-        "Type": sub["Type"].toString()
+        "Type": sub["Type"].toString(),
       };
       deviceAndType.add(temp);
       temp = {};
@@ -141,19 +125,6 @@ class _farmCardViewState extends State<farmCardView> {
     searchTextController = TextEditingController();
     super.initState();
   }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   // client.disconnect();
-  //   // devices.clear();
-  //   enableGraph = false;
-  //   // dataResponse.clear();
-  //   devList.clear();
-  //   tempLoc = "";
-  //   exposedLoc = "";
-  //   // timer.cancel();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -289,6 +260,7 @@ class _farmCardViewState extends State<farmCardView> {
     );
   }
 
+// ignore: long-method
   Widget generateNumberCards([List<ResultItem>? searched]) {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -351,6 +323,7 @@ class _farmCardViewState extends State<farmCardView> {
     );
   }
 
+  // ignore: long-method
   Widget analysisWidget() {
     return Container(
       margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
