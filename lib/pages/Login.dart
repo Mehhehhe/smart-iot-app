@@ -75,6 +75,7 @@ class _LogIn extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: _awsAuth(),
     );
   }
@@ -142,37 +143,82 @@ class _LogIn extends State<LogIn> {
     );
   }
 
+  // ignore: long-method
   Widget _signUpForm(EdgeInsets padding, AuthenticatorState state) {
-    return Scaffold(
-      body: Padding(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromARGB(255, 248, 236, 194),
+            Color.fromARGB(255, 197, 171, 127),
+          ],
+        ),
+      ),
+      child: Padding(
         padding: padding,
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const Center(
-                child: FlutterLogo(
-                  size: 100,
-                ),
-              ),
-              SignUpForm.custom(fields: [
-                SignUpFormField.username(),
-                SignUpFormField.email(required: true),
-                SignUpFormField.password(),
-                SignUpFormField.passwordConfirmation(),
-              ]),
-              const Divider(color: Colors.black),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Stack(
                 children: [
-                  const Text(
-                    "Already have an account? ",
-                    style: TextStyle(fontSize: 18),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.white,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.blueGrey,
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          blurStyle: BlurStyle.normal,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                    margin: const EdgeInsets.only(top: 70),
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Karriot",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SignUpForm.custom(
+                          fields: [
+                            SignUpFormField.username(),
+                            SignUpFormField.email(required: true),
+                            SignUpFormField.password(),
+                            SignUpFormField.passwordConfirmation(),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Already have an account? ",
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            TextButton(
+                              onPressed: () =>
+                                  state.changeStep(AuthenticatorStep.signIn),
+                              child: const Text(
+                                "Sign in",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () => state.changeStep(AuthenticatorStep.signIn),
-                    child: const Text(
-                      "Sign in",
-                      style: TextStyle(fontSize: 18),
+                  // Replace logo here!
+                  const Center(
+                    child: FlutterLogo(
+                      size: 100,
                     ),
                   ),
                 ],
@@ -186,8 +232,18 @@ class _LogIn extends State<LogIn> {
 
   // ignore: long-method
   Widget _signInForm(EdgeInsets padding, AuthenticatorState state) {
-    return Scaffold(
-      body: Padding(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromARGB(255, 248, 236, 194),
+            Color.fromARGB(255, 197, 171, 127),
+          ],
+        ),
+      ),
+      child: Padding(
         padding: padding,
         child: SingleChildScrollView(
           child: Column(
@@ -195,31 +251,44 @@ class _LogIn extends State<LogIn> {
               Stack(
                 children: [
                   Container(
-                    height: 700,
+                    // height: MediaQuery.of(context).size.height * 0.7,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.white,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.blueGrey,
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          blurStyle: BlurStyle.normal,
+                        ),
+                      ],
+                    ),
                     padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
                     margin: const EdgeInsets.only(top: 70),
                     child: Column(
                       children: [
+                        const Text(
+                          "Karriot",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         SignInForm(includeDefaultSocialProviders: true),
-                        const Divider(
-                          color: Colors.black,
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
                               "Don't have an account? ",
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(fontSize: 14),
                             ),
                             TextButton(
                               onPressed: () =>
                                   state.changeStep(AuthenticatorStep.signUp),
                               child: const Text(
                                 "Sign up",
-                                style: TextStyle(fontSize: 18),
+                                style: TextStyle(fontSize: 14),
                               ),
                             ),
                           ],
@@ -227,6 +296,8 @@ class _LogIn extends State<LogIn> {
                       ],
                     ),
                   ),
+
+                  // Logo replace here!
                   const Center(
                     child: FlutterLogo(
                       size: 100,
