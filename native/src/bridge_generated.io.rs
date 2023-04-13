@@ -17,6 +17,11 @@ pub extern "C" fn wire_test(port_: i64) {
 }
 
 #[no_mangle]
+pub extern "C" fn wire_test_neural(port_: i64) {
+    wire_test_neural_impl(port_)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_calculate_sma(
     port_: i64,
     period: usize,

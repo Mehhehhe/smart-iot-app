@@ -2,6 +2,7 @@
 
 pub use serde::Deserialize;
 pub use serde::Serialize;
+pub use dfdx::{tensor::{Cpu, ZerosTensor, Tensor}, prelude::{DeviceBuildExt, Linear, ReLU, Tanh, Module, SaveToNpz}, shapes::Rank1};
 // pub use serde_json::Value;
 
 // This is the entry point of your Rust library.
@@ -68,6 +69,19 @@ pub fn test() -> String {
     println!("Hello from native!");
 
     return "Hello Native!".to_owned();
+}
+
+pub fn test_neural(){
+    type Mlp = (
+        (Linear<10, 32>, ReLU),
+        (Linear<32, 32>, ReLU),
+        (Linear<32, 2>, Tanh),
+    );
+    let dev:Cpu = Default::default();
+    let mlp = dev.build_module::<Mlp, f32>();
+    let x:Tensor<Rank1<10>, f32, Cpu> = dev.zeros();
+    let y:Tensor<Rank1<2>, f32, Cpu> = mlp.forward(x);
+    mlp.save("checkpoint.npz");
 }
 
 // pub fn analyze() -> HashMap<String, serde_json::Value>{
