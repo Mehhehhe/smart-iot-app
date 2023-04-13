@@ -69,6 +69,21 @@ class NativeImpl implements Native {
         argNames: [],
       );
 
+  Future<void> testNeural({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_test_neural(port_),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kTestNeuralConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kTestNeuralConstMeta => const FlutterRustBridgeTaskConstMeta(
+        debugName: "test_neural",
+        argNames: [],
+      );
+
   Future<List<MaReturnTypes>> calculateSma({required int period, required List<RtDeviceVec> data, dynamic hint}) {
     var arg0 = api2wire_usize(period);
     var arg1 = _platform.api2wire_list_rt_device_vec(data);
@@ -183,6 +198,10 @@ class NativeImpl implements Native {
 
   Uint8List _wire2api_uint_8_list(dynamic raw) {
     return raw as Uint8List;
+  }
+
+  void _wire2api_unit(dynamic raw) {
+    return;
   }
 }
 
@@ -396,6 +415,17 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   late final _wire_testPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_test');
   late final _wire_test = _wire_testPtr.asFunction<void Function(int)>();
+
+  void wire_test_neural(
+    int port_,
+  ) {
+    return _wire_test_neural(
+      port_,
+    );
+  }
+
+  late final _wire_test_neuralPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_test_neural');
+  late final _wire_test_neural = _wire_test_neuralPtr.asFunction<void Function(int)>();
 
   void wire_calculate_sma(
     int port_,
