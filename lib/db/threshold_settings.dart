@@ -31,7 +31,7 @@ class ThresholdDatabase {
     await db.execute('''
     CREATE TABLE IF NOT EXISTS thresh(
       _id $textType PRIMARY KEY,
-      _threshVal $integerType)''');
+      _threshVal $textType)''');
   }
 
   Future<Map> add(Map<String, dynamic> map) async {
@@ -56,7 +56,7 @@ class ThresholdDatabase {
     return result;
   }
 
-  Future<num> getThresh(String id) async {
+  Future<dynamic> getThresh(String id) async {
     final db = await instance.database;
     // String enc = sha1.convert(utf8.encode(id)).toString();
     final result = await db.query(
@@ -68,6 +68,19 @@ class ThresholdDatabase {
       return 100000;
     }
     print("[DB] $result , $id");
+    // String to num
+    bool isConvertableToMap = result[0]["_threshVal"].toString().contains("/");
+    if (isConvertableToMap) {
+      List<String> numMap = result[0]["_threshVal"].toString().split("/");
+      // Create map
+      Map<String, num> multiVal = {
+        "N": num.parse(numMap[0]),
+        "P": num.parse(numMap[1]),
+        "K": num.parse(numMap[2]),
+      };
+
+      return multiVal;
+    }
 
     return result[0]["_threshVal"] as num;
   }
