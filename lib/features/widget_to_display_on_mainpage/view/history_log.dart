@@ -1,10 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-// import 'package:fpdart/fpdart.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 
 class historyLog extends StatefulWidget {
+  final String farmName;
+
+  const historyLog({Key? key, required this.farmName}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _historyLog();
 }
@@ -64,7 +67,8 @@ class _historyLog extends State<historyLog> {
                     // is sorting enabled?
                     List<LocalHist> val = value.takeWhile((value) {
                       String tempName = "${key.day}/${key.month}/${key.year}";
-                      if (exposedFilterMap.containsKey(tempName)) {
+                      if (exposedFilterMap.containsKey(tempName) &&
+                          value.farm == widget.farmName) {
                         if (exposedFilterMap[tempName]["filter"] == "Info") {
                           return !(value.comment.contains("Warning") ||
                               value.comment.contains("Error"));
@@ -81,7 +85,7 @@ class _historyLog extends State<historyLog> {
                     }).toList();
                     if (val.isEmpty) {
                       subTile.add(const ListTile(
-                        title: Text("No data matched the filter"),
+                        title: Text("No data"),
                       ));
                     }
                     val.forEach((element) {
