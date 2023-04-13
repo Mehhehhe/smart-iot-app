@@ -438,10 +438,11 @@ module.exports.registerDevice = async (event, context, callback) => {
     callback(new Error("Couldn't create because of validation errors"));
   }
   // console.log(event);
+  var gen_id = crypto.randomBytes(8).toString('hex');
   const deviceInfo = (DeviceSerial, DeviceName, DeviceType, FarmName) => {
     const timestamp = new Date().getTime();
     return {
-      ID: crypto.randomBytes(8).toString('hex'),
+      ID: gen_id,
       SerialNumber: DeviceSerial,
       DeviceName: DeviceName,
       Type: DeviceType,
@@ -464,7 +465,7 @@ module.exports.registerDevice = async (event, context, callback) => {
       isBase64Encoded: false,
       statusCode: 200,
       headers,
-      body: JSON.stringify({message: "device registered successfully"})
+      body: JSON.stringify({message: "device registered successfully", id: gen_id})
     })
   }).catch(err => {
     console.log(err);
