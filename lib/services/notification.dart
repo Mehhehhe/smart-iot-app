@@ -92,6 +92,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 @pragma('vm:entry-point')
+// ignore: long-method
 void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
@@ -151,7 +152,7 @@ void onStart(ServiceInstance service) async {
     // print("[Background] $currId , ${event["name"]}");
     List thAll = await threshdb.getAllAvailableThresh();
     // print("[AllTHDB] $thAll");
-    num activationTh = await threshdb.getThresh(currId);
+    var activationTh = await threshdb.getThresh(currId);
 
     if (service is AndroidServiceInstance &&
         event["Value"].runtimeType == String) {
@@ -162,6 +163,39 @@ void onStart(ServiceInstance service) async {
           888,
           'KarrIoT',
           "${event["name"]} exceeds the set threshold of $activationTh with value ${event["value"]}",
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'KarrIoT',
+              'KarrIoT SERVICE',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+        );
+      } else if (await service.isForegroundService() && event["isMap"]) {
+        // Transform
+        Map<String, dynamic> rMap = event["Value"];
+        String errName = "";
+        String errVal = "";
+        if (rMap["N"] > activationTh["N"]) {
+          errName += "N,";
+          errVal += "N => ${rMap["N"]}, ";
+        }
+        if (rMap["P"] > activationTh["P"]) {
+          errName += "P,";
+          errVal += "P => ${rMap["P"]}, ";
+        }
+        if (rMap["K"] > activationTh["K"]) {
+          errName += "K,";
+          errVal += "K => ${rMap["K"]}, ";
+        }
+
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'KarrIoT',
+          "${event["name"]}'s $errName exceeds the set threshold with value $errVal",
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'KarrIoT',
