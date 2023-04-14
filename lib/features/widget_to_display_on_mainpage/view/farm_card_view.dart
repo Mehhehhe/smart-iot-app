@@ -13,7 +13,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/modules/native_call.dart';
-import 'package:smart_iot_app/pages/CommandPage.dart';
+import 'package:smart_iot_app/pages/AnalysisPage.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
@@ -327,67 +327,101 @@ class _farmCardViewState extends State<farmCardView> {
   Widget analysisWidget() {
     return Container(
       margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
-      color: Colors.white,
+      // color: Colors.white,
       height: 120,
-      alignment: Alignment.centerLeft,
+      // alignment: Alignment.centerLeft,
       width: MediaQuery.of(context).size.width * 0.45,
-      child: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
-            child: Text(
-              "Analysis",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+      child: ElevatedButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnalysisPage(
+              devices: devices,
             ),
           ),
-          ElevatedButton(
-            child: Text(""),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                LocalHistoryDatabase instance = LocalHistoryDatabase.instance;
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.analytics_outlined),
+            Text("Analysis"),
+          ],
+        ),
+        // child: InkWell(
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.center,
+        //     mainAxisAlignment: MainAxisAlignment.center,
+        //     children: const [
+        //       Icon(Icons.analytics_outlined),
+        //       Text("Analysis"),
+        //     ],
+        //   ),
+        //   onTap: () => Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (context) => AnalysisPage(),
+        //     ),
+        //   ),
+        // ),
+        // child: Column(
+        //   children: [
+        //     const Padding(
+        //       padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
+        //       child: Text(
+        //         "Analysis",
+        //         style: TextStyle(
+        //           fontSize: 18,
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //     ),
+        //     // ElevatedButton(
+        //     //   child: Text(""),
+        //     //   onPressed: () => showModalBottomSheet(
+        //     //     context: context,
+        //     //     builder: (context) {
+        //     //       LocalHistoryDatabase instance = LocalHistoryDatabase.instance;
 
-                return FutureBuilder(
-                  future: instance.getAllHistory(),
-                  builder: (context, AsyncSnapshot<dynamic> snapshot) {
-                    if (snapshot.hasData) {
-                      List<LocalHist> hist = snapshot.data;
-                      var rtHist = RustNativeCall().generateVec(
-                        hist: hist,
-                      );
-                      var smaList = RustNativeCall().calculateSMA(hist: rtHist);
+        //     //       return FutureBuilder(
+        //     //         future: instance.getAllHistory(),
+        //     //         builder: (context, AsyncSnapshot<dynamic> snapshot) {
+        //     //           if (snapshot.hasData) {
+        //     //             List<LocalHist> hist = snapshot.data;
+        //     //             var rtHist = RustNativeCall().generateVec(
+        //     //               hist: hist,
+        //     //             );
+        //     //             var smaList = RustNativeCall().calculateSMA(hist: rtHist);
 
-                      return FutureBuilder(
-                        builder: (context, AsyncSnapshot<dynamic> snapshot) {
-                          if (snapshot.hasData) {
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                print(
-                                    "[RsTypeCheck] ${snapshot.data[index].runtimeType}");
+        //     //             return FutureBuilder(
+        //     //               builder: (context, AsyncSnapshot<dynamic> snapshot) {
+        //     //                 if (snapshot.hasData) {
+        //     //                   return ListView.builder(
+        //     //                     shrinkWrap: true,
+        //     //                     itemCount: snapshot.data.length,
+        //     //                     itemBuilder: (context, index) {
+        //     //                       print(
+        //     //                           "[RsTypeCheck] ${snapshot.data[index].runtimeType}");
 
-                                return Text(snapshot.data![index].toString());
-                              },
-                            );
-                          }
+        //     //                       return Text(snapshot.data![index].toString());
+        //     //                     },
+        //     //                   );
+        //     //                 }
 
-                          return Text("Calculating .. ");
-                        },
-                        future: smaList,
-                      );
-                    }
+        //     //                 return Text("Calculating .. ");
+        //     //               },
+        //     //               future: smaList,
+        //     //             );
+        //     //           }
 
-                    return Text("Generating ... ");
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+        //     //           return Text("Generating ... ");
+        //     //         },
+        //     //       );
+        //     //     },
+        //     //   ),
+        //     // ),
+        //   ],
+        // ),
       ),
     );
   }
@@ -420,7 +454,7 @@ class _farmCardViewState extends State<farmCardView> {
                 topRight: Radius.circular(25),
               ),
             ),
-            child: historyLog(),
+            child: historyLog(farmName: tempLoc),
           ),
         ),
       ),
