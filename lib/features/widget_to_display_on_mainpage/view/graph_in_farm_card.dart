@@ -8,12 +8,12 @@ import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
-import 'package:smart_iot_app/services/MQTTClientHandler.dart';
+// import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
-import 'package:syncfusion_flutter_core/core.dart';
-import 'package:syncfusion_flutter_sliders/sliders.dart';
+// import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+// import 'package:syncfusion_flutter_core/core.dart';
+// import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 List<Color> palette = [
   const Color.fromRGBO(208, 31, 49, 1.0),

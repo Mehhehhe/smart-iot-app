@@ -24,30 +24,6 @@ class _DeviceEditor extends State<DeviceEditor> {
 
   @override
   Widget build(BuildContext context) {
-    // return Scaffold(
-    //   body: Center(
-    //     child: Column(
-    //       children: [
-    //         const Text("Threshold"),
-    //         TextFormField(
-    //           controller: thresholdController,
-    //           enabled: true,
-    //         ),
-    //         TextButton(
-    //           onPressed: () async {
-    //             SharedPreferences instance =
-    //                 await SharedPreferences.getInstance();
-    //             instance.setString(
-    //               "${widget.deviceName}.thresh",
-    //               thresholdController.text,
-    //             );
-    //           },
-    //           child: const Text("Save"),
-    //         ),
-    //       ],
-    //     ),
-    //   ),
-    // );
     return ExpansionTile(
       title: const Text("Settings"),
       initiallyExpanded: false,
