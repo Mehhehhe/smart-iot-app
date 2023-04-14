@@ -6,6 +6,7 @@ import 'package:smart_iot_app/src/native/bridge_definitions.dart';
 class RustNativeCall {
   // Future<Platform> platform = api.platform();
   var test = api.test();
+  var test_neural = api.testNeural();
 
   List<RtDeviceVec> generateVec({required List<LocalHist> hist}) {
     List<RtDeviceVec> rtList = [];
@@ -29,11 +30,20 @@ class RustNativeCall {
     return rtList;
   }
 
-  Future<List<MaReturnTypes>> calculateSMA(
-      {required List<RtDeviceVec> hist, int window_size = 5}) async {
-    print("[sma] receives ${hist.length}");
+  Future<List<MaReturnTypes>> calculateSMA({
+    required List<RtDeviceVec> hist,
+    int window_size = 5,
+  }) async {
     var res = api.calculateSma(period: window_size, data: hist);
-    print("[sma:Finish] $res");
+
+    return res;
+  }
+
+  Future<List<MaReturnTypes>> calculateEMA({
+    required List<RtDeviceVec> hist,
+    int period = 5,
+  }) async {
+    var res = api.calculateEma(period: period, data: hist);
 
     return res;
   }
