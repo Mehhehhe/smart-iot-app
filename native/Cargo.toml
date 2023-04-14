@@ -15,11 +15,16 @@ safetensors = "0.3.0"
 serde = "1.0.159"
 serde_json = "1.0.95"
 ta = "0.5.0"
-pyo3 = { version = "0.18.2", features = ["extension-module", "abi3"] }
+pyo3 = { version = "0.18.3", features = ["extension-module", "abi3", "abi3-py310"] }
+pyo3-build-config = { version = "0.18.3", features = ["resolve-config"]}
 
 [dependencies.pyo3-ffi]
-version = "*"
-features = ["extension-module", "abi3-py310"]
+version = "0.18.3"
+features = ["extension-module", "abi3", "abi3-py310", "generate-import-lib"]
 
 [build-dependencies]
 flutter_rust_bridge_codegen = "1"
+
+[env]
+PYO3_PRINT_CONFIG = 1
+PYO3_CROSS_PYTHON_VERSION = 3.10
