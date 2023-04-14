@@ -71,7 +71,7 @@ pub fn test() -> String {
     return "Hello Native!".to_owned();
 }
 
-pub fn test_neural(){
+pub fn test_neural() -> Vec<f32>{
     type Mlp = (
         (Linear<10, 32>, ReLU),
         (Linear<32, 32>, ReLU),
@@ -82,6 +82,8 @@ pub fn test_neural(){
     let x:Tensor<Rank1<10>, f32, Cpu> = dev.zeros();
     let y:Tensor<Rank1<2>, f32, Cpu> = mlp.forward(x);
     mlp.save("checkpoint.npz");
+
+    return y.as_vec();
 }
 
 // pub fn analyze() -> HashMap<String, serde_json::Value>{

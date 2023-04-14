@@ -69,10 +69,10 @@ class NativeImpl implements Native {
         argNames: [],
       );
 
-  Future<void> testNeural({dynamic hint}) {
+  Future<Float32List> testNeural({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_test_neural(port_),
-      parseSuccessData: _wire2api_unit,
+      parseSuccessData: _wire2api_float_32_list,
       constMeta: kTestNeuralConstMeta,
       argValues: [],
       hint: hint,
@@ -147,8 +147,16 @@ class NativeImpl implements Native {
     return _wire2api_triple_vec(raw);
   }
 
+  double _wire2api_f32(dynamic raw) {
+    return raw as double;
+  }
+
   double _wire2api_f64(dynamic raw) {
     return raw as double;
+  }
+
+  Float32List _wire2api_float_32_list(dynamic raw) {
+    return raw as Float32List;
   }
 
   Float64List _wire2api_float_64_list(dynamic raw) {
@@ -198,10 +206,6 @@ class NativeImpl implements Native {
 
   Uint8List _wire2api_uint_8_list(dynamic raw) {
     return raw as Uint8List;
-  }
-
-  void _wire2api_unit(dynamic raw) {
-    return;
   }
 }
 

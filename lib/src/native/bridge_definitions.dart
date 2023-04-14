@@ -24,7 +24,7 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kTestConstMeta;
 
-  Future<void> testNeural({dynamic hint});
+  Future<Float32List> testNeural({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kTestNeuralConstMeta;
 
