@@ -1,18 +1,20 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/modules/native_call.dart';
+import 'package:smart_iot_app/src/native/bridge_definitions.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 List<Color> palette = [
   const Color.fromRGBO(208, 31, 49, 1.0),
-  const Color.fromRGBO(246, 129, 33, 1.0),
-  const Color.fromRGBO(251, 221, 11, 1.0),
   const Color.fromRGBO(0, 123, 97, 1.0),
   const Color.fromRGBO(0, 114, 185, 1.0),
+  Colors.deepOrange,
+  Colors.deepPurple,
 ];
 
 class AnalysisPage extends StatefulWidget {
@@ -33,8 +35,8 @@ class _AnalysisPage extends State<AnalysisPage> {
   static const List<Widget> movingAverageRangeSelector = <Widget>[
     Text("5"),
     Text("10"),
-    Text("15"),
-    Text("20"),
+    Text("25"),
+    Text("50"),
   ];
   static const List<String> availableIndicators = ["sma", "ema"];
   // TODO: implement each device's own settings of indicator
@@ -52,11 +54,130 @@ class _AnalysisPage extends State<AnalysisPage> {
     ),
   ];
 
+  List<LocalHist> cleanNull({required List<LocalHist> h}) {
+    List<LocalHist> cleaned = [];
+    for (var hist in h) {
+      if (hist.value != "null") {
+        cleaned.add(hist);
+      }
+    }
+
+    return cleaned;
+  }
+
   // Function 1: Fetch database of a device
   // Function 2: For each data, transform with toJson(), then List<Map> to List<ChartData>
-  Future<List<ChartData>> _addBase({required String deviceName}) async {
-    List<LocalHist> base = await instance.getHistoryOf(device: deviceName);
-    // create List<ChartData>
+  // ignore: long-method
+  Future<dynamic> _addBase({required String deviceName}) async {
+    List<LocalHist> baseUncleaned =
+        await instance.getHistoryOf(device: deviceName);
+    List<LocalHist> base = cleanNull(h: baseUncleaned);
+    // For each indicators enabled by user
+    List<MaReturnTypes>? sma;
+    List? ema;
+    DateTime? smaStart;
+    DateTime? emaStart;
+    int smaDiff = 0;
+    int emaDiff = 0;
+    List<ChartData> smaLines = [];
+    List<ChartData> emaLines = [];
+
+    if (indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
+      print("Activate sma for $deviceName");
+      sma = await RustNativeCall().calculateSMA(
+        hist: RustNativeCall().generateVec(
+          hist: base,
+          multiValue: deviceName.contains("NPK") ? true : false,
+        ),
+        window_size: int.parse(indicatorsSetMap[selectDevice]["sma"]["range"]),
+      );
+      print("Base length: ${base.length}");
+      smaDiff = base.length - sma.length + 1;
+
+      smaStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
+        base[base.length -
+                int.parse(indicatorsSetMap[selectDevice]["sma"]["range"]) +
+                1]
+            .dateUnixAsId,
+      ));
+      print("[SMA] processing on start date $sma");
+      int count = 0;
+      // int pivot = int.parse(base[smaDiff].dateUnixAsId);
+      List smaField0List = [];
+      // List smaField0List = sma.map(
+      //   single: (value) => value.field0,
+      //   triple: (value) => [
+      //     {
+      //       "N": value.field0.nVec,
+      //       "P": value.field0.pVec,
+      //       "K": value.field0.kVec,
+      //     },
+      //   ],
+      // ).toList();
+      smaField0List = deviceName.contains("NPK")
+          ? sma[1].map(
+              single: (value) => value.field0,
+              triple: (value) => [
+                {
+                  "N": value.field0.nVec,
+                  "P": value.field0.pVec,
+                  "K": value.field0.kVec,
+                },
+              ],
+            )
+          : sma[0].map(
+              single: (value) => value.field0,
+              triple: (value) => [
+                {
+                  "N": value.field0.nVec,
+                  "P": value.field0.pVec,
+                  "K": value.field0.kVec,
+                },
+              ],
+            );
+      // print(smaField0List);
+      base.sort(
+        (a, b) => DateTime.fromMillisecondsSinceEpoch(int.parse(a.dateUnixAsId))
+            .compareTo(
+          DateTime.fromMillisecondsSinceEpoch(
+            int.parse(b.dateUnixAsId),
+          ),
+        ),
+      );
+      int smaLen = deviceName.contains("NPK")
+          ? smaField0List[0]["N"].length
+          : smaField0List.length;
+      print(
+          "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
+      for (var h in base) {
+        int curr = int.parse(h.dateUnixAsId);
+        DateTime currDate = DateTime.fromMillisecondsSinceEpoch(curr);
+        // print(
+        //     "[SMA - Loop] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)} counting $count, diff: ${smaField0List.length - count}");
+        // print(smaField0List[0]["N"][count]);
+        if ((currDate == smaStart || currDate.isAfter(smaStart)) &&
+            count < smaLen) {
+          // print(
+          //     "[SMA - LoopPassCond] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)}, check cond:=> ${DateTime.fromMillisecondsSinceEpoch(curr).isAfter(smaStart)} counting $count, diff: ${smaField0List.length - count}");
+          smaLines.add(ChartData(
+            DateTime.fromMillisecondsSinceEpoch(curr),
+            [
+              deviceName.contains("NPK")
+                  ? {
+                      "N": smaField0List[0]["N"][count],
+                      "P": smaField0List[0]["P"][count],
+                      "K": smaField0List[0]["K"][count],
+                    }
+                  : smaField0List[count],
+            ],
+            "",
+          ));
+          // print("Counting $count");
+          count++;
+        }
+      }
+      print("Done! smaLines = $smaLines");
+    }
 
     // replace this with device type checker.
     Type baseVal = base[0].device.contains("MOIST")
@@ -66,6 +187,8 @@ class _AnalysisPage extends State<AnalysisPage> {
             : String;
     List<ChartData> temp = [];
     dynamic valueToSet;
+    // print("Start Loop");
+    int countNull = 0;
     for (var b in base) {
       // print("State: ${b.value}, ${b.value.runtimeType}");
       switch (baseVal) {
@@ -84,8 +207,12 @@ class _AnalysisPage extends State<AnalysisPage> {
 
           break;
         case num:
+          if (b.value == "null") {
+            countNull++;
+            break;
+          }
           // print("[BaseVal] double case:=> ${b.value}, ${b.value.runtimeType}");
-          valueToSet = num.parse(b.value == "null" ? "-1.0" : b.value);
+          valueToSet = num.parse(b.value);
           // print("Num parsed and get $valueToSet");
           break;
         default:
@@ -95,23 +222,30 @@ class _AnalysisPage extends State<AnalysisPage> {
         DateTime.fromMillisecondsSinceEpoch(int.parse(b.dateUnixAsId)),
         [valueToSet],
         b.farm,
-        name: baseVal == Map ? "NPK" : null,
+        name: deviceName,
       ));
     }
-    // print("Cleaned & get $temp");
+    print("Cleaned & get ${temp.length} , deleted $countNull");
+    // print("Before return: check indicator lines $smaLines");
 
-    return temp;
+    return {
+      "base": temp,
+      "sma": smaLines,
+      "ema": emaLines,
+    };
   }
 
   // Function 3: Use the same functions with detail's page of graph creation.
+  // ignore: long-method
   Future<Map<String, dynamic>> _lineSeries(String device) async {
     List<LineSeries<ChartData, DateTime>> temp =
         <LineSeries<ChartData, DateTime>>[];
     List<String> places = [];
     // add base here
-    List<ChartData> base = await _addBase(deviceName: device);
+    dynamic base = await _addBase(deviceName: device);
+
     List<ChartData> newDataList = [];
-    newDataList.addAll(base);
+    newDataList.addAll(base["base"]);
     // newDataList.addAll(data);
     newDataList.sort(
       (a, b) => b.date.compareTo(a.date),
@@ -136,12 +270,43 @@ class _AnalysisPage extends State<AnalysisPage> {
         temp.add(_createSeries(tempArr, ""));
       } else if (newDataList[0].name!.contains("NPK")) {
         // single device, multi values
-        temp.add(_createSeries(tempArr, "N"));
-        temp.add(_createSeries(tempArr, "P"));
-        temp.add(_createSeries(tempArr, "K"));
+        temp.add(_createSeries(tempArr, "N", multiValue: true));
+        temp.add(_createSeries(tempArr, "P", multiValue: true));
+        temp.add(_createSeries(tempArr, "K", multiValue: true));
+      } else {
+        temp.add(_createSeries(tempArr, device));
       }
 
       tempArr = [];
+    }
+    // print("Adding indicators ... ");
+    if (base["sma"].isNotEmpty) {
+      // print("Add sma");
+      if (newDataList[0].name!.contains("NPK")) {
+        temp.add(_createSeries(
+          base["sma"],
+          "N sma",
+          isIndicator: true,
+          multiValue: true,
+        ));
+        temp.add(_createSeries(
+          base["sma"],
+          "P sma",
+          isIndicator: true,
+          multiValue: true,
+        ));
+        temp.add(_createSeries(
+          base["sma"],
+          "K sma",
+          isIndicator: true,
+          multiValue: true,
+        ));
+      } else {
+        temp.add(_createSeries(base["sma"], "sma", isIndicator: true));
+      }
+    }
+    if (base["ema"].isNotEmpty) {
+      temp.add(_createSeries(base["ema"], "ema", isIndicator: true));
     }
 
     // print("[AddAll map] $temp");
@@ -149,38 +314,53 @@ class _AnalysisPage extends State<AnalysisPage> {
 
     return {
       "series": temp,
-      "start": newDataList.first.date.toLocal(),
-      "end": newDataList.last.date.toLocal(),
     };
   }
 
   LineSeries<ChartData, DateTime> _createSeries(
     List<ChartData> tempArr,
-    String name,
-  ) {
+    String name, {
+    bool isIndicator = false,
+    bool multiValue = false,
+  }) {
     // print("[create] $name");
 
     return LineSeries(
       name: name,
       dataSource: tempArr,
-      enableTooltip: true,
+      opacity: isIndicator ? 0.8 : 1,
+      legendIconType: LegendIconType.circle,
+      legendItemText: name,
+      // enableTooltip: true,
+      isVisibleInLegend: true,
       xValueMapper: (datum, index) => datum.date,
       yValueMapper: (datum, index) {
         // print("datum accesses ${datum.date}, ${datum.values[0].keys}");
         if (name == "") {
           return datum.values[0];
+        } else if (!multiValue) {
+          return datum.values[0];
+        } else if (isIndicator && !multiValue) {
+          return datum.values[0];
         }
+        // print("Return mapper value $name => ${datum.values[0][name]}");
 
-        return datum.values[0][name];
+        return datum.values[0][name.characters.first];
       },
+      trendlines: !multiValue
+          ? [
+              Trendline(
+                  isVisible: true, opacity: 0.2, isVisibleInLegend: false),
+            ]
+          : [],
     );
   }
 
   @override
   void initState() {
     instance = LocalHistoryDatabase.instance;
-    print("[Ana] ${widget.devices}");
-    print("[NativeCall] complete!~ get ${RustNativeCall().test_neural}");
+    // print("[Ana] ${widget.devices}");
+    // print("[NativeCall] complete!~ get ${RustNativeCall().test_neural}");
     super.initState();
   }
 
@@ -255,6 +435,7 @@ class _AnalysisPage extends State<AnalysisPage> {
             Map<String, dynamic> fetchedMap =
                 snapshot.data! as Map<String, dynamic>;
             dynamic ls = fetchedMap["series"];
+            print("[FetchGraph] ${ls.length}");
 
             return _buildLineChart(ls: ls);
           }
@@ -301,12 +482,12 @@ class _AnalysisPage extends State<AnalysisPage> {
       name: {
         "indicators": [],
         "sma": {
-          "range": [],
-          "bools": [false, false, false, false],
+          "range": "5",
+          "bools": [true, false, false, false],
         },
         "ema": {
-          "range": [],
-          "bools": [false, false, false, false],
+          "range": "5",
+          "bools": [true, false, false, false],
         },
       },
     };
@@ -317,7 +498,10 @@ class _AnalysisPage extends State<AnalysisPage> {
       switch (i) {
         case "sma":
           // Safety >.0
-          if (!enableSma) {
+          // if (!enableSma) {
+          //   break;
+          // }
+          if (!indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
             break;
           }
           lts.add(ListTile(
@@ -359,8 +543,24 @@ class _AnalysisPage extends State<AnalysisPage> {
                     ToggleButtons(
                       onPressed: (index) {
                         setState(() {
-                          indicatorsSetMap[name]["sma"]["bools"][index] =
-                              !indicatorsSetMap[name]["sma"]["bools"][index];
+                          for (int i = 0;
+                              i < indicatorsSetMap[name]["sma"]["bools"].length;
+                              i++) {
+                            indicatorsSetMap[name]["sma"]["bools"][i] =
+                                i == index;
+                          }
+                          indicatorsSetMap[name]["sma"]["range"] =
+                              movingAverageRangeSelector[index]
+                                  .toString()
+                                  .substring(
+                                    6,
+                                    movingAverageRangeSelector[index]
+                                            .toString()
+                                            .length -
+                                        2,
+                                  );
+                          // indicatorsSetMap[name]["sma"]["bools"][index] =
+                          //     !indicatorsSetMap[name]["sma"]["bools"][index];
                         });
                       },
                       isSelected: indicatorsSetMap[name]["sma"]["bools"],
@@ -426,8 +626,10 @@ class _AnalysisPage extends State<AnalysisPage> {
       plotAreaBackgroundColor: Colors.white54,
       palette: palette,
       plotAreaBorderColor: Colors.grey,
+      legend: Legend(isVisible: true),
       primaryXAxis: DateTimeAxis(
         enableAutoIntervalOnZooming: true,
+        intervalType: DateTimeIntervalType.days,
       ),
       primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
@@ -437,9 +639,9 @@ class _AnalysisPage extends State<AnalysisPage> {
       tooltipBehavior: TooltipBehavior(
         enable: true,
         elevation: 5,
-        canShowMarker: false,
+        canShowMarker: true,
         activationMode: ActivationMode.singleTap,
-        shared: true,
+        shared: false,
         header: "Sensor Value",
         format: 'ณ point.x, ค่า: point.y',
         decimalPlaces: 2,
@@ -449,11 +651,18 @@ class _AnalysisPage extends State<AnalysisPage> {
         activationMode: ActivationMode.singleTap,
         enable: true,
         shouldAlwaysShow: true,
-        tooltipDisplayMode: TrackballDisplayMode.floatAllPoints,
+        tooltipDisplayMode: TrackballDisplayMode.nearestPoint,
         tooltipSettings: const InteractiveTooltip(enable: false),
         markerSettings: const TrackballMarkerSettings(
           markerVisibility: TrackballVisibilityMode.hidden,
         ),
+      ),
+      zoomPanBehavior: ZoomPanBehavior(
+        zoomMode: ZoomMode.x,
+        maximumZoomLevel: 0.2,
+        enableMouseWheelZooming: true,
+        enablePinching: true,
+        enablePanning: true,
       ),
     );
   }
