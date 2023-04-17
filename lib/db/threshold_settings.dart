@@ -65,7 +65,7 @@ class ThresholdDatabase {
       whereArgs: [id],
     );
     if (result.isEmpty) {
-      return 100000;
+      return 100000.0;
     }
     print("[DB] $result , $id");
     // String to num
