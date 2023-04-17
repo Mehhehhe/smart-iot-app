@@ -309,13 +309,15 @@ class _farmCardViewState extends State<farmCardView> {
             )
           else
             Center(
-              child: Row(
-                children: const [
-                  CircularProgressIndicator(),
-                  Text(
-                    "Loading ... ",
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircularProgressIndicator(),
+                    Text("Loading"),
+                  ],
+                ),
               ),
             ),
         ],
@@ -348,80 +350,6 @@ class _farmCardViewState extends State<farmCardView> {
             Text("Analysis"),
           ],
         ),
-        // child: InkWell(
-        //   child: Column(
-        //     crossAxisAlignment: CrossAxisAlignment.center,
-        //     mainAxisAlignment: MainAxisAlignment.center,
-        //     children: const [
-        //       Icon(Icons.analytics_outlined),
-        //       Text("Analysis"),
-        //     ],
-        //   ),
-        //   onTap: () => Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //       builder: (context) => AnalysisPage(),
-        //     ),
-        //   ),
-        // ),
-        // child: Column(
-        //   children: [
-        //     const Padding(
-        //       padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
-        //       child: Text(
-        //         "Analysis",
-        //         style: TextStyle(
-        //           fontSize: 18,
-        //           fontWeight: FontWeight.bold,
-        //         ),
-        //       ),
-        //     ),
-        //     // ElevatedButton(
-        //     //   child: Text(""),
-        //     //   onPressed: () => showModalBottomSheet(
-        //     //     context: context,
-        //     //     builder: (context) {
-        //     //       LocalHistoryDatabase instance = LocalHistoryDatabase.instance;
-
-        //     //       return FutureBuilder(
-        //     //         future: instance.getAllHistory(),
-        //     //         builder: (context, AsyncSnapshot<dynamic> snapshot) {
-        //     //           if (snapshot.hasData) {
-        //     //             List<LocalHist> hist = snapshot.data;
-        //     //             var rtHist = RustNativeCall().generateVec(
-        //     //               hist: hist,
-        //     //             );
-        //     //             var smaList = RustNativeCall().calculateSMA(hist: rtHist);
-
-        //     //             return FutureBuilder(
-        //     //               builder: (context, AsyncSnapshot<dynamic> snapshot) {
-        //     //                 if (snapshot.hasData) {
-        //     //                   return ListView.builder(
-        //     //                     shrinkWrap: true,
-        //     //                     itemCount: snapshot.data.length,
-        //     //                     itemBuilder: (context, index) {
-        //     //                       print(
-        //     //                           "[RsTypeCheck] ${snapshot.data[index].runtimeType}");
-
-        //     //                       return Text(snapshot.data![index].toString());
-        //     //                     },
-        //     //                   );
-        //     //                 }
-
-        //     //                 return Text("Calculating .. ");
-        //     //               },
-        //     //               future: smaList,
-        //     //             );
-        //     //           }
-
-        //     //           return Text("Generating ... ");
-        //     //         },
-        //     //       );
-        //     //     },
-        //     //   ),
-        //     // ),
-        //   ],
-        // ),
       ),
     );
   }
