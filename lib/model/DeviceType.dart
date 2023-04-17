@@ -61,6 +61,7 @@ class DeviceWidgetGenerator {
     required String deviceSerial,
     required dynamic currentValue,
     BuildContext? context,
+    bool state = true,
   }) {
     // fetch props
     print(
@@ -74,21 +75,27 @@ class DeviceWidgetGenerator {
     }
     bool isMultiValuesDevice = props['value_type'] == Map;
     // convert current value if a single value
+    if (state) {
+      if (isMultiValuesDevice) {
+        return _multiValueInCard(
+          context: context!,
+          serial: deviceSerial,
+          values: currentValue,
+          props: props,
+        );
+      }
 
-    if (isMultiValuesDevice) {
-      return _multiValueInCard(
+      return _singleValueInCard(
         context: context!,
         serial: deviceSerial,
-        values: currentValue,
+        value: currentValue,
         props: props,
       );
     }
 
-    return _singleValueInCard(
-      context: context!,
-      serial: deviceSerial,
-      value: currentValue,
-      props: props,
+    return Container(
+      height: MediaQuery.of(context!).size.height,
+      child: Text("Device is turned off"),
     );
   }
 
