@@ -249,6 +249,7 @@ class _numberCardState extends State<numberCard> {
               deviceSerial: name,
               currentValue: currentValue,
               context: context,
+              state: currMap[name]!["State"],
             ),
           ),
         ),
@@ -256,15 +257,51 @@ class _numberCardState extends State<numberCard> {
     );
   }
 
+// ignore: long-method
   Widget _MainpageCardModal(
       {required Map<String, dynamic> currMap, required String name}) {
     return Container(
       height: 200,
       color: Colors.greenAccent,
-      child: ListView(children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-          child: Column(
+      child: ListView(shrinkWrap: true, children: [
+        // Padding(
+        //   padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+        //   child: Column(
+        //     children: [
+        //       const Text("Toggle state"),
+        //       Switch(
+        //         value: currMap[name]!["State"],
+        //         onChanged: (value) {
+        //           widget.existedCli.publishToSetDeviceState(
+        //             widget.whichFarm,
+        //             name,
+        //             value,
+        //           );
+        //           showDialog(
+        //             context: context,
+        //             builder: (context) => AlertDialog(
+        //               title: Text("Device Status"),
+        //               content: Text(
+        //                 "This device will not received value from $name in the next time. You may open this again to reactivate.",
+        //               ),
+        //               actions: [
+        //                 TextButton(
+        //                   onPressed: () => Navigator.pop(context),
+        //                   child: const Text("OK"),
+        //                 ),
+        //               ],
+        //             ),
+        //           );
+        //           Navigator.pop(context);
+        //         },
+        //       ),
+        //     ],
+        //   ),
+        // ),
+        ListTile(
+          tileColor: Colors.white,
+          title: Text("Toggle device on/off"),
+          subtitle: Row(
             children: [
               const Text("Toggle state"),
               Switch(
@@ -275,6 +312,22 @@ class _numberCardState extends State<numberCard> {
                     name,
                     value,
                   );
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text("Device Status"),
+                      content: Text(
+                        "This device will not received value from $name in the next time. You may open this again to reactivate.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    ),
+                  );
+                  Navigator.pop(context);
                 },
               ),
             ],
