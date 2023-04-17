@@ -191,21 +191,21 @@ class DeviceDetail extends StatelessWidget {
                               ),
                             ],
                           ),
-                          DropdownButton(
-                            items: graphTypes
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ))
-                                .toList(),
-                            onChanged: (value) => print(value),
-                          ),
+                          // DropdownButton(
+                          //   items: graphTypes
+                          //       .map((e) => DropdownMenuItem(
+                          //             value: e,
+                          //             child: Text(e),
+                          //           ))
+                          //       .toList(),
+                          //   onChanged: (value) => print(value),
+                          // ),
                           if (detail["Type"] == "MOISTURE" && liveData != null)
                             ExpansionTile(
                               title: Text("Moisture Graph"),
                               children: [
                                 Container(
-                                  height: 800,
+                                  height: 400,
                                   width: MediaQuery.of(context).size.width,
                                   child: BlocProvider(
                                     create: (_) =>
@@ -226,7 +226,7 @@ class DeviceDetail extends StatelessWidget {
                               initiallyExpanded: false,
                               children: [
                                 Container(
-                                  height: 800,
+                                  height: 400,
                                   width: MediaQuery.of(context).size.width,
                                   child: BlocProvider(
                                     create: (_) => LiveDataCubit(
