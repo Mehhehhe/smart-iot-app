@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 // import 'dart:html';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_iot_app/db/local_history.dart';
+import 'package:smart_iot_app/db/threshold_settings.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_data_cubit.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/highlow_renderer.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 // import 'package:smart_iot_app/services/MQTTClientHandler.dart';
@@ -39,6 +42,7 @@ class LiveChart extends StatefulWidget {
 
 class _LiveChartState extends State<LiveChart> {
   ChartSeriesController? _chartSeriesController;
+  GlobalKey<SfCartesianChartState> _chartKey = GlobalKey();
   // List<_ChartData> chartData = [_ChartData(DateTime.now(), 0.0)];
   late String chartType;
   late List<Map> dev;
@@ -55,6 +59,7 @@ class _LiveChartState extends State<LiveChart> {
   DateTime _end = DateTime.now();
   // Base data
   late LocalHistoryDatabase instance;
+  late dynamic thresholdValue;
 
   // Graph range config
   //  _days3 = true;
@@ -69,10 +74,10 @@ class _LiveChartState extends State<LiveChart> {
     false,
   ];
   static const List<Widget> intervalTexts = <Widget>[
-    Text("Today"),
+    Text("1 Hour"),
     Text("3 days"),
     Text("1 week"),
-    Text("1 month"),
+    Text("3 month"),
   ];
 
   @override
@@ -116,11 +121,13 @@ class _LiveChartState extends State<LiveChart> {
               dynamic ls = l["series"];
               noCallingGraph = _buildLineChart(
                 list,
+                l["end"],
                 ls: ls,
               );
 
               return _buildLineChart(
                 list,
+                l["end"],
                 ls: ls,
               );
             }
@@ -163,8 +170,8 @@ class _LiveChartState extends State<LiveChart> {
               .toString()
               .substring(6, intervalTexts[index].toString().length - 2)) {
             // today
-            case "Today":
-              _start = _end.subtract(const Duration(days: 1));
+            case "1 Hour":
+              _start = _end.subtract(const Duration(hours: 1));
               break;
             // 3 days
             case "3 days":
@@ -175,8 +182,8 @@ class _LiveChartState extends State<LiveChart> {
               _start = _end.subtract(const Duration(days: 7));
               break;
             // 1 month
-            case "1 month":
-              _start = _end.subtract(const Duration(days: 30));
+            case "3 month":
+              _start = _end.subtract(const Duration(days: 90));
               break;
             default:
               break;
@@ -197,24 +204,62 @@ class _LiveChartState extends State<LiveChart> {
     );
   }
 
+  // ignore: long-method
   SfCartesianChart _buildLineChart(
-    List<ChartData> data, {
+    List<ChartData> data,
+    DateTime? endDateForDEbug, {
     required dynamic ls,
   }) {
     return SfCartesianChart(
+      key: _chartKey,
       plotAreaBorderWidth: 0,
       enableAxisAnimation: true,
       backgroundColor: Colors.white,
       plotAreaBackgroundColor: Colors.white54,
       palette: palette,
       plotAreaBorderColor: Colors.grey,
+      annotations: [
+        CartesianChartAnnotation(
+          widget: Container(
+            height: 1,
+            width: MediaQuery.of(context).size.width * 0.87,
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.5),
+            ),
+          ),
+          horizontalAlignment: ChartAlignment.near,
+          verticalAlignment: ChartAlignment.near,
+          coordinateUnit: CoordinateUnit.point,
+          region: AnnotationRegion.plotArea,
+          // xAxisName: "Threshold",
+          x: _start,
+          y: thresholdValue,
+        ),
+        CartesianChartAnnotation(
+          widget: const Text(
+            "Threshold",
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          horizontalAlignment: ChartAlignment.near,
+          verticalAlignment: ChartAlignment.near,
+          coordinateUnit: CoordinateUnit.point,
+          region: AnnotationRegion.plotArea,
+          // xAxisName: "Threshold",
+          x: _start,
+          y: thresholdValue + 3,
+        ),
+      ],
       primaryXAxis: DateTimeAxis(
         enableAutoIntervalOnZooming: true,
         // intervalType: DateTimeIntervalType.hours,
         // autoScrollingDelta: 3,
         // autoScrollingDeltaType: DateTimeIntervalType.hours,
         minimum: _start,
-        visibleMaximum: _end,
+        maximum: _end,
+        // visibleMaximum: endDateForDEbug!,
       ),
       primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
@@ -252,6 +297,7 @@ class _LiveChartState extends State<LiveChart> {
   }
 
   Future<Map<String, dynamic>> _lineSeries(List<ChartData> data) async {
+    thresholdValue = await getThreshold();
     List<LineSeries<ChartData, DateTime>> temp =
         <LineSeries<ChartData, DateTime>>[];
     List<String> places = [];
@@ -292,11 +338,12 @@ class _LiveChartState extends State<LiveChart> {
     }
     // print("[AddAll map] $temp");
     // print("[TestEx] ${temp[0].dataSource[0]}");
+    print("[End Date] ${newDataList.last.date}");
 
     return {
       "series": temp,
-      "start": newDataList.first.date.toLocal(),
-      "end": newDataList.last.date.toLocal(),
+      "end": newDataList[1].date.toLocal(),
+      "start": newDataList.last.date.toLocal(),
     };
   }
 
@@ -307,6 +354,11 @@ class _LiveChartState extends State<LiveChart> {
     // print("[create] $name");
 
     return LineSeries(
+      onCreateRenderer: (series) => CustomLineSeriesRenderer(
+        series as LineSeries<ChartData, DateTime>,
+        thresholdValue,
+      ),
+      emptyPointSettings: EmptyPointSettings(mode: EmptyPointMode.zero),
       onRendererCreated: (controller) => _chartSeriesController = controller,
       name: name,
       dataSource: tempArr,
@@ -372,6 +424,16 @@ class _LiveChartState extends State<LiveChart> {
 
     return temp;
   }
+
+  Future<dynamic> getThreshold() async {
+    ThresholdDatabase thd = ThresholdDatabase.instance;
+    // "${sha1.convert(utf8.encode(widget.detail["SerialNumber"])).toString()}"
+
+    return thd.getThresh(
+      sha1.convert(utf8.encode(widget.detail["SerialNumber"])).toString(),
+    );
+  }
+
   // _lineSeriesNPK(List<ChartData> data) {
   //   List<LineSeries<ChartData, DateTime>> temp =
   //       <LineSeries<ChartData, DateTime>>[];
