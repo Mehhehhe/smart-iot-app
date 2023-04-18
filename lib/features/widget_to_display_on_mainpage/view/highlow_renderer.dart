@@ -11,29 +11,29 @@ List<double> _xPointValues = <double>[];
 List<double> _yPointValues = <double>[];
 
 class CustomLineSeriesRenderer extends LineSeriesRenderer {
-  CustomLineSeriesRenderer(this.series, this.thresh);
+  CustomLineSeriesRenderer(this.series);
 
   final LineSeries<dynamic, dynamic> series;
-  final double thresh;
+  // final double thresh;
   // static Random randomNumber = Random();
 
   @override
   LineSegment createSegment() {
-    return _LineCustomPainter(thresh, series);
+    return _LineCustomPainter(series);
   }
 }
 
 class _LineCustomPainter extends LineSegment {
-  _LineCustomPainter(double value, this.series) {
+  _LineCustomPainter(this.series) {
     //ignore: prefer_initializing_formals
-    index = value;
+    // index = value;
     _xValues = <num>[];
     _yValues = <num>[];
   }
 
   final LineSeries<dynamic, dynamic> series;
   late double maximum, minimum;
-  late double index;
+  // late double index;
   List<Color> colors = <Color>[
     Colors.blue,
     Colors.yellow,
