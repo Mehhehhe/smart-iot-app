@@ -49,7 +49,21 @@ class _historyLog extends State<historyLog> {
               builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
                 // read local
                 if (snapshot.hasData) {
-                  List<LocalHist> dataArray = snapshot.data;
+                  List<LocalHist> fetchedDataArray = snapshot.data;
+                  // query only active selected farm
+                  List<LocalHist> dataArray = [];
+                  for (var f in fetchedDataArray) {
+                    if (f.farm == widget.farmName) {
+                      dataArray.add(f);
+                    }
+                  }
+
+                  if (dataArray.isEmpty) {
+                    return const Center(
+                      child: Text("No history of this device"),
+                    );
+                  }
+
                   Map<DateTime, List<LocalHist>> groupedData = groupBy(
                     dataArray,
                     (LocalHist p0) {
@@ -62,13 +76,13 @@ class _historyLog extends State<historyLog> {
                   );
 
                   List<ExpansionTile> dayTile = [];
+                  // print("Group of farm ${widget.farmName}");
                   groupedData.forEach((key, value) {
                     List<ListTile> subTile = [];
                     // is sorting enabled?
                     List<LocalHist> val = value.takeWhile((value) {
                       String tempName = "${key.day}/${key.month}/${key.year}";
-                      if (exposedFilterMap.containsKey(tempName) &&
-                          value.farm == widget.farmName) {
+                      if (exposedFilterMap.containsKey(tempName)) {
                         if (exposedFilterMap[tempName]["filter"] == "Info") {
                           return !(value.comment.contains("Warning") ||
                               value.comment.contains("Error"));
