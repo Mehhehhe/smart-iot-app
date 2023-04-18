@@ -59,10 +59,13 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
     _handlePassCompleteData();
   }
 
-  void chooseIndex(int index, List farms) =>
-      add(_OnChoosingIndex(index: index));
+  void chooseIndex(int index) {
+    add(_OnChoosingIndex(index: index));
+  }
 
   int currentIndex() => state.farmIndex;
+
+  List userFarmList() => state.farms;
 
   _getOwnedFarmsList() async {
     var res = await Amplify.Auth.getCurrentUser();
@@ -88,13 +91,9 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
   }
 
   _handleChoosingIndex() {
-    on<_OnChoosingIndex>((event, emit) => emit(FarmCardReState.loaded(
-          event.index,
-          state.farms,
-          state.devices,
-          state.data,
-          state.pt,
-        )));
+    on<_OnChoosingIndex>((event, emit) {
+      _devicesToList(state.farms[event.index]);
+    });
   }
 
   _handleFetchingFarm() {
