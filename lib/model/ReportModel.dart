@@ -17,8 +17,14 @@ class ReportCard {
   Widget generatedChart;
   List<Map> dataResponse;
 
-  ReportCard(this.farmName, this.devicesWithType, this.generatedChart,
-      this.location, this.whoGenerated, this.dataResponse);
+  ReportCard(
+    this.farmName,
+    this.devicesWithType,
+    this.generatedChart,
+    this.location,
+    this.whoGenerated,
+    this.dataResponse,
+  );
 
   _mapDevicesToTableRow() {
     List<pdf.TableRow> tb = [];
@@ -27,12 +33,12 @@ class ReportCard {
       var temp = <pdf.Widget>[];
       temp.add(pdf.Column(children: [
         pdf.Padding(
-            padding: pdf.EdgeInsets.all(5.0),
+            padding: const pdf.EdgeInsets.all(5.0),
             child: pdf.Text(element["Name"].toString()))
       ]));
       temp.add(pdf.Column(children: [
         pdf.Padding(
-            padding: pdf.EdgeInsets.all(5.0),
+            padding: const pdf.EdgeInsets.all(5.0),
             child: pdf.Text(element["Type"].toString()))
       ]));
       tb.add(pdf.TableRow(
@@ -45,123 +51,118 @@ class ReportCard {
     return tb;
   }
 
+  // ignore: long-method
   FutureOr<Uint8List> make() async {
     final pf = pdf.Document();
     final deviceRow = _mapDevicesToTableRow();
     pf.addPage(
       pdf.Page(
-          build: (context) => pdf.Column(children: [
-                // Top section
-                pdf.Row(
-                    mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pdf.Text("Report of $farmName",
-                          style: const pdf.TextStyle(fontSize: 30)),
-                      pdf.Column(
-                          mainAxisAlignment: pdf.MainAxisAlignment.end,
-                          children: [
-                            pdf.Text("${_generatedTime.toString()}"),
-                            pdf.Text("By $whoGenerated")
-                          ])
-                    ]),
-                pdf.Divider(),
-                pdf.Row(
-                    mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pdf.Column(children: [
-                        pdf.Padding(
-                            child: pdf.Text("Devices Table"),
-                            padding: pdf.EdgeInsets.all(5.0)),
-                        pdf.Divider(),
-                        pdf.Table(children: deviceRow)
-                      ]),
-                      pdf.Column(children: [
-                        pdf.Text("Location",
-                            style:
-                                pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
-                        pdf.Text(farmName),
-                      ])
-                    ]),
-                pdf.Divider(),
+        build: (context) => pdf.Column(
+          children: [
+            // Top section
+            pdf.Row(
+              mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
+              children: [
+                pdf.Text("Report of $farmName",
+                    style: const pdf.TextStyle(fontSize: 30)),
+                pdf.Column(
+                  mainAxisAlignment: pdf.MainAxisAlignment.end,
+                  children: [
+                    pdf.Text("${_generatedTime.toString()}"),
+                    pdf.Text("By $whoGenerated"),
+                  ],
+                ),
+              ],
+            ),
+            pdf.Divider(),
+            pdf.Row(
+              mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
+              children: [
                 pdf.Column(children: [
-                  // pdf.Row(
-                  //     mainAxisAlignment: pdf.MainAxisAlignment.spaceEvenly,
-                  //     children: [
-                  //       pdf.Column(children: [
-                  //         pdf.Row(
-                  //             mainAxisAlignment:
-                  //                 pdf.MainAxisAlignment.spaceEvenly,
-                  //             children: [
-                  //               pdf.Text("Value",
-                  //                   style: pdf.TextStyle(fontSize: 16)),
-                  //               pdf.Text("Timestamp",
-                  //                   style: pdf.TextStyle(fontSize: 16)),
-                  //               pdf.Text("State",
-                  //                   style: pdf.TextStyle(fontSize: 16)),
-                  //             ])
-                  //       ]),
-                  //       pdf.Text("Device", style: pdf.TextStyle(fontSize: 16))
-                  //     ]),
-                  pdf.ListView.builder(
-                      itemBuilder: (context, index) {
-                        var data = dataResponse.elementAt(index)["Data"];
-                        // print(
-                        //     "${json.decode(data)}, ${json.decode(data).runtimeType}");
-                        var dataTrimmed = json.decode(data.toString());
-                        // List<Map> dt = [];
-                        // for (var strMap in dataTrimmed) {
-                        //   dt.add(json.decode(strMap));
-                        // }
-                        var source =
-                            dataResponse.elementAt(index)["FromDevice"];
-                        print("Build pdf data: $data, ${data.runtimeType}");
-                        return pdf.Column(children: [
-                          pdf.Row(
-                              mainAxisAlignment:
-                                  pdf.MainAxisAlignment.spaceBetween,
-                              children: [
-                                pdf.ListView.builder(
-                                    itemBuilder: (context, index2) {
-                                      return pdf.Row(
-                                          mainAxisAlignment: pdf
-                                              .MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            pdf.Padding(
-                                              padding: pdf.EdgeInsets.fromLTRB(
-                                                  5, 5, 70, 0),
-                                              child: pdf.Text(DateTime
-                                                      .fromMillisecondsSinceEpoch(
-                                                          dataTrimmed[index2]
-                                                              ["TimeStamp"])
-                                                  .toLocal()
-                                                  .toString()),
-                                            ),
-                                            pdf.Padding(
-                                              padding: pdf.EdgeInsets.fromLTRB(
-                                                  5, 5, 70, 0),
-                                              child: pdf.Text(
-                                                  dataTrimmed[index2]["Value"]
-                                                      .toString()),
-                                            ),
-                                            pdf.Padding(
-                                              padding: pdf.EdgeInsets.fromLTRB(
-                                                  5, 5, 70, 0),
-                                              child: pdf.Text(
-                                                  dataTrimmed[index2]["State"]
-                                                      .toString()),
-                                            ),
-                                          ]);
-                                    },
-                                    itemCount: dataTrimmed.length),
-                                pdf.Text(source)
-                              ]),
-                          pdf.Divider()
-                        ]);
-                      },
-                      itemCount: dataResponse.length)
-                ])
-              ])),
+                  pdf.Padding(
+                    child: pdf.Text("Devices Table"),
+                    padding: const pdf.EdgeInsets.all(5.0),
+                  ),
+                  pdf.Divider(),
+                  pdf.Table(children: deviceRow),
+                ]),
+                pdf.Column(
+                  children: [
+                    pdf.Text("Location",
+                        style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                    pdf.Text(farmName),
+                  ],
+                ),
+              ],
+            ),
+            pdf.Divider(),
+            pdf.Column(
+              children: [
+                pdf.ListView.builder(
+                  itemBuilder: (context, index) {
+                    var data = dataResponse.elementAt(index)["Data"];
+                    // print(
+                    //     "${json.decode(data)}, ${json.decode(data).runtimeType}");
+                    var dataTrimmed = json.decode(data.toString());
+                    // List<Map> dt = [];
+                    // for (var strMap in dataTrimmed) {
+                    //   dt.add(json.decode(strMap));
+                    // }
+                    var source = dataResponse.elementAt(index)["FromDevice"];
+                    print("Build pdf data: $data, ${data.runtimeType}");
+
+                    return pdf.Column(children: [
+                      pdf.Row(
+                        mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pdf.ListView.builder(
+                            itemBuilder: (context, index2) {
+                              return pdf.Row(
+                                mainAxisAlignment:
+                                    pdf.MainAxisAlignment.spaceBetween,
+                                children: [
+                                  pdf.Padding(
+                                    padding: const pdf.EdgeInsets.fromLTRB(
+                                        5, 5, 70, 0),
+                                    child: pdf.Text(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                      dataTrimmed[index2]["TimeStamp"],
+                                    ).toLocal().toString()),
+                                  ),
+                                  pdf.Padding(
+                                    padding: const pdf.EdgeInsets.fromLTRB(
+                                        5, 5, 70, 0),
+                                    child: pdf.Text(
+                                      dataTrimmed[index2]["Value"].toString(),
+                                    ),
+                                  ),
+                                  pdf.Padding(
+                                    padding: const pdf.EdgeInsets.fromLTRB(
+                                        5, 5, 70, 0),
+                                    child: pdf.Text(
+                                      dataTrimmed[index2]["State"].toString(),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                            itemCount: dataTrimmed.length,
+                          ),
+                          pdf.Text(source),
+                        ],
+                      ),
+                      pdf.Divider(),
+                    ]);
+                  },
+                  itemCount: dataResponse.length,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
+
     return pf.save();
   }
 }
