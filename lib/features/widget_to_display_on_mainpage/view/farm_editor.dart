@@ -18,6 +18,7 @@ decodeAndRemovePadding(String encodedFarmName) {
       }
     }
   }
+
   return dec.replaceRange(0, countZero, '');
 }
 
@@ -31,32 +32,33 @@ class FarmEditor extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey,
       body: SafeArea(
-          child: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        color: Colors.white,
-        padding: const EdgeInsets.all(20),
-        child: Column(children: [
-          Container(
-            child: const Text(
-              "Farm Selector",
-              style: TextStyle(fontSize: 20),
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.white,
+          padding: const EdgeInsets.all(20),
+          child: Column(children: [
+            Container(
+              child: const Text(
+                "Farm Selector",
+                style: TextStyle(fontSize: 20),
+              ),
             ),
-          ),
-          Divider(),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: farm.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(decodeAndRemovePadding(farm[index])),
-                selected: true,
-                onTap: () => Navigator.pop(context, index),
-              );
-            },
-          ),
-        ]),
-      )),
+            const Divider(),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: farm.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(farm[index]),
+                  selected: true,
+                  onTap: () => Navigator.pop(context, index),
+                );
+              },
+            ),
+          ]),
+        ),
+      ),
     );
   }
 }
