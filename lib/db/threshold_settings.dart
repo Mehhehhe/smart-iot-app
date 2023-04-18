@@ -82,7 +82,7 @@ class ThresholdDatabase {
       return multiVal;
     }
 
-    return result[0]["_threshVal"] as num;
+    return num.parse(result[0]["_threshVal"].toString());
   }
 
   Future<Map> edit(Map<String, dynamic> map) async {
