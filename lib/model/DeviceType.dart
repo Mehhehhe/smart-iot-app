@@ -64,8 +64,8 @@ class DeviceWidgetGenerator {
     bool state = true,
   }) {
     // fetch props
-    print(
-        "[Translator: $deviceSerial] ${_translate(deviceName: deviceSerial)}");
+    // print(
+    //     "[Translator: $deviceSerial] ${_translate(deviceName: deviceSerial)}");
     Map props =
         DeviceType().getProps("${_translate(deviceName: deviceSerial)}")!;
     if (props['value_type'] == null) {

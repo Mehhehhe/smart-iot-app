@@ -1,7 +1,6 @@
+// ignore: file_names
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
@@ -100,7 +99,7 @@ class _AnalysisPage extends State<AnalysisPage> {
                 1]
             .dateUnixAsId,
       ));
-      print("[SMA] processing on start date $sma");
+      // print("[SMA] processing on start date $sma");
       int count = 0;
       // int pivot = int.parse(base[smaDiff].dateUnixAsId);
       List smaField0List = [];
@@ -114,6 +113,7 @@ class _AnalysisPage extends State<AnalysisPage> {
       //     },
       //   ],
       // ).toList();
+      // print(sma[1].runtimeType);
       smaField0List = deviceName.contains("NPK")
           ? sma[1].map(
               single: (value) => value.field0,
@@ -136,6 +136,26 @@ class _AnalysisPage extends State<AnalysisPage> {
               ],
             );
       // print(smaField0List);
+      // if (kDebugMode) {
+      //   // ignore: use_build_context_synchronously
+      //   await showDialog(
+      //     context: context,
+      //     builder: (context) => AlertDialog(
+      //       title: Text("Mapping"),
+      //       content: TextField(
+      //         controller: TextEditingController(text: smaField0List.toString()),
+      //         readOnly: true,
+      //         onTap: () {
+      //           Clipboard.setData(
+      //             ClipboardData(text: smaField0List.toString()),
+      //           );
+      //           Navigator.pop(context);
+      //         },
+      //       ),
+      //     ),
+      //   );
+      // }
+
       base.sort(
         (a, b) => DateTime.fromMillisecondsSinceEpoch(int.parse(a.dateUnixAsId))
             .compareTo(
@@ -144,11 +164,12 @@ class _AnalysisPage extends State<AnalysisPage> {
           ),
         ),
       );
+      print("Sorting completed! ${smaField0List.length}");
       int smaLen = deviceName.contains("NPK")
           ? smaField0List[0]["N"].length
           : smaField0List.length;
-      print(
-          "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
+      // print(
+      //     "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
       for (var h in base) {
         int curr = int.parse(h.dateUnixAsId);
         DateTime currDate = DateTime.fromMillisecondsSinceEpoch(curr);
@@ -176,7 +197,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           count++;
         }
       }
-      print("Done! smaLines = $smaLines");
+      // print("Done! smaLines = $smaLines");
     }
 
     // replace this with device type checker.
@@ -225,7 +246,7 @@ class _AnalysisPage extends State<AnalysisPage> {
         name: deviceName,
       ));
     }
-    print("Cleaned & get ${temp.length} , deleted $countNull");
+    // print("Cleaned & get ${temp.length} , deleted $countNull");
     // print("Before return: check indicator lines $smaLines");
 
     return {
@@ -517,7 +538,7 @@ class _AnalysisPage extends State<AnalysisPage> {
                       onPressed: () {
                         setState(() {
                           indicatorsSetMap[name]["indicators"].remove("sma");
-                          enableSma = false;
+                          // enableSma = false;
                         });
                         Navigator.pop(context);
                       },
@@ -600,7 +621,7 @@ class _AnalysisPage extends State<AnalysisPage> {
                       setState(() {
                         indicatorsSetMap[selectDevice]["indicators"]
                             .add(availableIndicators[index]);
-                        enableSma = true;
+                        // enableSma = true;
                       });
                     },
                     child: Row(
@@ -616,6 +637,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     );
   }
 
+  // ignore: long-method
   SfCartesianChart _buildLineChart({
     required dynamic ls,
   }) {
