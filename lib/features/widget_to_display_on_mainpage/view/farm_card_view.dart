@@ -10,9 +10,7 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/cubit/live_
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/history_log.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/numbers_card.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/search_bar.dart';
-import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
-import 'package:smart_iot_app/modules/native_call.dart';
 import 'package:smart_iot_app/pages/AnalysisPage.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
@@ -128,7 +126,6 @@ class _farmCardViewState extends State<farmCardView> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return SingleChildScrollView(
       child: BlocProvider(
         create: (_) =>
@@ -177,10 +174,11 @@ class _farmCardViewState extends State<farmCardView> {
 
   Widget normalCard([List<ResultItem>? items]) {
     return ListView.builder(
-      itemCount: 1,
+      // testing fetch new farm
+      itemCount: widget.overrideFarmIndex != null
+          ? 1
+          : context.read<FarmCardReBloc>().userFarmList().length,
       shrinkWrap: true,
-      // ignore: body_might_complete_normally_nullable
-      // ignore: no-empty-block
       itemBuilder: (context, index) {
         return BlocBuilder<FarmCardReBloc, FarmCardReState>(
           buildWhen: (previous, current) =>
@@ -188,12 +186,12 @@ class _farmCardViewState extends State<farmCardView> {
           builder: (context, state) {
             // Data is init
             if (state.farms.isNotEmpty) {
-              return farmAsCard(context, state.farms, items);
+              return farmAsCard(context, state.farms, index, items);
             }
 
             return const Card(
               elevation: 5.0,
-              margin: EdgeInsets.all(20),
+              margin: EdgeInsets.fromLTRB(20, 10, 20, 0),
             );
           },
         );
@@ -201,13 +199,15 @@ class _farmCardViewState extends State<farmCardView> {
     );
   }
 
+  // ignore: long-method
   Widget farmAsCard(
     BuildContext context,
-    dynamic data, [
+    dynamic data,
+    int farmIndex, [
     List<ResultItem>? searched,
   ]) {
     return Card(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       elevation: 5.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -222,7 +222,25 @@ class _farmCardViewState extends State<farmCardView> {
               }
               // print("[Response] $dataResponse");
               if (widget.overrideFarmIndex != null && state.farms.isNotEmpty) {
-                var farmTarget = state.farms[state.farmIndex];
+                var farmTarget = state.farms[widget.overrideFarmIndex!];
+                // print("[SetBase] ${state.devices}");
+                context
+                    .read<SearchWidgetBloc>()
+                    .add(BaseListChanged(state.devices));
+                devices = state.devices;
+                tempLoc = farmTarget;
+                // print("In farm target, [devices] $devices");
+
+                return Text(
+                  farmTarget,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              } else if (widget.overrideFarmIndex == null &&
+                  state.farms.isNotEmpty) {
+                var farmTarget = state.farms[farmIndex];
                 // print("[SetBase] ${state.devices}");
                 context
                     .read<SearchWidgetBloc>()
@@ -270,13 +288,30 @@ class _farmCardViewState extends State<farmCardView> {
             BlocBuilder<FarmCardReBloc, FarmCardReState>(
               bloc: context.read<FarmCardReBloc>(),
               builder: (context, stateFarm) {
-                // print("Respond To Change: ${stateFarm.devices}");
+                print(
+                    "Respond To Change: ${stateFarm.devices} \n\ntempLoc:=>$tempLoc");
+
                 var selectedResponse = dataResponse
                     .where((element) => element["FromFarm"] == tempLoc)
                     .toList();
-                // print("Select $selectedResponse");
+                print("Select $selectedResponse");
                 // Main generator
                 // Caution: dataResponse, selectedResponse
+                if (selectedResponse.isEmpty) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Center(
+                        widthFactor: 1.8,
+                        child: Text(
+                          "No data found on this farm.",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  );
+                  ;
+                }
 
                 return BlocProvider(
                   create: (_) => LiveDataCubit(selectedResponse),
@@ -293,7 +328,7 @@ class _farmCardViewState extends State<farmCardView> {
                         );
                       }
                       print(
-                        "Check on number card data, $selectedResponse, \n$tempLoc, \n$devices",
+                        "Check on number card data, \n$tempLoc, \n$devices",
                       );
 
                       return numberCard(
@@ -330,10 +365,12 @@ class _farmCardViewState extends State<farmCardView> {
     return Container(
       margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
       // color: Colors.white,
-      height: 120,
+      height: 60,
       // alignment: Alignment.centerLeft,
       width: MediaQuery.of(context).size.width * 0.45,
       child: ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStatePropertyAll(Colors.brown)),
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -357,9 +394,11 @@ class _farmCardViewState extends State<farmCardView> {
   Widget historyWidget() {
     return Container(
       margin: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
-      height: 120,
+      height: 60,
       width: MediaQuery.of(context).size.width * 0.45,
       child: ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStatePropertyAll(Colors.lightBlue)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
