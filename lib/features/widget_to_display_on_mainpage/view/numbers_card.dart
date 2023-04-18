@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/bloc/search_widget_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:smart_iot_app/model/DeviceType.dart';
 import 'package:smart_iot_app/model/SearchResult.dart';
 import 'package:smart_iot_app/pages/DeviceDetail.dart';
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class numberCard extends StatefulWidget {
   List<Map> inputData;
@@ -35,17 +35,17 @@ class _numberCardState extends State<numberCard> {
 
   void _setLatest(List<Map> target) {
     var latestList = <Map>[];
-    print("[LatestLoop] $target");
+    // print("[LatestLoop] $target");
     for (var data_map in target) {
       var tempMap = {};
       final cardName = data_map["FromDevice"];
       final latestData = json.decode(data_map["Data"]);
       final lat = latestData[0];
-      print(
-          "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
+      // print(
+      //     "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
       tempMap = {cardName: latestData[latestData.length - 1]};
       if (!latestList.contains(tempMap)) {
-        print("[LatestList] $tempMap");
+        // print("[LatestList] $tempMap");
         // Check existing device
         for (var submap in latestList) {
           if (submap.containsKey(cardName)) {
@@ -63,7 +63,7 @@ class _numberCardState extends State<numberCard> {
       data = latestList;
     });
 
-    print("[NumbCard] $data");
+    // print("[NumbCard] $data");
   }
 
   getDetailOfDevice(String serial) {
@@ -126,7 +126,7 @@ class _numberCardState extends State<numberCard> {
       width: double.infinity,
       child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
         builder: (context, state) {
-          print("[SearchState] $state");
+          // print("[SearchState] $state");
           if (state is SearchWidgetSuccess) {
             return ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -162,6 +162,20 @@ class _numberCardState extends State<numberCard> {
       buildWhen: (previous, current) => current is SearchStateEmpty,
       builder: (context, state) {
         // print("[BuildBloc] $data");
+        if (data.isEmpty) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Center(
+                widthFactor: 1.8,
+                child: Text(
+                  "No devices found on this farm.",
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          );
+        }
         Map<String, dynamic> currMap = Map<String, dynamic>.from(data[index]);
         String name = currMap.keys.first;
         // print("[CheckBuildCard] $name");
@@ -261,50 +275,17 @@ class _numberCardState extends State<numberCard> {
   Widget _MainpageCardModal(
       {required Map<String, dynamic> currMap, required String name}) {
     return Container(
-      height: 200,
-      color: Colors.greenAccent,
+      height: 500,
+      color: Colors.white,
+      padding: const EdgeInsets.all(20.0),
       child: ListView(shrinkWrap: true, children: [
-        // Padding(
-        //   padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-        //   child: Column(
-        //     children: [
-        //       const Text("Toggle state"),
-        //       Switch(
-        //         value: currMap[name]!["State"],
-        //         onChanged: (value) {
-        //           widget.existedCli.publishToSetDeviceState(
-        //             widget.whichFarm,
-        //             name,
-        //             value,
-        //           );
-        //           showDialog(
-        //             context: context,
-        //             builder: (context) => AlertDialog(
-        //               title: Text("Device Status"),
-        //               content: Text(
-        //                 "This device will not received value from $name in the next time. You may open this again to reactivate.",
-        //               ),
-        //               actions: [
-        //                 TextButton(
-        //                   onPressed: () => Navigator.pop(context),
-        //                   child: const Text("OK"),
-        //                 ),
-        //               ],
-        //             ),
-        //           );
-        //           Navigator.pop(context);
-        //         },
-        //       ),
-        //     ],
-        //   ),
-        // ),
         ListTile(
           tileColor: Colors.white,
-          title: Text("Toggle device on/off"),
-          subtitle: Row(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Toggle state"),
-              Switch(
+              const Text("Toggle device on/off"),
+              CupertinoSwitch(
                 value: currMap[name]!["State"],
                 onChanged: (value) {
                   widget.existedCli.publishToSetDeviceState(
@@ -315,7 +296,7 @@ class _numberCardState extends State<numberCard> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text("Device Status"),
+                      title: const Text("Device Status"),
                       content: Text(
                         "This device will not received value from $name in the next time. You may open this again to reactivate.",
                       ),
