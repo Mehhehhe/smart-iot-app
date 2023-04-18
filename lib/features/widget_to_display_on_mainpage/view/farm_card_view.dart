@@ -371,14 +371,23 @@ class _farmCardViewState extends State<farmCardView> {
       child: ElevatedButton(
         style: ButtonStyle(
             backgroundColor: MaterialStatePropertyAll(Colors.brown)),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AnalysisPage(
-              devices: devices,
+        onPressed: () {
+          List deviceCheck = [];
+
+          for (var d in devices) {
+            if (d["Location"] == tempLoc) {
+              deviceCheck.add(d);
+            }
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AnalysisPage(
+                devices: deviceCheck,
+              ),
             ),
-          ),
-        ),
+          );
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
