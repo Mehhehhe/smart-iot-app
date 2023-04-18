@@ -121,13 +121,11 @@ class _LiveChartState extends State<LiveChart> {
               dynamic ls = l["series"];
               noCallingGraph = _buildLineChart(
                 list,
-                l["end"],
                 ls: ls,
               );
 
               return _buildLineChart(
                 list,
-                l["end"],
                 ls: ls,
               );
             }
@@ -206,8 +204,7 @@ class _LiveChartState extends State<LiveChart> {
 
   // ignore: long-method
   SfCartesianChart _buildLineChart(
-    List<ChartData> data,
-    DateTime? endDateForDEbug, {
+    List<ChartData> data, {
     required dynamic ls,
   }) {
     return SfCartesianChart(
@@ -218,40 +215,7 @@ class _LiveChartState extends State<LiveChart> {
       plotAreaBackgroundColor: Colors.white54,
       palette: palette,
       plotAreaBorderColor: Colors.grey,
-      annotations: [
-        CartesianChartAnnotation(
-          widget: Container(
-            height: 1,
-            width: MediaQuery.of(context).size.width * 0.87,
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.5),
-            ),
-          ),
-          horizontalAlignment: ChartAlignment.near,
-          verticalAlignment: ChartAlignment.near,
-          coordinateUnit: CoordinateUnit.point,
-          region: AnnotationRegion.plotArea,
-          // xAxisName: "Threshold",
-          x: _start,
-          y: thresholdValue,
-        ),
-        CartesianChartAnnotation(
-          widget: const Text(
-            "Threshold",
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          horizontalAlignment: ChartAlignment.near,
-          verticalAlignment: ChartAlignment.near,
-          coordinateUnit: CoordinateUnit.point,
-          region: AnnotationRegion.plotArea,
-          // xAxisName: "Threshold",
-          x: _start,
-          y: thresholdValue + 3,
-        ),
-      ],
+      annotations: [...getThreshLine()],
       primaryXAxis: DateTimeAxis(
         enableAutoIntervalOnZooming: true,
         // intervalType: DateTimeIntervalType.hours,
@@ -356,7 +320,6 @@ class _LiveChartState extends State<LiveChart> {
     return LineSeries(
       onCreateRenderer: (series) => CustomLineSeriesRenderer(
         series as LineSeries<ChartData, DateTime>,
-        thresholdValue,
       ),
       emptyPointSettings: EmptyPointSettings(mode: EmptyPointMode.zero),
       onRendererCreated: (controller) => _chartSeriesController = controller,
@@ -432,6 +395,57 @@ class _LiveChartState extends State<LiveChart> {
     return thd.getThresh(
       sha1.convert(utf8.encode(widget.detail["SerialNumber"])).toString(),
     );
+  }
+
+  getThreshLine() {
+    // Check threshold type Map | double
+    bool isMulti = thresholdValue.runtimeType.toString() == "_Map<String, num>";
+    List threshLine(String? key) {
+      return [
+        CartesianChartAnnotation(
+          widget: Container(
+            height: 1,
+            width: MediaQuery.of(context).size.width * 0.85,
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.5),
+            ),
+          ),
+          horizontalAlignment: ChartAlignment.near,
+          verticalAlignment: ChartAlignment.near,
+          coordinateUnit: CoordinateUnit.point,
+          region: AnnotationRegion.plotArea,
+          // xAxisName: "Threshold",
+          x: _start,
+          y: key != null ? thresholdValue[key] : thresholdValue,
+        ),
+        CartesianChartAnnotation(
+          widget: const Text(
+            "Threshold",
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          horizontalAlignment: ChartAlignment.near,
+          verticalAlignment: ChartAlignment.near,
+          coordinateUnit: CoordinateUnit.point,
+          region: AnnotationRegion.plotArea,
+          // xAxisName: "Threshold",
+          x: _start,
+          y: key != null ? thresholdValue[key] + 15 : thresholdValue + 3,
+        ),
+      ];
+    }
+
+    if (isMulti) {
+      return [
+        ...threshLine("N"),
+        ...threshLine("P"),
+        ...threshLine("K"),
+      ];
+    }
+
+    return threshLine(null);
   }
 
   // _lineSeriesNPK(List<ChartData> data) {
