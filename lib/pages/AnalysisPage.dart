@@ -73,7 +73,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     List<LocalHist> base = cleanNull(h: baseUncleaned);
     // For each indicators enabled by user
     List<MaReturnTypes>? sma;
-    List? ema;
+    List<MaReturnTypes>? ema;
     DateTime? smaStart;
     DateTime? emaStart;
     int smaDiff = 0;
@@ -82,7 +82,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     List<ChartData> emaLines = [];
 
     if (indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
-      print("Activate sma for $deviceName");
+      // print("Activate sma for $deviceName");
       sma = await RustNativeCall().calculateSMA(
         hist: RustNativeCall().generateVec(
           hist: base,
@@ -90,7 +90,7 @@ class _AnalysisPage extends State<AnalysisPage> {
         ),
         window_size: int.parse(indicatorsSetMap[selectDevice]["sma"]["range"]),
       );
-      print("Base length: ${base.length}");
+      // print("Base length: ${base.length}");
       smaDiff = base.length - sma.length + 1;
 
       smaStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
@@ -190,6 +190,125 @@ class _AnalysisPage extends State<AnalysisPage> {
                       "K": smaField0List[0]["K"][count],
                     }
                   : smaField0List[count],
+            ],
+            "",
+          ));
+          // print("Counting $count");
+          count++;
+        }
+      }
+      // print("Done! smaLines = $smaLines");
+    }
+
+    if (indicatorsSetMap[selectDevice]["indicators"].contains("ema")) {
+      // print("Activate sma for $deviceName");
+      ema = await RustNativeCall().calculateEMA(
+        hist: RustNativeCall().generateVec(
+          hist: base,
+          multiValue: deviceName.contains("NPK") ? true : false,
+        ),
+        period: int.parse(indicatorsSetMap[selectDevice]["ema"]["range"]),
+      );
+      // print("Base length: ${base.length}");
+      emaDiff = base.length - ema.length + 1;
+
+      emaStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
+        base[base.length -
+                int.parse(indicatorsSetMap[selectDevice]["ema"]["range"]) +
+                1]
+            .dateUnixAsId,
+      ));
+      // print("[SMA] processing on start date $sma");
+      int count = 0;
+      // int pivot = int.parse(base[smaDiff].dateUnixAsId);
+      List emaField0List = [];
+      // List smaField0List = sma.map(
+      //   single: (value) => value.field0,
+      //   triple: (value) => [
+      //     {
+      //       "N": value.field0.nVec,
+      //       "P": value.field0.pVec,
+      //       "K": value.field0.kVec,
+      //     },
+      //   ],
+      // ).toList();
+      // print(sma[1].runtimeType);
+      emaField0List = deviceName.contains("NPK")
+          ? ema[1].map(
+              single: (value) => value.field0,
+              triple: (value) => [
+                {
+                  "N": value.field0.nVec,
+                  "P": value.field0.pVec,
+                  "K": value.field0.kVec,
+                },
+              ],
+            )
+          : ema[0].map(
+              single: (value) => value.field0,
+              triple: (value) => [
+                {
+                  "N": value.field0.nVec,
+                  "P": value.field0.pVec,
+                  "K": value.field0.kVec,
+                },
+              ],
+            );
+      // print(smaField0List);
+      // if (kDebugMode) {
+      //   // ignore: use_build_context_synchronously
+      //   await showDialog(
+      //     context: context,
+      //     builder: (context) => AlertDialog(
+      //       title: Text("Mapping"),
+      //       content: TextField(
+      //         controller: TextEditingController(text: smaField0List.toString()),
+      //         readOnly: true,
+      //         onTap: () {
+      //           Clipboard.setData(
+      //             ClipboardData(text: smaField0List.toString()),
+      //           );
+      //           Navigator.pop(context);
+      //         },
+      //       ),
+      //     ),
+      //   );
+      // }
+
+      base.sort(
+        (a, b) => DateTime.fromMillisecondsSinceEpoch(int.parse(a.dateUnixAsId))
+            .compareTo(
+          DateTime.fromMillisecondsSinceEpoch(
+            int.parse(b.dateUnixAsId),
+          ),
+        ),
+      );
+      print("Sorting completed! ${emaField0List.length}");
+      int emaLen = deviceName.contains("NPK")
+          ? emaField0List[0]["N"].length
+          : emaField0List.length;
+      // print(
+      //     "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
+      for (var h in base) {
+        int curr = int.parse(h.dateUnixAsId);
+        DateTime currDate = DateTime.fromMillisecondsSinceEpoch(curr);
+        // print(
+        //     "[SMA - Loop] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)} counting $count, diff: ${smaField0List.length - count}");
+        // print(smaField0List[0]["N"][count]);
+        if ((currDate == emaStart || currDate.isAfter(emaStart)) &&
+            count < emaLen) {
+          // print(
+          //     "[SMA - LoopPassCond] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)}, check cond:=> ${DateTime.fromMillisecondsSinceEpoch(curr).isAfter(smaStart)} counting $count, diff: ${smaField0List.length - count}");
+          emaLines.add(ChartData(
+            DateTime.fromMillisecondsSinceEpoch(curr),
+            [
+              deviceName.contains("NPK")
+                  ? {
+                      "N": emaField0List[0]["N"][count],
+                      "P": emaField0List[0]["P"][count],
+                      "K": emaField0List[0]["K"][count],
+                    }
+                  : emaField0List[count],
             ],
             "",
           ));
@@ -327,7 +446,29 @@ class _AnalysisPage extends State<AnalysisPage> {
       }
     }
     if (base["ema"].isNotEmpty) {
-      temp.add(_createSeries(base["ema"], "ema", isIndicator: true));
+      // print("Add sma");
+      if (newDataList[0].name!.contains("NPK")) {
+        temp.add(_createSeries(
+          base["ema"],
+          "N ema",
+          isIndicator: true,
+          multiValue: true,
+        ));
+        temp.add(_createSeries(
+          base["ema"],
+          "P ema",
+          isIndicator: true,
+          multiValue: true,
+        ));
+        temp.add(_createSeries(
+          base["ema"],
+          "K ema",
+          isIndicator: true,
+          multiValue: true,
+        ));
+      } else {
+        temp.add(_createSeries(base["ema"], "ema", isIndicator: true));
+      }
     }
 
     // print("[AddAll map] $temp");
@@ -371,7 +512,10 @@ class _AnalysisPage extends State<AnalysisPage> {
       trendlines: !multiValue
           ? [
               Trendline(
-                  isVisible: true, opacity: 0.2, isVisibleInLegend: false),
+                isVisible: true,
+                opacity: 0.2,
+                isVisibleInLegend: false,
+              ),
             ]
           : [],
     );
@@ -400,6 +544,12 @@ class _AnalysisPage extends State<AnalysisPage> {
               case "indicators":
                 return indicatorsTab();
               case "report":
+                if (widget.devices.isEmpty) {
+                  return const Center(
+                    child: Text("No data available"),
+                  );
+                }
+
                 return FutureBuilder(
                   future: RustNativeCall().test_neural,
                   builder: (context, snapshot) {
@@ -439,8 +589,8 @@ class _AnalysisPage extends State<AnalysisPage> {
       shrinkWrap: true,
       children: [
         graphScreen(),
-        deviceAvgSelector(),
-        indicatorsInput(name: selectDevice),
+        if (widget.devices.isNotEmpty) deviceAvgSelector(),
+        if (widget.devices.isNotEmpty) indicatorsInput(name: selectDevice),
       ],
     );
   }
@@ -518,10 +668,6 @@ class _AnalysisPage extends State<AnalysisPage> {
     for (String i in indicatorsSetMap[name]["indicators"]) {
       switch (i) {
         case "sma":
-          // Safety >.0
-          // if (!enableSma) {
-          //   break;
-          // }
           if (!indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
             break;
           }
@@ -599,6 +745,84 @@ class _AnalysisPage extends State<AnalysisPage> {
             ),
           ));
           break;
+        case "ema":
+          if (!indicatorsSetMap[selectDevice]["indicators"].contains("ema")) {
+            break;
+          }
+          lts.add(ListTile(
+            onLongPress: () => showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text("Delete"),
+                  content: Text(
+                      "EMA; Exponential Moving Average will disappear from the graph. You can still add it back later."),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          indicatorsSetMap[name]["indicators"].remove("ema");
+                          // enableSma = false;
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: const Text("OK"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ],
+                );
+              },
+            ),
+            title: Text("Exponential Moving Average"),
+            subtitle: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Choose a range"),
+                    ToggleButtons(
+                      onPressed: (index) {
+                        setState(() {
+                          for (int i = 0;
+                              i < indicatorsSetMap[name]["ema"]["bools"].length;
+                              i++) {
+                            indicatorsSetMap[name]["ema"]["bools"][i] =
+                                i == index;
+                          }
+                          indicatorsSetMap[name]["ema"]["range"] =
+                              movingAverageRangeSelector[index]
+                                  .toString()
+                                  .substring(
+                                    6,
+                                    movingAverageRangeSelector[index]
+                                            .toString()
+                                            .length -
+                                        2,
+                                  );
+                          // indicatorsSetMap[name]["sma"]["bools"][index] =
+                          //     !indicatorsSetMap[name]["sma"]["bools"][index];
+                        });
+                      },
+                      isSelected: indicatorsSetMap[name]["ema"]["bools"],
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                      selectedBorderColor: Colors.green[700],
+                      selectedColor: Colors.white,
+                      fillColor: Colors.green[200],
+                      color: Colors.green[400],
+                      children: movingAverageRangeSelector,
+                    ),
+                  ],
+                ),
+                Text("Press & Hold to remove this indicator"),
+              ],
+            ),
+          ));
+          break;
         default:
       }
     }
@@ -614,7 +838,7 @@ class _AnalysisPage extends State<AnalysisPage> {
             builder: (context) => ListView.builder(
               itemCount: availableIndicators.length,
               itemBuilder: (context, index) => ExpansionTile(
-                title: Text(availableIndicators[index]),
+                title: Text(availableIndicators[index].toUpperCase()),
                 children: [
                   ElevatedButton(
                     onPressed: () {
@@ -625,6 +849,7 @@ class _AnalysisPage extends State<AnalysisPage> {
                       });
                     },
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: const [Icon(Icons.add), Text("Choose")],
                     ),
                   ),
