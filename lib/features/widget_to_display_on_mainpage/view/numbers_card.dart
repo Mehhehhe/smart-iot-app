@@ -32,6 +32,10 @@ class numberCard extends StatefulWidget {
 
 class _numberCardState extends State<numberCard> {
   late List<Map> data;
+  double valueToSet = 1.0;
+  double max = 500.0;
+  double min = 0.0;
+  TextEditingController valueController = TextEditingController();
 
   void _setLatest(List<Map> target) {
     var latestList = <Map>[];
@@ -279,6 +283,11 @@ class _numberCardState extends State<numberCard> {
       color: Colors.white,
       padding: const EdgeInsets.all(20.0),
       child: ListView(shrinkWrap: true, children: [
+        const Text(
+          "Quick Settings",
+          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+        ),
+        const Text("The following settings "),
         ListTile(
           tileColor: Colors.white,
           title: Row(
@@ -314,9 +323,135 @@ class _numberCardState extends State<numberCard> {
             ],
           ),
         ),
+        ListTile(
+          title: Text("Value Control"),
+          subtitle: const Text(
+              "Set the device's controller value. Tap to start set the value."),
+          onTap: () => showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("Value Control"),
+                content: Container(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: 170,
+                  child: StatefulBuilder(
+                    builder: (context, setState) {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // minus
+                              TextButton.icon(
+                                  onPressed: () {
+                                    if (valueToSet > min) {
+                                      setState(() {
+                                        valueToSet = valueToSet - 0.1;
+                                        valueController.text =
+                                            valueToSet.toStringAsPrecision(5);
+                                      });
+                                    }
+                                  },
+                                  icon: Icon(Icons.remove),
+                                  label: Text("")),
+                              // textfield
+                              Container(
+                                width: MediaQuery.of(context).size.width * 0.2,
+                                child: TextFormField(
+                                  controller: valueController,
+                                  enabled: true,
+                                  textAlign: TextAlign.center,
+                                  // initialValue: "0.0",
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                              // plus
+                              TextButton.icon(
+                                  onPressed: () {
+                                    if (valueToSet < max) {
+                                      setState(() {
+                                        valueToSet = valueToSet + 0.1;
+                                        valueController.text =
+                                            valueToSet.toStringAsPrecision(5);
+                                      });
+                                    }
+                                  },
+                                  icon: Icon(Icons.add),
+                                  label: Text("")),
+                            ],
+                          ),
+                          Slider.adaptive(
+                            min: 0.0,
+                            max: 500.0,
+                            value: valueToSet,
+                            divisions: 100,
+                            label: valueToSet.toStringAsPrecision(5),
+                            onChanged: (double value) => setState(() {
+                              valueToSet = value;
+                              valueController.text = valueToSet.toString();
+                            }),
+                          ),
+                          const Text(
+                            "Note: press buttons for increase/decrease by 0.1. You may use slider to move value by 5.",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                actions: [
+                  TextButton(onPressed: () => {}, child: Text("Send")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Cancel")),
+                ],
+              );
+            },
+          ),
+        ),
       ]),
     );
   }
+
+// Builder(
+//             builder: (context) {
+//               TextEditingController valueController = TextEditingController();
+
+//               return AlertDialog(
+//                 title: Text("Value Control"),
+//                 content: Row(children: [
+//                   // minus
+//                   TextButton.icon(
+//                       onPressed: () => valueController.text =
+//                           (num.parse(valueController.text) - 0.1).toString(),
+//                       icon: Icon(Icons.remove),
+//                       label: Text("")),
+//                   // textfield
+//                   CupertinoTextField(
+//                     controller: valueController,
+//                     keyboardType: TextInputType.number,
+//                     maxLines: 1,
+//                   ),
+//                   // plus
+//                   TextButton.icon(
+//                       onPressed: () => valueController.text =
+//                           (num.parse(valueController.text) + 0.1).toString(),
+//                       icon: Icon(Icons.add),
+//                       label: Text("")),
+//                 ]),
+//                 actions: [
+//                   TextButton(onPressed: () => {}, child: Text("Send")),
+//                   TextButton(
+//                       onPressed: () => Navigator.pop(context),
+//                       child: Text("Cancel")),
+//                 ],
+//               );
+//             },
+//           )
 
   Widget buildSearchError(BuildContext contextP) {
     return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
