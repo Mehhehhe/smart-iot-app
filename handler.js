@@ -13,7 +13,7 @@ const FarmTable = process.env.FARM_TABLE;
 const FarmUserTable = process.env.FARM_USER_TABLE;
 const FarmDeviceTable = process.env.FARM_DEVICE_TABLE;
 
-var iotdata = new AWS.IotData({endpoint: 'a2ym69b60cuwbt-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1"});
+var iotdata = new AWS.IotData({ endpoint: 'a2ym69b60cuwbt-ats.iot.ap-southeast-1.amazonaws.com', region: "ap-southeast-1" });
 const ALLOWED_ORIGIN = [
   "https://project-three-dun.vercel.app"
 ];
@@ -26,14 +26,14 @@ const ALLOWED_ORIGIN = [
 // };
 
 // Encode Function
-function encode(msg){
+function encode(msg) {
   const maximumLength = 8;
-  if(msg.length > maximumLength){
+  if (msg.length > maximumLength) {
     msg = msg.substr(0, maximumLength);
-  } else if(msg.length < maximumLength){
+  } else if (msg.length < maximumLength) {
     var diff = maximumLength - msg.length;
     var padding = '';
-    for(var i = 0; i < diff; i++) padding += '0';
+    for (var i = 0; i < diff; i++) padding += '0';
     msg = padding + msg;
   }
   return Buffer.from(msg).toString('base64');
@@ -46,7 +46,7 @@ module.exports.getFarmExample = (event, context, callback) => {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Credentials': true
   };
-  const response =  {
+  const response = {
     statusCode: 200,
     headers,
     body: JSON.stringify(example),
@@ -65,7 +65,7 @@ module.exports.getFarmList = (event, context, callback) => {
   };
   console.log("Scanning 'FARM' table ... ");
   const onScan = (err, data) => {
-    if(err){
+    if (err) {
       console.log("Scan failed. Error: ", JSON.stringify(err, null, 2));
       callback(err);
     } else {
@@ -97,7 +97,7 @@ module.exports.getFarmByID = (event, context, callback) => {
   dynamoDb.get(params).promise().then(
     result => {
       const response = {
-        statusCode:200, 
+        statusCode: 200,
         headers,
         body: JSON.stringify(result.Item)
       };
@@ -118,16 +118,16 @@ module.exports.createFarm = async (event, context, callback) => {
   };
 
   var bodyFromWebInput = {};
-  if(event.body != undefined){
+  if (event.body != undefined) {
     bodyFromWebInput = JSON.parse(event.body);
   }
 
-  const FarmName = event.FarmName == undefined ? bodyFromWebInput.FarmName: event.farmName;
+  const FarmName = event.FarmName == undefined ? bodyFromWebInput.FarmName : event.farmName;
   const FarmOwner = event.Owner == undefined ? bodyFromWebInput.Owner : event.Owner;
   const AllowedUsersInFarm = event.AllowedUsers == undefined ? bodyFromWebInput.AllowedUsers : event.AllowedUsers;
   const AvailableDevicesInFarm = event.AvailableDevices == undefined ? bodyFromWebInput.AvailableDevices : event.AvailableDevices;
 
-  if(typeof FarmName !== 'string' || typeof FarmOwner !== 'string' || !(Array.isArray(AllowedUsersInFarm)) || !(Array.isArray(AvailableDevicesInFarm))){
+  if (typeof FarmName !== 'string' || typeof FarmOwner !== 'string' || !(Array.isArray(AllowedUsersInFarm)) || !(Array.isArray(AvailableDevicesInFarm))) {
     console.error("Validation failed.");
     // console.log("Users:"+Array.isArray(AllowedUsersInFarm)+" "+AllowedUsersInFarm.every((value) => typeof value !== 'string'));
     // console.log("Devices:"+Array.isArray(AvailableDevicesInFarm)+" "+AvailableDevicesInFarm.every((value) => typeof value !== 'string'));
@@ -135,7 +135,7 @@ module.exports.createFarm = async (event, context, callback) => {
     return;
   }
 
-  if(AllowedUsersInFarm.every((value) => typeof value !== 'string') || AvailableDevicesInFarm.every((value) => typeof value !== 'string')){
+  if (AllowedUsersInFarm.every((value) => typeof value !== 'string') || AvailableDevicesInFarm.every((value) => typeof value !== 'string')) {
     console.error("Validation failed.");
     callback(new Error("Couldn't create because validation errors occured in the array"));
   }
@@ -181,18 +181,18 @@ module.exports.createFarm = async (event, context, callback) => {
   });
 };
 
-function getFarm(){
+function getFarm() {
   return [
     {
       Name: 'first farm',
       ID: 'farm01',
-      Owner:'Adam',
-      AllowedUsers:[
+      Owner: 'Adam',
+      AllowedUsers: [
         "Adam",
         "John",
         "Robert"
       ],
-      AvailableDevices:[
+      AvailableDevices: [
         "farm01.DEVICE_01",
         "farm01.DEVICE_02"
       ]
@@ -212,7 +212,7 @@ module.exports.createUser = async (event, context, callback) => {
   const origin = event.headers.origin;
   let headers;
 
-  if(ALLOWED_ORIGIN.includes(origin)){
+  if (ALLOWED_ORIGIN.includes(origin)) {
     headers = {
       'Access-Control-Allow-Origin': 'https://project-three-dun.vercel.app/',
       'Access-Control-Allow-Credentials': true,
@@ -223,7 +223,7 @@ module.exports.createUser = async (event, context, callback) => {
     }
   }
 
-  if(typeof User !== 'string' || !Array.isArray(owned_farm)){
+  if (typeof User !== 'string' || !Array.isArray(owned_farm)) {
     console.error("Validation failed");
     // console.log(event.user);
     console.log(User);
@@ -231,16 +231,16 @@ module.exports.createUser = async (event, context, callback) => {
     callback(new Error("Couldn't create because of validation errors"));
   }
 
-  if(owned_farm.every((value) => typeof value !== 'string')){
+  if (owned_farm.every((value) => typeof value !== 'string')) {
     console.error("Validation failed");
     callback(new Error("Couldn't create because validation errors occurred in the array"));
   }
 
   const UserID = crypto.randomUUID();
-  
+
   // Generate farm ID
-  if(owned_farm !== ["Wait for update"] || owned_farm !== null){
-    owned_farm.forEach(function(part, index) {
+  if (owned_farm !== ["Wait for update"] || owned_farm !== null) {
+    owned_farm.forEach(function (part, index) {
       owned_farm[index] = encode(owned_farm[index]);
     });
   }
@@ -253,7 +253,7 @@ module.exports.createUser = async (event, context, callback) => {
       Email: Email,
       OwnedFarm: owned_farm,
       Role: "user",
-      Permissions: ["WaitForFarmsDataConfirmation","WaitForRoleConfirmation"],
+      Permissions: ["WaitForFarmsDataConfirmation", "WaitForRoleConfirmation"],
       CreateAt: timestamp
     };
   };
@@ -272,7 +272,7 @@ module.exports.createUser = async (event, context, callback) => {
       statusCode: 200,
       headers: headers,
       body: JSON.stringify({
-        message: "Successfully created "+res.FarmUser,
+        message: "Successfully created " + res.FarmUser,
         userID: res.ID
       })
     })
@@ -290,11 +290,11 @@ module.exports.createUser = async (event, context, callback) => {
 
 module.exports.createUserToTable = async (event, context, callback) => {
   var bodyFromWebInput = {};
-  if(event.body != undefined){
+  if (event.body != undefined) {
     bodyFromWebInput = JSON.parse(event.body);
   }
-  const User = event.userName == undefined ? bodyFromWebInput.userName: event.userName;
-  const Email = event.request.userAttributes.email == undefined ? bodyFromWebInput.email: event.request.userAttributes.email;
+  const User = event.userName == undefined ? bodyFromWebInput.userName : event.userName;
+  const Email = event.request.userAttributes.email == undefined ? bodyFromWebInput.email : event.request.userAttributes.email;
   var owned_farm = event.OwnedFarm ?? ["Wait for update"];
 
   var headers = {
@@ -303,7 +303,7 @@ module.exports.createUserToTable = async (event, context, callback) => {
     'Content-Type': 'application/json'
   };
 
-  if(typeof User !== 'string' || !Array.isArray(owned_farm)){
+  if (typeof User !== 'string' || !Array.isArray(owned_farm)) {
     console.error("Validation failed");
     // console.log(event.user);
     console.log(User);
@@ -311,16 +311,16 @@ module.exports.createUserToTable = async (event, context, callback) => {
     callback(new Error("Couldn't create because of validation errors"));
   }
 
-  if(owned_farm.every((value) => typeof value !== 'string')){
+  if (owned_farm.every((value) => typeof value !== 'string')) {
     console.error("Validation failed");
     callback(new Error("Couldn't create because validation errors occurred in the array"));
   }
 
   const UserID = crypto.randomUUID();
-  
+
   // Generate farm ID
-  if(owned_farm !== ["Wait for update"] || owned_farm !== null){
-    owned_farm.forEach(function(part, index) {
+  if (owned_farm !== ["Wait for update"] || owned_farm !== null) {
+    owned_farm.forEach(function (part, index) {
       owned_farm[index] = encode(owned_farm[index]);
     });
   }
@@ -333,7 +333,7 @@ module.exports.createUserToTable = async (event, context, callback) => {
       Email: Email,
       OwnedFarm: owned_farm,
       Role: "user",
-      Permissions: ["WaitForFarmsDataConfirmation","WaitForRoleConfirmation"],
+      Permissions: ["WaitForFarmsDataConfirmation", "WaitForRoleConfirmation"],
       CreateAt: timestamp
     };
   };
@@ -365,7 +365,7 @@ module.exports.getUserList = (event, context, callback) => {
   };
   console.log("Retrieving users ... ");
   const onScan = (err, data) => {
-    if(err){
+    if (err) {
       console.log("Retreived failed. Error: ", JSON.stringify(err, null, 2));
       callback(err);
     } else {
@@ -421,20 +421,20 @@ module.exports.registerDevice = async (event, context, callback) => {
 
   var bodyExisted = event.body;
   var jsonBody = {};
-  if(bodyExisted != undefined){
+  if (bodyExisted != undefined) {
     jsonBody = JSON.parse(bodyExisted);
   }
 
   const DeviceName = event.device == undefined ? jsonBody.device : event.device;
   const DeviceType = event.type == undefined ? jsonBody.type : event.type;
   const DeviceSerial = event.serialNumber == undefined ? jsonBody.serialNumber : event.serialNumber;
-  
+
   const FarmName = event.farmName == undefined ? jsonBody.farmName : event.farmName;
 
-  if(typeof DeviceType !== 'string' || typeof FarmName !== 'string' || typeof DeviceName !== 'string' || typeof DeviceSerial !== 'string'){
+  if (typeof DeviceType !== 'string' || typeof FarmName !== 'string' || typeof DeviceName !== 'string' || typeof DeviceSerial !== 'string') {
     console.error("Validation failed");
     console.log(event, typeof event.body);
-    console.log("DeviceType "+typeof DeviceType+", FarmName: "+typeof FarmName + ", DeviceName: " + typeof DeviceName+", DeviceSerial: ", typeof DeviceSerial);
+    console.log("DeviceType " + typeof DeviceType + ", FarmName: " + typeof FarmName + ", DeviceName: " + typeof DeviceName + ", DeviceSerial: ", typeof DeviceSerial);
     callback(new Error("Couldn't create because of validation errors"));
   }
   // console.log(event);
@@ -465,7 +465,7 @@ module.exports.registerDevice = async (event, context, callback) => {
       isBase64Encoded: false,
       statusCode: 200,
       headers,
-      body: JSON.stringify({message: "device registered successfully", id: gen_id})
+      body: JSON.stringify({ message: "device registered successfully", id: gen_id })
     })
   }).catch(err => {
     console.log(err);
@@ -515,7 +515,7 @@ module.exports.getAllDevices = (event, context, callback) => {
   };
   console.log("Scanning 'DEVICE' table ... ");
   const onScan = (err, data) => {
-    if(err){
+    if (err) {
       console.log("Scan failed. Error: ", JSON.stringify(err, null, 2));
       callback(err);
     } else {
@@ -537,7 +537,7 @@ module.exports.getDevicesByFarmName = async (event, context, callback) => {
   console.log("GET ", event);
   var transData = JSON.parse(event.body);
   const loc = transData.DeviceLocation;
-  console.log("location:=",loc);
+  console.log("location:=", loc);
   console.log("From body: ", event.body);
   var params = {
     TableName: FarmDeviceTable,
@@ -560,7 +560,7 @@ module.exports.getDevicesByFarmName = async (event, context, callback) => {
   // };
 
   const raw = await dynamoDb.scan(params).promise();
-  var listToReturn = {"Devices":[]};
+  var listToReturn = { "Devices": [] };
   // raw.farm.forEach((device) => {
   //   console.log(device);
   //   if(device.Location == event.DeviceLocation){
@@ -571,10 +571,10 @@ module.exports.getDevicesByFarmName = async (event, context, callback) => {
   // console.log(event.DeviceLocation);
   raw.Items.forEach((device, index, arr) => {
     console.log(device);
-    if(device.Location == loc){
+    if (device.Location == loc) {
       console.log(device, index);
       listToReturn.Devices.push(device)
-      console.log("Inside forEach :=>",listToReturn);
+      console.log("Inside forEach :=>", listToReturn);
     }
   });
   console.log(listToReturn);
@@ -588,18 +588,27 @@ module.exports.getDevicesByFarmName = async (event, context, callback) => {
 // MQTT: manage mqtt-related functions
 
 module.exports.liveDataHandler = async (event, context, callback) => {
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
+
+  let isWebPlatform = event.body != undefined;
+  let requestBody = isWebPlatform ? event.body : event;
   // Check if request is sent through json.
-  if(event.RequestConfirm == null || event.RequestConfirm == undefined || event.RequestConfirm == ""){
+  if (requestBody.RequestConfirm == null || requestBody.RequestConfirm == undefined || requestBody.RequestConfirm == "") {
     console.log("Suspicious request. Type: ", typeof event.Request);
     return Error("Unexpected request.");
   }
 
-  if(event.topic == null || event.topic == undefined || typeof event.topic !== 'string'){
+  if (requestBody.topic == null || requestBody.topic == undefined || typeof requestBody.topic !== 'string') {
     console.log("Something went wrong with topic. ", event.topic);
     return Error("Unexpected at topic");
   }
   console.log(JSON.stringify(event));
   // Fetch data from topic
+
+  let noMqtt = requestBody.RequestNoMqtt == "yes";
 
   // Separate a topic to get farm name and device
   let splitStr = event.topic.split("/");
@@ -620,8 +629,8 @@ module.exports.liveDataHandler = async (event, context, callback) => {
 
   // Query latest 10 items
   // const data = await dynamoDb.query(params).promise();
-  var itemToReturn = {"LatestItems":[]};
-  if(data.Item["DeviceValue"].length >= 10){
+  var itemToReturn = { "LatestItems": [] };
+  if (data.Item["DeviceValue"].length >= 10) {
     itemToReturn.LatestItems = data.Item["DeviceValue"].slice(data.Item["DeviceValue"].length - 10, data.Item["DeviceValue"].length);
   } else {
     itemToReturn.LatestItems = data.Item["DeviceValue"];
@@ -640,22 +649,31 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   //     console.error(err);
   //     callback(new Error("Couldn't fetch live data from given device"));
   //   });
-    // console.log("temp: ", temp);
+  // console.log("temp: ", temp);
   console.log("[itemToReturn] :===> PASSED");
   console.log(itemToReturn.LatestItems);
 
   // itemToReturn.LatestItems = itemToReturn.LatestItems.map((item) => JSON.stringify(item));
 
+  if (noMqtt) {
+    const noMqttResponse = {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(itemToReturn.LatestItems),
+    };
+    callback(null, noMqttResponse);
+  }
+
   // console.log("Test joining ===> ", itemToReturn.LatestItems.join(","));
   var paramsResponse = {
-    topic: farmName+'/'+targetDevice+'/'+'data/live',
+    topic: farmName + '/' + targetDevice + '/' + 'data/live',
     payload: JSON.stringify(itemToReturn.LatestItems),
     qos: 1
   };
   const pub = iotdata.publish(paramsResponse);
-  pub.on('success', ()=>console.log("success")).on('error', ()=>console.log("error"));
-  return new Promise(() => pub.send(function(err, data){
-    if(err){
+  pub.on('success', () => console.log("success")).on('error', () => console.log("error"));
+  return new Promise(() => pub.send(function (err, data) {
+    if (err) {
       console.log(err);
     } else {
       console.log(data);
@@ -672,11 +690,11 @@ module.exports.liveDataHandler = async (event, context, callback) => {
 
 module.exports.createFarmAsTable = (event, context, callback) => {
   var body = {};
-  if(event.body != undefined){
+  if (event.body != undefined) {
     body = JSON.parse(event.body);
   }
 
-  var table_name_from_body = event.farmName == undefined ? body.farmName: event.farmName;
+  var table_name_from_body = event.farmName == undefined ? body.farmName : event.farmName;
 
   const params = {
     AttributeDefinitions: [
@@ -705,8 +723,8 @@ module.exports.createFarmAsTable = (event, context, callback) => {
     'Access-Control-Allow-Credentials': true
   };
   var ddb = new AWS.DynamoDB();
-  ddb.createTable(params, function(err, data){
-    if(err) {
+  ddb.createTable(params, function (err, data) {
+    if (err) {
       console.log("Error: ", err);
     } else {
       console.log("Success => ", data);
@@ -715,7 +733,7 @@ module.exports.createFarmAsTable = (event, context, callback) => {
   callback(null, {
     statusCode: 200,
     headers,
-    body: JSON.stringify({message: "create farm as table successfully"})
+    body: JSON.stringify({ message: "create farm as table successfully" })
   });
 };
 
@@ -723,14 +741,14 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
   const DeviceName = event.device;
   const DeviceType = event.type;
   const DeviceSerial = event.serialNumber;
-  
+
   const FarmName = event.farmName;
 
   // Separate a topic to get farm name and device
   let splitStr = event.topic.split("/");
   var farmName = splitStr[0];
   var targetDevice = splitStr[1];
-  
+
   const timestamp = new Date().getTime();
   const deviceInfo = (DeviceSerial, DeviceState, FarmName) => {
     return {
@@ -773,7 +791,7 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
 
   const submitDevice = device => {
     console.log("Submitting device data ... :noData = ", noData);
-    if(!noData){
+    if (!noData) {
       console.log(targetDevice);
       console.log(farmName);
     }
@@ -791,25 +809,24 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
       ExpressionAttributeNames: {
         "#attrName": "DeviceValue"
       },
-      ExpressionAttributeValues:{
+      ExpressionAttributeValues: {
         ":attrValue": device["DeviceValue"]
       },
       ReturnValues: "ALL_NEW"
     };
-    if(noData == true)
-    {
+    if (noData == true) {
       console.log("data not found");
       return dynamoDb.put(deviceInfo).promise().then(res => device);
     }
-    else{
+    else {
       console.log("update");
       return dynamoDb.update(deviceUpdateInfo).promise().then(res => device);
     }
-      
+
   };
 
   var paramsResponse = {
-    topic: farmName+'/'+targetDevice+'/'+'data/live',
+    topic: farmName + '/' + targetDevice + '/' + 'data/live',
     payload: JSON.stringify([
       {
         "Value": event.payload.Data,
@@ -827,8 +844,8 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
   await submitDevice(deviceInfo(targetDevice, event.DeviceState, event.DeviceLocation)).then(res => {
     callback(null, event)
   }).then(() => {
-    return new Promise(() => pub.send(function(err, data){
-      if(err){
+    return new Promise(() => pub.send(function (err, data) {
+      if (err) {
         console.log("[Error] ", err);
       } else {
         console.log(data);
@@ -847,7 +864,7 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
 
 module.exports.changeDeviceStatusByMobile = async (event, context, callback) => {
   var requestToChangeTo = event.requestedState;
-  if(requestToChangeTo == null || typeof requestToChangeTo !== 'boolean'){
+  if (requestToChangeTo == null || typeof requestToChangeTo !== 'boolean') {
     console.log("Unknown state. Something wrong with requested state.");
     return Error("Unexpected State");
   }
@@ -860,14 +877,14 @@ module.exports.changeDeviceStatusByMobile = async (event, context, callback) => 
   // Send to device to set its state to either "true/false" 
   // If 'false', send only its status and pause on sending other sensor value
   var responseToDevice = {
-    topic: farmName+'/'+targetDevice+'/'+'state/listen/request',
+    topic: farmName + '/' + targetDevice + '/' + 'state/listen/request',
     payload: JSON.stringify(requestToChangeTo),
     qos: 1
   };
   const pub = iotdata.publish(responseToDevice);
   pub.on('success', () => console.log("successfully send requested state change")).on('error', () => console.log("error. request not function correctly"));
-  return new Promise(() => pub.send(function(err, data){
-    if(err){
+  return new Promise(() => pub.send(function (err, data) {
+    if (err) {
       console.log(err);
     } else {
       console.log(data);
