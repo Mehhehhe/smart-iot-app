@@ -594,7 +594,8 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   };
 
   let isWebPlatform = event.body != undefined;
-  let requestBody = isWebPlatform ? event.body : event;
+  let requestBody = isWebPlatform ? JSON.parse(event.body) : event;
+  console.info(["Check pass ", event]);
   // Check if request is sent through json.
   if (requestBody.RequestConfirm == null || requestBody.RequestConfirm == undefined || requestBody.RequestConfirm == "") {
     console.log("Suspicious request. Type: ", typeof event.Request);
@@ -611,7 +612,7 @@ module.exports.liveDataHandler = async (event, context, callback) => {
   let noMqtt = requestBody.RequestNoMqtt == "yes";
 
   // Separate a topic to get farm name and device
-  let splitStr = event.topic.split("/");
+  let splitStr = requestBody.topic.split("/");
   var farmName = splitStr[0];
   var targetDevice = splitStr[1];
 
