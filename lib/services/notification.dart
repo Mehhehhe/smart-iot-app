@@ -121,29 +121,6 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  // bring to foreground
-  // Timer.periodic(const Duration(seconds: 1), (timer) async {
-  //   if (service is AndroidServiceInstance) {
-  //     if (await service.isForegroundService()) {
-  //       /// OPTIONAL for use custom notification
-  //       /// the notification id must be equals with AndroidConfiguration when you call configure() method.
-  //       flutterLocalNotificationsPlugin.show(
-  //         888,
-  //         'COOL SERVICE',
-  //         'Awesome ${DateTime.now()}',
-  //         const NotificationDetails(
-  //           android: AndroidNotificationDetails(
-  //             'my_foreground',
-  //             'MY FOREGROUND SERVICE',
-  //             icon: 'ic_bg_service_small',
-  //             ongoing: true,
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   }
-  // });
-
   // Fetching `threshold` sql, display notification
   service.on('threshDiff').listen((event) async {
     // Compare to thresh
