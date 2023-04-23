@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -10,51 +11,57 @@ class ReportCard {
   // Top Section requirements
   String farmName;
   final DateTime _generatedTime = DateTime.now().toLocal();
-  String whoGenerated;
+  // String whoGenerated;
   // Information
-  List<Map<String, String>> devicesWithType;
-  String location;
-  Widget generatedChart;
-  List<Map> dataResponse;
+  List devicesWithType;
+  List<String> imgPath;
+  // String location;
+  // Widget generatedChart;
+  // List<Map> dataResponse;
 
   ReportCard(
     this.farmName,
     this.devicesWithType,
-    this.generatedChart,
-    this.location,
-    this.whoGenerated,
-    this.dataResponse,
+    this.imgPath,
+    // this.generatedChart,
+    // this.location,
+    // this.whoGenerated,
+    // this.dataResponse,
   );
 
   _mapDevicesToTableRow() {
-    List<pdf.TableRow> tb = [];
-    // In 1 TableRow has 2 Column and in each column has 1 Text widget.
-    for (var element in devicesWithType) {
-      var temp = <pdf.Widget>[];
-      temp.add(pdf.Column(children: [
-        pdf.Padding(
-            padding: const pdf.EdgeInsets.all(5.0),
-            child: pdf.Text(element["Name"].toString()))
-      ]));
-      temp.add(pdf.Column(children: [
-        pdf.Padding(
-            padding: const pdf.EdgeInsets.all(5.0),
-            child: pdf.Text(element["Type"].toString()))
-      ]));
-      tb.add(pdf.TableRow(
-          children: temp,
-          decoration: pdf.BoxDecoration(
-              border: pdf.Border.all(
-                  color: PdfColor.fromHex("000000"), width: 1.0))));
-      temp = <pdf.Widget>[];
-    }
-    return tb;
+    return pdf.Table.fromTextArray(
+      data: List<List<dynamic>>.generate(
+        devicesWithType.length,
+        (index) => [
+          devicesWithType[index]["DeviceName"],
+          devicesWithType[index]["Type"],
+        ],
+      ),
+      headers: ["Name", "Type"],
+      headerStyle: pdf.TextStyle(
+        color: PdfColors.white,
+        fontWeight: pdf.FontWeight.bold,
+      ),
+      headerDecoration: const pdf.BoxDecoration(
+        color: PdfColors.orange,
+      ),
+      cellAlignment: pdf.Alignment.centerRight,
+      cellAlignments: {0: pdf.Alignment.centerLeft},
+    );
+  }
+
+  _graphImages(path) {
+    return pdf.Image(
+      pdf.MemoryImage(File(path).readAsBytesSync()),
+    );
   }
 
   // ignore: long-method
   FutureOr<Uint8List> make() async {
     final pf = pdf.Document();
     final deviceRow = _mapDevicesToTableRow();
+    // print(devicesWithType);
     pf.addPage(
       pdf.Page(
         build: (context) => pdf.Column(
@@ -69,7 +76,7 @@ class ReportCard {
                   mainAxisAlignment: pdf.MainAxisAlignment.end,
                   children: [
                     pdf.Text("${_generatedTime.toString()}"),
-                    pdf.Text("By $whoGenerated"),
+                    // pdf.Text("By $whoGenerated"),
                   ],
                 ),
               ],
@@ -84,7 +91,7 @@ class ReportCard {
                     padding: const pdf.EdgeInsets.all(5.0),
                   ),
                   pdf.Divider(),
-                  pdf.Table(children: deviceRow),
+                  deviceRow,
                 ]),
                 pdf.Column(
                   children: [
@@ -96,72 +103,16 @@ class ReportCard {
               ],
             ),
             pdf.Divider(),
-            pdf.Column(
-              children: [
-                pdf.ListView.builder(
-                  itemBuilder: (context, index) {
-                    var data = dataResponse.elementAt(index)["Data"];
-                    // print(
-                    //     "${json.decode(data)}, ${json.decode(data).runtimeType}");
-                    var dataTrimmed = json.decode(data.toString());
-                    // List<Map> dt = [];
-                    // for (var strMap in dataTrimmed) {
-                    //   dt.add(json.decode(strMap));
-                    // }
-                    var source = dataResponse.elementAt(index)["FromDevice"];
-                    print("Build pdf data: $data, ${data.runtimeType}");
-
-                    return pdf.Column(children: [
-                      pdf.Row(
-                        mainAxisAlignment: pdf.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pdf.ListView.builder(
-                            itemBuilder: (context, index2) {
-                              return pdf.Row(
-                                mainAxisAlignment:
-                                    pdf.MainAxisAlignment.spaceBetween,
-                                children: [
-                                  pdf.Padding(
-                                    padding: const pdf.EdgeInsets.fromLTRB(
-                                        5, 5, 70, 0),
-                                    child: pdf.Text(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                      dataTrimmed[index2]["TimeStamp"],
-                                    ).toLocal().toString()),
-                                  ),
-                                  pdf.Padding(
-                                    padding: const pdf.EdgeInsets.fromLTRB(
-                                        5, 5, 70, 0),
-                                    child: pdf.Text(
-                                      dataTrimmed[index2]["Value"].toString(),
-                                    ),
-                                  ),
-                                  pdf.Padding(
-                                    padding: const pdf.EdgeInsets.fromLTRB(
-                                        5, 5, 70, 0),
-                                    child: pdf.Text(
-                                      dataTrimmed[index2]["State"].toString(),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                            itemCount: dataTrimmed.length,
-                          ),
-                          pdf.Text(source),
-                        ],
-                      ),
-                      pdf.Divider(),
-                    ]);
-                  },
-                  itemCount: dataResponse.length,
-                ),
-              ],
-            ),
+            // Analyze section
           ],
         ),
       ),
     );
+    for (var path in imgPath) {
+      pf.addPage(pdf.Page(
+        build: (context) => _graphImages(path),
+      ));
+    }
 
     return pf.save();
   }
