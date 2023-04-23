@@ -892,3 +892,28 @@ module.exports.changeDeviceStatusByMobile = async (event, context, callback) => 
     }
   }));
 };
+
+module.exports.sendControlValue = async (event, context, callback) => {
+  if (event.controlValue == null || event.controlValue == "") {
+    return Error("Unknown value");
+  }
+  let splitStr = event.topic.split("/");
+  var farmName = splitStr[0];
+  var targetDevice = splitStr[1];
+  var responseToDevice = {
+    topic: farmName + '/' + targetDevice + '/' + 'control/listen/request',
+    payload: JSON.stringify({
+      "value": event.controlValue
+    }),
+    qos: 1
+  };
+  const pub = iotdata.publish(responseToDevice);
+  pub.on('success', () => console.log("successfully send requested state change")).on('error', () => console.log("error. request not function correctly"));
+  return new Promise(() => pub.send(function (err, data) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(data);
+    }
+  }));
+};

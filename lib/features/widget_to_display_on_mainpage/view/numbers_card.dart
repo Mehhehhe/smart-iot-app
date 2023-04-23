@@ -404,7 +404,13 @@ class _numberCardState extends State<numberCard> {
                   ),
                 ),
                 actions: [
-                  TextButton(onPressed: () => {}, child: Text("Send")),
+                  TextButton(
+                      onPressed: () => widget.existedCli.publishToControlValue(
+                            widget.whichFarm,
+                            name,
+                            valueToSet,
+                          ),
+                      child: Text("Send")),
                   TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text("Cancel")),

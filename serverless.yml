@@ -229,6 +229,13 @@ functions:
           path: /any/targetTable/delete
           method: POST
           cors: true
+  sendControlValue:
+    handler: handler.sendControlValue
+    description: Send a value to control the device
+    events:
+      - http:
+          path: /farm/device/controlValue
+          method: POST
 
 resources:
   Resources:
