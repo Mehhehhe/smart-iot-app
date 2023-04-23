@@ -10,7 +10,9 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/model/ReportModel.dart';
+import 'package:smart_iot_app/modules/native_call.dart';
 import 'package:smart_iot_app/pages/AnalysisSub.dart';
+import 'package:smart_iot_app/src/native/bridge_definitions.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 List<Color> palette = [
@@ -62,17 +64,6 @@ class _AnalysisPage extends State<AnalysisPage> {
       text: "Report",
     ),
   ];
-
-  List<LocalHist> cleanNull({required List<LocalHist> h}) {
-    List<LocalHist> cleaned = [];
-    for (var hist in h) {
-      if (hist.value != "null") {
-        cleaned.add(hist);
-      }
-    }
-
-    return cleaned;
-  }
 
   // Function 1: Fetch database of a device
   // Function 2: For each data, transform with toJson(), then List<Map> to List<ChartData>
@@ -322,35 +313,35 @@ class _AnalysisPage extends State<AnalysisPage> {
       shrinkWrap: true,
       children: [
         graphScreen(),
-        if (widget.devices.isNotEmpty)
-          TextButton(
-            onPressed: () => setState(() {
-              indicatorsSetMap[selectDevice]["legend"] =
-                  !indicatorsSetMap[selectDevice]["legend"];
-            }),
-            child: const Text("Toggle Legend"),
-          ),
-        if (widget.devices.isNotEmpty)
-          Container(
-            width: 200,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () async => await screenshotController
-                  .capture(delay: Duration(milliseconds: 10))
-                  .then((value) async {
-                // print(value);
-                if (value != null) {
-                  final directory = await getApplicationDocumentsDirectory();
-                  final imagePath = await File(
-                          '${directory.path}/$selectDevice${DateTime.now().millisecondsSinceEpoch}.jpeg')
-                      .create();
-                  await imagePath.writeAsBytes(value);
+        if (selectDevice != "")
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () => setState(() {
+                  indicatorsSetMap[selectDevice]["legend"] =
+                      !indicatorsSetMap[selectDevice]["legend"];
+                }),
+                child: const Text("Toggle Legend"),
+              ),
+              TextButton(
+                onPressed: () async => await screenshotController
+                    .capture(delay: Duration(milliseconds: 10))
+                    .then((value) async {
+                  // print(value);
+                  if (value != null) {
+                    final directory = await getApplicationDocumentsDirectory();
+                    final imagePath = await File(
+                            '${directory.path}/$selectDevice${DateTime.now().millisecondsSinceEpoch}.jpeg')
+                        .create();
+                    await imagePath.writeAsBytes(value);
 
-                  graphImgPaths.add(imagePath.path);
-                }
-              }),
-              child: const Text("Export graph as jpeg"),
-            ),
+                    graphImgPaths.add(imagePath.path);
+                  }
+                }),
+                child: const Text("Export graph as jpeg"),
+              ),
+            ],
           ),
         if (widget.devices.isNotEmpty) deviceAvgSelector(),
         if (widget.devices.isNotEmpty) indicatorsInput(name: selectDevice),
@@ -390,25 +381,44 @@ class _AnalysisPage extends State<AnalysisPage> {
       height: 100,
       width: MediaQuery.of(context).size.width * 0.8,
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
         shrinkWrap: true,
         itemCount: widget.devices.length,
         itemBuilder: (context, index) {
           // Build tile with average in it
           String name = widget.devices[index]["DeviceName"];
 
-          return Container(
-            height: 50,
-            child: InkWell(
-              child: Text(name),
-              onTap: () => setState(() {
-                selectDevice = name;
-              }),
+          return ListTile(
+            tileColor: Colors.white,
+            title: Text(name),
+            subtitle: Row(
+              children: [
+                const Text("Average: "),
+                FutureBuilder(
+                  future: getAvgDisplay(instance, name),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      List avg = snapshot.data as List;
+
+                      return avg.length == 1
+                          ? Text(double.parse(avg[0].toString())
+                              .toStringAsPrecision(2))
+                          : Text("N: ${avg[0]}, P: ${avg[1]},K: ${avg[2]}");
+                    }
+
+                    return Container();
+                  },
+                ),
+              ],
             ),
+            onTap: () => setState(() {
+              selectDevice = name;
+            }),
           );
         },
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisExtent: 60.0,
+        ),
       ),
     );
   }

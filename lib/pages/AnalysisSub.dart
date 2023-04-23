@@ -48,6 +48,17 @@ LineSeries<ChartData, DateTime> createSeries(
   );
 }
 
+List<LocalHist> cleanNull({required List<LocalHist> h}) {
+  List<LocalHist> cleaned = [];
+  for (var hist in h) {
+    if (hist.value != "null") {
+      cleaned.add(hist);
+    }
+  }
+
+  return cleaned;
+}
+
 indicatorOnAdd({
   required String deviceName,
   required String whatIndicator,
@@ -136,6 +147,50 @@ _addingLoop(base, indStart, deviceName, indField0List) {
   }
 
   return indLines;
+}
+
+getAvgDisplay(instance, deviceName) async {
+  List<LocalHist> baseUncleaned =
+      await instance.getHistoryOf(device: deviceName);
+  List<LocalHist> base = cleanNull(h: baseUncleaned);
+  List<MaReturnTypes>? avgMa = await RustNativeCall().staticAvg(
+    hist: RustNativeCall().generateVec(
+      hist: base,
+      multiValue: deviceName.contains("NPK") ? true : false,
+    ),
+  );
+
+  List avgField0List = deviceName.contains("NPK")
+      ? avgMa[1].map(
+          single: (value) => value.field0,
+          triple: (value) => [
+            {
+              "N": value.field0.nVec[0].toStringAsPrecision(2),
+              "P": value.field0.pVec[0].toStringAsPrecision(2),
+              "K": value.field0.pVec[0].toStringAsPrecision(2),
+            },
+          ],
+        )
+      : avgMa[0].map(
+          single: (value) => value.field0,
+          triple: (value) => [
+            {
+              "N": value.field0.nVec[0].toStringAsPrecision(2),
+              "P": value.field0.pVec[0].toStringAsPrecision(2),
+              "K": value.field0.pVec[0].toStringAsPrecision(2),
+            },
+          ],
+        );
+
+  if (deviceName.contains("NPK")) {
+    return [
+      avgField0List[0]["N"],
+      avgField0List[0]["P"],
+      avgField0List[0]["K"],
+    ];
+  }
+
+  return avgField0List;
 }
 
 class GraphSettings {

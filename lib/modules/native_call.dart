@@ -109,4 +109,10 @@ class RustNativeCall {
 
     return res;
   }
+
+  Future<List<MaReturnTypes>> staticAvg({required List<RtDeviceVec> hist}) {
+    var res = api.getStaticAverage(data: hist);
+
+    return res;
+  }
 }
