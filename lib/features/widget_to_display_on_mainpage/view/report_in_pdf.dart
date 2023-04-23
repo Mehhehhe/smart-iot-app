@@ -4,7 +4,10 @@ import 'package:smart_iot_app/model/ReportModel.dart';
 
 class ReportPreview extends StatelessWidget {
   final ReportCard reportCard;
-  const ReportPreview({Key? key, required this.reportCard}) : super(key: key);
+  const ReportPreview({
+    Key? key,
+    required this.reportCard,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

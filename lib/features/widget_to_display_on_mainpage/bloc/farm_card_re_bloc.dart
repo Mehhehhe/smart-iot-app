@@ -133,7 +133,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
   _devicesToList(farm) async {
     var tempDevices = await getDevicesByFarmName(farm);
     // devices = temp_devices;
-    print("Cubit fetch devices : => $tempDevices");
+    // print("Cubit fetch devices : => $tempDevices");
     emit(FarmCardReState.loaded(
       currentIndex(),
       state.farms,
@@ -194,7 +194,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
 
   void triggerThreshCheck(String dev, value) {
     var enc = sha1.convert(utf8.encode(dev)).toString();
-    print("[BFonstart] $value , ${value.runtimeType}");
+    // print("[BFonstart] $value , ${value.runtimeType}");
     FlutterBackgroundService().invoke('threshDiff', {
       "encryptedKey": enc,
       "name": dev,

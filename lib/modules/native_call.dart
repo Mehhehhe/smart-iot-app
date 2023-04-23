@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
+import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
 import 'package:smart_iot_app/src/native.dart';
 import 'package:smart_iot_app/src/native/bridge_definitions.dart';
@@ -8,7 +10,7 @@ import 'package:smart_iot_app/src/native/bridge_definitions.dart';
 class RustNativeCall {
   // Future<Platform> platform = api.platform();
   var test = api.test();
-  var test_neural = api.testNeural();
+  // var test_neural = api.testNeural();
 
   static const List<dynamic> valueErrs = [
     null,
@@ -24,7 +26,7 @@ class RustNativeCall {
   }) {
     List<RtDeviceVec> rtList = [];
     // generate struct for calling rust fn
-    print("Input to gen len: ${hist.length}");
+    // print("Input to gen len: ${hist.length}");
     int countFalse = 0;
     for (int hIndex = 0; hIndex < hist.length; hIndex++) {
       LocalHist h = hist[hIndex];
@@ -61,7 +63,7 @@ class RustNativeCall {
     rtList.sort(
       (a, b) => int.parse(b.id).compareTo(int.parse(a.id)),
     );
-    print("Generate vec get len ${rtList.length}, deleted $countFalse");
+    // print("Generate vec get len ${rtList.length}, deleted $countFalse");
 
     return rtList;
   }
