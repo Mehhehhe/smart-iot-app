@@ -91,6 +91,15 @@ class MQTTClientWrapper {
       String farmName, String device, bool stateToSet) async {
     _publishMessage(json.encode({"requestedState": stateToSet}),
         "$farmName/$device/change_state");
+
+    return true;
+  }
+
+  Future<bool> publishToControlValue(
+      String farmName, String device, double value) async {
+    _publishMessage(
+        json.encode({"controlValue": value}), "$farmName/$device/controlValue");
+
     return true;
   }
 
