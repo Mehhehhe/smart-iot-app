@@ -1,11 +1,16 @@
 // ignore: file_names
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:smart_iot_app/db/local_history.dart';
+import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/report_in_pdf.dart';
 import 'package:smart_iot_app/model/ChartDataModel.dart';
 import 'package:smart_iot_app/model/LocalHistory.dart';
-import 'package:smart_iot_app/modules/native_call.dart';
-import 'package:smart_iot_app/src/native/bridge_definitions.dart';
+import 'package:smart_iot_app/model/ReportModel.dart';
+import 'package:smart_iot_app/pages/AnalysisSub.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 List<Color> palette = [
@@ -44,6 +49,11 @@ class _AnalysisPage extends State<AnalysisPage> {
   bool enableSma = false;
   bool enableEma = false;
 
+  // Section for report
+  late Uint8List _imageFile;
+  ScreenshotController screenshotController = ScreenshotController();
+  List<String> graphImgPaths = [];
+
   static const List<Tab> analyzeTab = <Tab>[
     Tab(
       text: "Indicators",
@@ -67,256 +77,31 @@ class _AnalysisPage extends State<AnalysisPage> {
   // Function 1: Fetch database of a device
   // Function 2: For each data, transform with toJson(), then List<Map> to List<ChartData>
   // ignore: long-method
-  Future<dynamic> _addBase({required String deviceName}) async {
+  Future<dynamic> addBase({required String deviceName}) async {
     List<LocalHist> baseUncleaned =
         await instance.getHistoryOf(device: deviceName);
     List<LocalHist> base = cleanNull(h: baseUncleaned);
     // For each indicators enabled by user
-    List<MaReturnTypes>? sma;
-    List<MaReturnTypes>? ema;
-    DateTime? smaStart;
-    DateTime? emaStart;
-    int smaDiff = 0;
-    int emaDiff = 0;
     List<ChartData> smaLines = [];
     List<ChartData> emaLines = [];
 
     if (indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
-      // print("Activate sma for $deviceName");
-      sma = await RustNativeCall().calculateSMA(
-        hist: RustNativeCall().generateVec(
-          hist: base,
-          multiValue: deviceName.contains("NPK") ? true : false,
-        ),
-        window_size: int.parse(indicatorsSetMap[selectDevice]["sma"]["range"]),
+      smaLines = await indicatorOnAdd(
+        deviceName: deviceName,
+        whatIndicator: "sma",
+        range: indicatorsSetMap[selectDevice]["sma"]["range"],
+        base: base,
       );
-      // print("Base length: ${base.length}");
-      smaDiff = base.length - sma.length + 1;
-
-      smaStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
-        base[base.length -
-                int.parse(indicatorsSetMap[selectDevice]["sma"]["range"]) +
-                1]
-            .dateUnixAsId,
-      ));
-      // print("[SMA] processing on start date $sma");
-      int count = 0;
-      // int pivot = int.parse(base[smaDiff].dateUnixAsId);
-      List smaField0List = [];
-      // List smaField0List = sma.map(
-      //   single: (value) => value.field0,
-      //   triple: (value) => [
-      //     {
-      //       "N": value.field0.nVec,
-      //       "P": value.field0.pVec,
-      //       "K": value.field0.kVec,
-      //     },
-      //   ],
-      // ).toList();
-      // print(sma[1].runtimeType);
-      smaField0List = deviceName.contains("NPK")
-          ? sma[1].map(
-              single: (value) => value.field0,
-              triple: (value) => [
-                {
-                  "N": value.field0.nVec,
-                  "P": value.field0.pVec,
-                  "K": value.field0.kVec,
-                },
-              ],
-            )
-          : sma[0].map(
-              single: (value) => value.field0,
-              triple: (value) => [
-                {
-                  "N": value.field0.nVec,
-                  "P": value.field0.pVec,
-                  "K": value.field0.kVec,
-                },
-              ],
-            );
-      // print(smaField0List);
-      // if (kDebugMode) {
-      //   // ignore: use_build_context_synchronously
-      //   await showDialog(
-      //     context: context,
-      //     builder: (context) => AlertDialog(
-      //       title: Text("Mapping"),
-      //       content: TextField(
-      //         controller: TextEditingController(text: smaField0List.toString()),
-      //         readOnly: true,
-      //         onTap: () {
-      //           Clipboard.setData(
-      //             ClipboardData(text: smaField0List.toString()),
-      //           );
-      //           Navigator.pop(context);
-      //         },
-      //       ),
-      //     ),
-      //   );
-      // }
-
-      base.sort(
-        (a, b) => DateTime.fromMillisecondsSinceEpoch(int.parse(a.dateUnixAsId))
-            .compareTo(
-          DateTime.fromMillisecondsSinceEpoch(
-            int.parse(b.dateUnixAsId),
-          ),
-        ),
-      );
-      print("Sorting completed! ${smaField0List.length}");
-      int smaLen = deviceName.contains("NPK")
-          ? smaField0List[0]["N"].length
-          : smaField0List.length;
-      // print(
-      //     "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
-      for (var h in base) {
-        int curr = int.parse(h.dateUnixAsId);
-        DateTime currDate = DateTime.fromMillisecondsSinceEpoch(curr);
-        // print(
-        //     "[SMA - Loop] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)} counting $count, diff: ${smaField0List.length - count}");
-        // print(smaField0List[0]["N"][count]);
-        if ((currDate == smaStart || currDate.isAfter(smaStart)) &&
-            count < smaLen) {
-          // print(
-          //     "[SMA - LoopPassCond] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)}, check cond:=> ${DateTime.fromMillisecondsSinceEpoch(curr).isAfter(smaStart)} counting $count, diff: ${smaField0List.length - count}");
-          smaLines.add(ChartData(
-            DateTime.fromMillisecondsSinceEpoch(curr),
-            [
-              deviceName.contains("NPK")
-                  ? {
-                      "N": smaField0List[0]["N"][count],
-                      "P": smaField0List[0]["P"][count],
-                      "K": smaField0List[0]["K"][count],
-                    }
-                  : smaField0List[count],
-            ],
-            "",
-          ));
-          // print("Counting $count");
-          count++;
-        }
-      }
-      // print("Done! smaLines = $smaLines");
     }
 
     if (indicatorsSetMap[selectDevice]["indicators"].contains("ema")) {
       // print("Activate sma for $deviceName");
-      ema = await RustNativeCall().calculateEMA(
-        hist: RustNativeCall().generateVec(
-          hist: base,
-          multiValue: deviceName.contains("NPK") ? true : false,
-        ),
-        period: int.parse(indicatorsSetMap[selectDevice]["ema"]["range"]),
+      emaLines = await indicatorOnAdd(
+        deviceName: deviceName,
+        whatIndicator: "ema",
+        range: indicatorsSetMap[selectDevice]["sma"]["range"],
+        base: base,
       );
-      // print("Base length: ${base.length}");
-      emaDiff = base.length - ema.length + 1;
-
-      emaStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
-        base[base.length -
-                int.parse(indicatorsSetMap[selectDevice]["ema"]["range"]) +
-                1]
-            .dateUnixAsId,
-      ));
-      // print("[SMA] processing on start date $sma");
-      int count = 0;
-      // int pivot = int.parse(base[smaDiff].dateUnixAsId);
-      List emaField0List = [];
-      // List smaField0List = sma.map(
-      //   single: (value) => value.field0,
-      //   triple: (value) => [
-      //     {
-      //       "N": value.field0.nVec,
-      //       "P": value.field0.pVec,
-      //       "K": value.field0.kVec,
-      //     },
-      //   ],
-      // ).toList();
-      // print(sma[1].runtimeType);
-      emaField0List = deviceName.contains("NPK")
-          ? ema[1].map(
-              single: (value) => value.field0,
-              triple: (value) => [
-                {
-                  "N": value.field0.nVec,
-                  "P": value.field0.pVec,
-                  "K": value.field0.kVec,
-                },
-              ],
-            )
-          : ema[0].map(
-              single: (value) => value.field0,
-              triple: (value) => [
-                {
-                  "N": value.field0.nVec,
-                  "P": value.field0.pVec,
-                  "K": value.field0.kVec,
-                },
-              ],
-            );
-      // print(smaField0List);
-      // if (kDebugMode) {
-      //   // ignore: use_build_context_synchronously
-      //   await showDialog(
-      //     context: context,
-      //     builder: (context) => AlertDialog(
-      //       title: Text("Mapping"),
-      //       content: TextField(
-      //         controller: TextEditingController(text: smaField0List.toString()),
-      //         readOnly: true,
-      //         onTap: () {
-      //           Clipboard.setData(
-      //             ClipboardData(text: smaField0List.toString()),
-      //           );
-      //           Navigator.pop(context);
-      //         },
-      //       ),
-      //     ),
-      //   );
-      // }
-
-      base.sort(
-        (a, b) => DateTime.fromMillisecondsSinceEpoch(int.parse(a.dateUnixAsId))
-            .compareTo(
-          DateTime.fromMillisecondsSinceEpoch(
-            int.parse(b.dateUnixAsId),
-          ),
-        ),
-      );
-      print("Sorting completed! ${emaField0List.length}");
-      int emaLen = deviceName.contains("NPK")
-          ? emaField0List[0]["N"].length
-          : emaField0List.length;
-      // print(
-      //     "Diff len ${smaField0List[0].length} , ${smaField0List[0]["N"].length}");
-      for (var h in base) {
-        int curr = int.parse(h.dateUnixAsId);
-        DateTime currDate = DateTime.fromMillisecondsSinceEpoch(curr);
-        // print(
-        //     "[SMA - Loop] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)} counting $count, diff: ${smaField0List.length - count}");
-        // print(smaField0List[0]["N"][count]);
-        if ((currDate == emaStart || currDate.isAfter(emaStart)) &&
-            count < emaLen) {
-          // print(
-          //     "[SMA - LoopPassCond] current is @ ${DateTime.fromMillisecondsSinceEpoch(curr)}, check cond:=> ${DateTime.fromMillisecondsSinceEpoch(curr).isAfter(smaStart)} counting $count, diff: ${smaField0List.length - count}");
-          emaLines.add(ChartData(
-            DateTime.fromMillisecondsSinceEpoch(curr),
-            [
-              deviceName.contains("NPK")
-                  ? {
-                      "N": emaField0List[0]["N"][count],
-                      "P": emaField0List[0]["P"][count],
-                      "K": emaField0List[0]["K"][count],
-                    }
-                  : emaField0List[count],
-            ],
-            "",
-          ));
-          // print("Counting $count");
-          count++;
-        }
-      }
-      // print("Done! smaLines = $smaLines");
     }
 
     // replace this with device type checker.
@@ -327,13 +112,10 @@ class _AnalysisPage extends State<AnalysisPage> {
             : String;
     List<ChartData> temp = [];
     dynamic valueToSet;
-    // print("Start Loop");
     int countNull = 0;
     for (var b in base) {
-      // print("State: ${b.value}, ${b.value.runtimeType}");
       switch (baseVal) {
         case Map:
-          // print("[BaseVal] map case:=> ${b.value}, ${b.value.runtimeType}");
           if (!b.value.contains('"')) {
             final modifiedString = b.value.replaceAllMapped(
               RegExp(r'([A-Za-z]+)(\s*:)', multiLine: true),
@@ -351,13 +133,12 @@ class _AnalysisPage extends State<AnalysisPage> {
             countNull++;
             break;
           }
-          // print("[BaseVal] double case:=> ${b.value}, ${b.value.runtimeType}");
           valueToSet = num.parse(b.value);
-          // print("Num parsed and get $valueToSet");
           break;
         default:
           break;
       }
+
       temp.add(ChartData(
         DateTime.fromMillisecondsSinceEpoch(int.parse(b.dateUnixAsId)),
         [valueToSet],
@@ -365,8 +146,6 @@ class _AnalysisPage extends State<AnalysisPage> {
         name: deviceName,
       ));
     }
-    // print("Cleaned & get ${temp.length} , deleted $countNull");
-    // print("Before return: check indicator lines $smaLines");
 
     return {
       "base": temp,
@@ -377,23 +156,19 @@ class _AnalysisPage extends State<AnalysisPage> {
 
   // Function 3: Use the same functions with detail's page of graph creation.
   // ignore: long-method
-  Future<Map<String, dynamic>> _lineSeries(String device) async {
+  Future<Map<String, dynamic>> lineSeries(String device) async {
     List<LineSeries<ChartData, DateTime>> temp =
         <LineSeries<ChartData, DateTime>>[];
     List<String> places = [];
     // add base here
-    dynamic base = await _addBase(deviceName: device);
+    dynamic base = await addBase(deviceName: device);
 
     List<ChartData> newDataList = [];
     newDataList.addAll(base["base"]);
-    // newDataList.addAll(data);
     newDataList.sort(
       (a, b) => b.date.compareTo(a.date),
     );
-    // print("[base] $base");
-    // Find all devices
     for (var elm in newDataList) {
-      // print("Prepare data ${elm.place}, ${elm.values}");
       if (!places.contains(elm.place)) {
         places.add(elm.place);
       }
@@ -407,14 +182,14 @@ class _AnalysisPage extends State<AnalysisPage> {
         }
       }
       if (newDataList[0].name == null) {
-        temp.add(_createSeries(tempArr, ""));
+        temp.add(createSeries(tempArr, ""));
       } else if (newDataList[0].name!.contains("NPK")) {
         // single device, multi values
-        temp.add(_createSeries(tempArr, "N", multiValue: true));
-        temp.add(_createSeries(tempArr, "P", multiValue: true));
-        temp.add(_createSeries(tempArr, "K", multiValue: true));
+        temp.add(createSeries(tempArr, "N", multiValue: true));
+        temp.add(createSeries(tempArr, "P", multiValue: true));
+        temp.add(createSeries(tempArr, "K", multiValue: true));
       } else {
-        temp.add(_createSeries(tempArr, device));
+        temp.add(createSeries(tempArr, device));
       }
 
       tempArr = [];
@@ -423,109 +198,62 @@ class _AnalysisPage extends State<AnalysisPage> {
     if (base["sma"].isNotEmpty) {
       // print("Add sma");
       if (newDataList[0].name!.contains("NPK")) {
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["sma"],
           "N sma",
           isIndicator: true,
           multiValue: true,
         ));
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["sma"],
           "P sma",
           isIndicator: true,
           multiValue: true,
         ));
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["sma"],
           "K sma",
           isIndicator: true,
           multiValue: true,
         ));
       } else {
-        temp.add(_createSeries(base["sma"], "sma", isIndicator: true));
+        temp.add(createSeries(base["sma"], "sma", isIndicator: true));
       }
     }
     if (base["ema"].isNotEmpty) {
       // print("Add sma");
       if (newDataList[0].name!.contains("NPK")) {
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["ema"],
           "N ema",
           isIndicator: true,
           multiValue: true,
         ));
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["ema"],
           "P ema",
           isIndicator: true,
           multiValue: true,
         ));
-        temp.add(_createSeries(
+        temp.add(createSeries(
           base["ema"],
           "K ema",
           isIndicator: true,
           multiValue: true,
         ));
       } else {
-        temp.add(_createSeries(base["ema"], "ema", isIndicator: true));
+        temp.add(createSeries(base["ema"], "ema", isIndicator: true));
       }
     }
-
-    // print("[AddAll map] $temp");
-    // print("[TestEx] ${temp[0].dataSource[0]}");
 
     return {
       "series": temp,
     };
   }
 
-  LineSeries<ChartData, DateTime> _createSeries(
-    List<ChartData> tempArr,
-    String name, {
-    bool isIndicator = false,
-    bool multiValue = false,
-  }) {
-    // print("[create] $name");
-
-    return LineSeries(
-      name: name,
-      dataSource: tempArr,
-      opacity: isIndicator ? 0.8 : 1,
-      legendIconType: LegendIconType.circle,
-      legendItemText: name,
-      // enableTooltip: true,
-      isVisibleInLegend: true,
-      xValueMapper: (datum, index) => datum.date,
-      yValueMapper: (datum, index) {
-        // print("datum accesses ${datum.date}, ${datum.values[0].keys}");
-        if (name == "") {
-          return datum.values[0];
-        } else if (!multiValue) {
-          return datum.values[0];
-        } else if (isIndicator && !multiValue) {
-          return datum.values[0];
-        }
-        // print("Return mapper value $name => ${datum.values[0][name]}");
-
-        return datum.values[0][name.characters.first];
-      },
-      trendlines: !multiValue
-          ? [
-              Trendline(
-                isVisible: true,
-                opacity: 0.2,
-                isVisibleInLegend: false,
-              ),
-            ]
-          : [],
-    );
-  }
-
   @override
   void initState() {
     instance = LocalHistoryDatabase.instance;
-    // print("[Ana] ${widget.devices}");
-    // print("[NativeCall] complete!~ get ${RustNativeCall().test_neural}");
     super.initState();
   }
 
@@ -544,32 +272,37 @@ class _AnalysisPage extends State<AnalysisPage> {
               case "indicators":
                 return indicatorsTab();
               case "report":
-                if (widget.devices.isEmpty) {
+                if (widget.devices.isEmpty || selectDevice == "") {
                   return const Center(
                     child: Text("No data available"),
                   );
                 }
-
-                return FutureBuilder(
-                  future: RustNativeCall().test_neural,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List data = snapshot.data! as List;
-
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: data.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(data[index].toString()),
-                          );
-                        },
-                      );
-                    }
-
-                    return Container();
-                  },
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.9,
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportPreview(
+                              reportCard: ReportCard(
+                                widget.devices[0]["Location"],
+                                widget.devices,
+                                graphImgPaths,
+                                // "",
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: const Text(
+                          "Make",
+                        ),
+                      ),
+                    ],
+                  ),
                 );
+
               default:
             }
 
@@ -589,6 +322,36 @@ class _AnalysisPage extends State<AnalysisPage> {
       shrinkWrap: true,
       children: [
         graphScreen(),
+        if (widget.devices.isNotEmpty)
+          TextButton(
+            onPressed: () => setState(() {
+              indicatorsSetMap[selectDevice]["legend"] =
+                  !indicatorsSetMap[selectDevice]["legend"];
+            }),
+            child: const Text("Toggle Legend"),
+          ),
+        if (widget.devices.isNotEmpty)
+          Container(
+            width: 200,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () async => await screenshotController
+                  .capture(delay: Duration(milliseconds: 10))
+                  .then((value) async {
+                // print(value);
+                if (value != null) {
+                  final directory = await getApplicationDocumentsDirectory();
+                  final imagePath = await File(
+                          '${directory.path}/$selectDevice${DateTime.now().millisecondsSinceEpoch}.jpeg')
+                      .create();
+                  await imagePath.writeAsBytes(value);
+
+                  graphImgPaths.add(imagePath.path);
+                }
+              }),
+              child: const Text("Export graph as jpeg"),
+            ),
+          ),
         if (widget.devices.isNotEmpty) deviceAvgSelector(),
         if (widget.devices.isNotEmpty) indicatorsInput(name: selectDevice),
       ],
@@ -600,15 +363,18 @@ class _AnalysisPage extends State<AnalysisPage> {
       height: 300,
       width: MediaQuery.of(context).size.width * 0.8,
       child: FutureBuilder(
-        future: _lineSeries(selectDevice),
+        future: lineSeries(selectDevice),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             Map<String, dynamic> fetchedMap =
                 snapshot.data! as Map<String, dynamic>;
             dynamic ls = fetchedMap["series"];
-            print("[FetchGraph] ${ls.length}");
 
-            return _buildLineChart(ls: ls);
+            // Wrap this in Screenshot
+            return Screenshot(
+              controller: screenshotController,
+              child: _buildLineChart(ls: ls),
+            );
           }
 
           return const Center(
@@ -621,7 +387,7 @@ class _AnalysisPage extends State<AnalysisPage> {
 
   Widget deviceAvgSelector() {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.15,
+      height: 100,
       width: MediaQuery.of(context).size.width * 0.8,
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -633,7 +399,8 @@ class _AnalysisPage extends State<AnalysisPage> {
           // Build tile with average in it
           String name = widget.devices[index]["DeviceName"];
 
-          return Card(
+          return Container(
+            height: 50,
             child: InkWell(
               child: Text(name),
               onTap: () => setState(() {
@@ -646,10 +413,9 @@ class _AnalysisPage extends State<AnalysisPage> {
     );
   }
 
-  // ignore: long-method
   Widget indicatorsInput({required String name}) {
     List<Widget> lts = [];
-    Map<String, dynamic> temp = {
+    dynamic temp = {
       name: {
         "indicators": [],
         "sma": {
@@ -660,6 +426,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           "range": "5",
           "bools": [true, false, false, false],
         },
+        "legend": true,
       },
     };
     if (!indicatorsSetMap.containsKey(name)) {
@@ -671,156 +438,24 @@ class _AnalysisPage extends State<AnalysisPage> {
           if (!indicatorsSetMap[selectDevice]["indicators"].contains("sma")) {
             break;
           }
-          lts.add(ListTile(
-            onLongPress: () => showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text("Delete"),
-                  content: Text(
-                      "SMA; Simple Moving Average will disappear from the graph. You can still add it back later."),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          indicatorsSetMap[name]["indicators"].remove("sma");
-                          // enableSma = false;
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text("OK"),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                  ],
-                );
-              },
-            ),
-            title: Text("Simple Moving Average"),
-            subtitle: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Choose a range"),
-                    ToggleButtons(
-                      onPressed: (index) {
-                        setState(() {
-                          for (int i = 0;
-                              i < indicatorsSetMap[name]["sma"]["bools"].length;
-                              i++) {
-                            indicatorsSetMap[name]["sma"]["bools"][i] =
-                                i == index;
-                          }
-                          indicatorsSetMap[name]["sma"]["range"] =
-                              movingAverageRangeSelector[index]
-                                  .toString()
-                                  .substring(
-                                    6,
-                                    movingAverageRangeSelector[index]
-                                            .toString()
-                                            .length -
-                                        2,
-                                  );
-                          // indicatorsSetMap[name]["sma"]["bools"][index] =
-                          //     !indicatorsSetMap[name]["sma"]["bools"][index];
-                        });
-                      },
-                      isSelected: indicatorsSetMap[name]["sma"]["bools"],
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.green[700],
-                      selectedColor: Colors.white,
-                      fillColor: Colors.green[200],
-                      color: Colors.green[400],
-                      children: movingAverageRangeSelector,
-                    ),
-                  ],
-                ),
-                Text("Press & Hold to remove this indicator"),
-              ],
-            ),
+          lts.add(_indicatorTile(
+            whatIndicator: "sma",
+            textOnDelete:
+                "SMA; Simple Moving Average will disappear from the graph. You can still add it back later.",
+            deviceName: name,
+            indicatorFullName: "Simple Moving Average",
           ));
           break;
         case "ema":
           if (!indicatorsSetMap[selectDevice]["indicators"].contains("ema")) {
             break;
           }
-          lts.add(ListTile(
-            onLongPress: () => showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text("Delete"),
-                  content: Text(
-                      "EMA; Exponential Moving Average will disappear from the graph. You can still add it back later."),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          indicatorsSetMap[name]["indicators"].remove("ema");
-                          // enableSma = false;
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text("OK"),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                  ],
-                );
-              },
-            ),
-            title: Text("Exponential Moving Average"),
-            subtitle: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Choose a range"),
-                    ToggleButtons(
-                      onPressed: (index) {
-                        setState(() {
-                          for (int i = 0;
-                              i < indicatorsSetMap[name]["ema"]["bools"].length;
-                              i++) {
-                            indicatorsSetMap[name]["ema"]["bools"][i] =
-                                i == index;
-                          }
-                          indicatorsSetMap[name]["ema"]["range"] =
-                              movingAverageRangeSelector[index]
-                                  .toString()
-                                  .substring(
-                                    6,
-                                    movingAverageRangeSelector[index]
-                                            .toString()
-                                            .length -
-                                        2,
-                                  );
-                          // indicatorsSetMap[name]["sma"]["bools"][index] =
-                          //     !indicatorsSetMap[name]["sma"]["bools"][index];
-                        });
-                      },
-                      isSelected: indicatorsSetMap[name]["ema"]["bools"],
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.green[700],
-                      selectedColor: Colors.white,
-                      fillColor: Colors.green[200],
-                      color: Colors.green[400],
-                      children: movingAverageRangeSelector,
-                    ),
-                  ],
-                ),
-                Text("Press & Hold to remove this indicator"),
-              ],
-            ),
+          lts.add(_indicatorTile(
+            whatIndicator: "ema",
+            textOnDelete:
+                "EMA; Exponential Moving Average will disappear from the graph. You can still add it back later.",
+            deviceName: name,
+            indicatorFullName: "Exponential Moving Average",
           ));
           break;
         default:
@@ -837,24 +472,7 @@ class _AnalysisPage extends State<AnalysisPage> {
             context: context,
             builder: (context) => ListView.builder(
               itemCount: availableIndicators.length,
-              itemBuilder: (context, index) => ExpansionTile(
-                title: Text(availableIndicators[index].toUpperCase()),
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        indicatorsSetMap[selectDevice]["indicators"]
-                            .add(availableIndicators[index]);
-                        // enableSma = true;
-                      });
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [Icon(Icons.add), Text("Choose")],
-                    ),
-                  ),
-                ],
-              ),
+              itemBuilder: (context, index) => _indicatorChoose(index),
             ),
           ),
         ),
@@ -862,7 +480,128 @@ class _AnalysisPage extends State<AnalysisPage> {
     );
   }
 
-  // ignore: long-method
+  Widget _indicatorChoose(index) {
+    return ExpansionTile(
+      title: Text(availableIndicators[index].toUpperCase()),
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              indicatorsSetMap[selectDevice]["indicators"]
+                  .add(availableIndicators[index]);
+              // enableSma = true;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: const [Icon(Icons.add), Text("Choose")],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _indicatorTile({
+    required String whatIndicator,
+    required String textOnDelete,
+    required String deviceName,
+    required String indicatorFullName,
+  }) {
+    return ListTile(
+      onLongPress: () => showDialog(
+        context: context,
+        builder: (context) {
+          return _indicatorTileDelDialog(
+            context: context,
+            deviceName: deviceName,
+            whatIndicator: whatIndicator,
+            textOnDelete: textOnDelete,
+          );
+        },
+      ),
+      title: Text(indicatorFullName),
+      subtitle: _indicatorTileSettings(
+        deviceName: deviceName,
+        whatIndicator: whatIndicator,
+      ),
+    );
+  }
+
+  Widget _indicatorTileDelDialog({
+    required BuildContext context,
+    required String deviceName,
+    required String whatIndicator,
+    required String textOnDelete,
+  }) {
+    return AlertDialog(
+      title: const Text("Delete"),
+      content: Text(textOnDelete),
+      actions: [
+        TextButton(
+          onPressed: () {
+            setState(() {
+              indicatorsSetMap[deviceName]["indicators"].remove(whatIndicator);
+            });
+            Navigator.pop(context);
+          },
+          child: const Text("OK"),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text("Cancel"),
+        ),
+      ],
+    );
+  }
+
+  Widget _indicatorTileSettings({
+    required String deviceName,
+    required String whatIndicator,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Choose a range"),
+            ToggleButtons(
+              onPressed: (index) {
+                setState(() {
+                  for (int i = 0;
+                      i <
+                          indicatorsSetMap[deviceName][whatIndicator]["bools"]
+                              .length;
+                      i++) {
+                    indicatorsSetMap[deviceName][whatIndicator]["bools"][i] =
+                        i == index;
+                  }
+                  indicatorsSetMap[deviceName][whatIndicator]["range"] =
+                      movingAverageRangeSelector[index].toString().substring(
+                            6,
+                            movingAverageRangeSelector[index]
+                                    .toString()
+                                    .length -
+                                2,
+                          );
+                });
+              },
+              isSelected: indicatorsSetMap[deviceName][whatIndicator]["bools"],
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              selectedBorderColor: Colors.green[700],
+              selectedColor: Colors.white,
+              fillColor: Colors.green[200],
+              color: Colors.green[400],
+              children: movingAverageRangeSelector,
+            ),
+          ],
+        ),
+        const Text("Press & Hold to remove this indicator"),
+      ],
+    );
+  }
+
   SfCartesianChart _buildLineChart({
     required dynamic ls,
   }) {
@@ -873,7 +612,7 @@ class _AnalysisPage extends State<AnalysisPage> {
       plotAreaBackgroundColor: Colors.white54,
       palette: palette,
       plotAreaBorderColor: Colors.grey,
-      legend: Legend(isVisible: true),
+      legend: Legend(isVisible: indicatorsSetMap[selectDevice]["legend"]),
       primaryXAxis: DateTimeAxis(
         enableAutoIntervalOnZooming: true,
         intervalType: DateTimeIntervalType.days,
@@ -883,34 +622,9 @@ class _AnalysisPage extends State<AnalysisPage> {
         majorTickLines: const MajorTickLines(size: 0),
       ),
       series: ls,
-      tooltipBehavior: TooltipBehavior(
-        enable: true,
-        elevation: 5,
-        canShowMarker: true,
-        activationMode: ActivationMode.singleTap,
-        shared: false,
-        header: "Sensor Value",
-        format: 'ณ point.x, ค่า: point.y',
-        decimalPlaces: 2,
-        textStyle: const TextStyle(fontSize: 16.0),
-      ),
-      trackballBehavior: TrackballBehavior(
-        activationMode: ActivationMode.singleTap,
-        enable: true,
-        shouldAlwaysShow: true,
-        tooltipDisplayMode: TrackballDisplayMode.nearestPoint,
-        tooltipSettings: const InteractiveTooltip(enable: false),
-        markerSettings: const TrackballMarkerSettings(
-          markerVisibility: TrackballVisibilityMode.hidden,
-        ),
-      ),
-      zoomPanBehavior: ZoomPanBehavior(
-        zoomMode: ZoomMode.x,
-        maximumZoomLevel: 0.2,
-        enableMouseWheelZooming: true,
-        enablePinching: true,
-        enablePanning: true,
-      ),
+      tooltipBehavior: GraphSettings().tooltip(),
+      trackballBehavior: GraphSettings().trackball(),
+      zoomPanBehavior: GraphSettings().zoom(),
     );
   }
 }
