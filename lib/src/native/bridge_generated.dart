@@ -69,19 +69,24 @@ class NativeImpl implements Native {
         argNames: [],
       );
 
-  Future<Float32List> testNeural({dynamic hint}) {
+  Future<List<MaReturnTypes>> getStaticAverage({required List<RtDeviceVec> data, dynamic hint}) {
+    var arg0 = _platform.api2wire_list_rt_device_vec(data);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_test_neural(port_),
-      parseSuccessData: _wire2api_float_32_list,
-      constMeta: kTestNeuralConstMeta,
-      argValues: [],
+      callFfi: (port_) => _platform.inner.wire_get_static_average(port_, arg0),
+      parseSuccessData: _wire2api_list_ma_return_types,
+      constMeta: kGetStaticAverageConstMeta,
+      argValues: [
+        data
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kTestNeuralConstMeta => const FlutterRustBridgeTaskConstMeta(
-        debugName: "test_neural",
-        argNames: [],
+  FlutterRustBridgeTaskConstMeta get kGetStaticAverageConstMeta => const FlutterRustBridgeTaskConstMeta(
+        debugName: "get_static_average",
+        argNames: [
+          "data"
+        ],
       );
 
   Future<List<MaReturnTypes>> calculateSma({required int period, required List<RtDeviceVec> data, dynamic hint}) {
@@ -147,16 +152,8 @@ class NativeImpl implements Native {
     return _wire2api_triple_vec(raw);
   }
 
-  double _wire2api_f32(dynamic raw) {
-    return raw as double;
-  }
-
   double _wire2api_f64(dynamic raw) {
     return raw as double;
-  }
-
-  Float32List _wire2api_float_32_list(dynamic raw) {
-    return raw as Float32List;
   }
 
   Float64List _wire2api_float_64_list(dynamic raw) {
@@ -420,16 +417,18 @@ class NativeWire implements FlutterRustBridgeWireBase {
   late final _wire_testPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_test');
   late final _wire_test = _wire_testPtr.asFunction<void Function(int)>();
 
-  void wire_test_neural(
+  void wire_get_static_average(
     int port_,
+    ffi.Pointer<wire_list_rt_device_vec> data,
   ) {
-    return _wire_test_neural(
+    return _wire_get_static_average(
       port_,
+      data,
     );
   }
 
-  late final _wire_test_neuralPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_test_neural');
-  late final _wire_test_neural = _wire_test_neuralPtr.asFunction<void Function(int)>();
+  late final _wire_get_static_averagePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.Pointer<wire_list_rt_device_vec>)>>('wire_get_static_average');
+  late final _wire_get_static_average = _wire_get_static_averagePtr.asFunction<void Function(int, ffi.Pointer<wire_list_rt_device_vec>)>();
 
   void wire_calculate_sma(
     int port_,

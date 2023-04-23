@@ -17,8 +17,8 @@ pub extern "C" fn wire_test(port_: i64) {
 }
 
 #[no_mangle]
-pub extern "C" fn wire_test_neural(port_: i64) {
-    wire_test_neural_impl(port_)
+pub extern "C" fn wire_get_static_average(port_: i64, data: *mut wire_list_rt_device_vec) {
+    wire_get_static_average_impl(port_, data)
 }
 
 #[no_mangle]

@@ -24,9 +24,9 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kTestConstMeta;
 
-  Future<Float32List> testNeural({dynamic hint});
+  Future<List<MaReturnTypes>> getStaticAverage({required List<RtDeviceVec> data, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kTestNeuralConstMeta;
+  FlutterRustBridgeTaskConstMeta get kGetStaticAverageConstMeta;
 
   Future<List<MaReturnTypes>> calculateSma({required int period, required List<RtDeviceVec> data, dynamic hint});
 

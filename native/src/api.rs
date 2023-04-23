@@ -1,8 +1,9 @@
 // pub use std::collections::HashMap;
 
+use std::f64::consts::PI;
+
 pub use serde::Deserialize;
 pub use serde::Serialize;
-pub use dfdx::{tensor::{Cpu, ZerosTensor, Tensor}, prelude::{DeviceBuildExt, Linear, ReLU, Tanh, Module, SaveToNpz}, shapes::Rank1};
 // pub use serde_json::Value;
 
 // This is the entry point of your Rust library.
@@ -71,26 +72,45 @@ pub fn test() -> String {
     return "Hello Native!".to_owned();
 }
 
-pub fn test_neural() -> Vec<f32>{
-    type Mlp = (
-        (Linear<10, 32>, ReLU),
-        (Linear<32, 32>, ReLU),
-        (Linear<32, 2>, Tanh),
-    );
-    let dev:Cpu = Default::default();
-    let mlp = dev.build_module::<Mlp, f32>();
-    let x:Tensor<Rank1<10>, f32, Cpu> = dev.zeros();
-    let y:Tensor<Rank1<2>, f32, Cpu> = mlp.forward(x);
-    mlp.save("checkpoint.npz");
+pub fn get_static_average(data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes> {
+    let data_range = data.len() as f64;
+    let mut avg_single = Vec::new();
+    let mut avg_three = Vec::new();
+    let mut res = Vec::new();
 
-    return y.as_vec();
+    let mut sum_single = 0.0;
+    let mut sum_n = 0.0;
+    let mut sum_p = 0.0;
+    let mut sum_k = 0.0;
+
+    for d in data {
+        match d.value.as_ref() {
+            DeviceVal::Single(s) => {
+                sum_single += *s / (data_range);
+            }
+            DeviceVal::Three(t) => {
+                sum_n += t.n_value / (data_range);
+                sum_p += t.p_value / (data_range);
+                sum_k += t.k_value / (data_range);
+            }
+        }
+    }
+    avg_single.push(sum_single);
+    avg_three.push(sum_n);
+    avg_three.push(sum_p);
+    avg_three.push(sum_k);
+
+    res.push(MaReturnTypes::Single(avg_single));
+    res.push(MaReturnTypes::Triple(TripleVec {
+        n_vec: vec![avg_three[0]],
+        p_vec: vec![avg_three[1]],
+        k_vec: vec![avg_three[2]],
+    }));
+
+    return res;
 }
 
-// pub fn analyze() -> HashMap<String, serde_json::Value>{
-
-// }
-
-pub struct RtDeviceVec{
+pub struct RtDeviceVec {
     pub(crate) id: String,
     pub(crate) device: String,
     pub(crate) farm: String,
@@ -98,45 +118,53 @@ pub struct RtDeviceVec{
     pub(crate) comment: String,
 }
 
-pub enum DeviceVal{
+pub enum DeviceVal {
     Single(f64),
     Three(MultiVal),
 }
 
-pub struct MultiVal{
+pub struct MultiVal {
     pub(crate) n_value: f64,
     pub(crate) p_value: f64,
     pub(crate) k_value: f64,
 }
 
-impl Default for DeviceVal{
+impl Default for DeviceVal {
     fn default() -> Self {
         Self::Single(0.0);
-        Self::Three(MultiVal { n_value: 0.0, p_value: 0.0, k_value: 0.0 })
+        Self::Three(MultiVal {
+            n_value: 0.0,
+            p_value: 0.0,
+            k_value: 0.0,
+        })
     }
 }
 
-pub enum MaReturnTypes{
+pub enum MaReturnTypes {
     Single(Vec<f64>),
     Triple(TripleVec),
 }
 
-pub struct TripleVec{
+pub struct TripleVec {
     pub(crate) n_vec: Vec<f64>,
     pub(crate) p_vec: Vec<f64>,
-    pub(crate) k_vec: Vec<f64>
+    pub(crate) k_vec: Vec<f64>,
 }
 
-impl Default for MaReturnTypes{
+impl Default for MaReturnTypes {
     fn default() -> Self {
         Self::Single(vec![0.0]);
-        Self::Triple(TripleVec { n_vec: vec![0.0], p_vec: vec![0.0], k_vec: vec![0.0] })
+        Self::Triple(TripleVec {
+            n_vec: vec![0.0],
+            p_vec: vec![0.0],
+            k_vec: vec![0.0],
+        })
     }
 }
 
 pub fn calculate_sma(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes> {
     let mut window = Vec::new();
-    let mut window3:Vec<f64> = Vec::new();
+    let mut window3: Vec<f64> = Vec::new();
     let mut res = Vec::new();
 
     let mut single_vec = Vec::new();
@@ -151,24 +179,24 @@ pub fn calculate_sma(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes
                 if window.len() > period {
                     window.remove(0);
                 }
-    
+
                 if window.len() >= period {
                     let sum: f64 = window.iter().take(period).sum();
                     let sma_value = sum / period as f64;
                     single_vec.push(sma_value);
                 }
-            },
+            }
             DeviceVal::Three(t) => {
                 window3.push(t.n_value);
                 window3.push(t.p_value);
                 window3.push(t.k_value);
-                
+
                 if window3.len() > period * 3 {
                     window3.remove(0);
                     window3.remove(1);
                     window3.remove(2);
                 }
-    
+
                 if window3.len() >= period * 3 {
                     let nsum: f64 = window3[0] + window3[3] + window3[6];
                     let psum: f64 = window3[1] + window3[4] + window3[7];
@@ -182,17 +210,21 @@ pub fn calculate_sma(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes
                     pvec.push(psma_value);
                     kvec.push(ksma_value);
                 }
-            },
+            }
         };
     }
 
     res.push(MaReturnTypes::Single(single_vec));
-    res.push(MaReturnTypes::Triple(TripleVec { n_vec: nvec, p_vec: pvec, k_vec: kvec }));
+    res.push(MaReturnTypes::Triple(TripleVec {
+        n_vec: nvec,
+        p_vec: pvec,
+        k_vec: kvec,
+    }));
 
     return res;
 }
 
-pub fn calculate_ema(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes>{
+pub fn calculate_ema(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes> {
     // init vars
     let multiplier = 2.0 / ((period + 1) as f64);
     let mut prev_ema_single = 0.0;
@@ -211,28 +243,28 @@ pub fn calculate_ema(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes
     let mut nvec = Vec::new();
     let mut pvec = Vec::new();
     let mut kvec = Vec::new();
-    let mut res:Vec<MaReturnTypes> = Vec::new();
+    let mut res: Vec<MaReturnTypes> = Vec::new();
 
-    for d in data{
-        match d.value.as_ref(){
+    for d in data {
+        match d.value.as_ref() {
             DeviceVal::Single(s) => {
                 sum_s += s;
                 count_single += 1;
 
-                if count_single < period{
+                if count_single < period {
                     prev_ema_single = sum_s / (count_single as f64);
                 } else {
                     prev_ema_single = (s - prev_ema_single) * multiplier + prev_ema_single;
                 }
                 single_vec.push(prev_ema_single);
-            },
+            }
             DeviceVal::Three(t) => {
                 sum_n += t.n_value;
                 sum_p += t.p_value;
                 sum_k += t.k_value;
                 count_multi += 1;
 
-                if count_multi < period{
+                if count_multi < period {
                     prev_ema_n = sum_n / (count_multi as f64);
                     prev_ema_p = sum_p / (count_multi as f64);
                     prev_ema_k = sum_k / (count_multi as f64);
@@ -244,11 +276,15 @@ pub fn calculate_ema(period: usize, data: Vec<RtDeviceVec>) -> Vec<MaReturnTypes
                 nvec.push(prev_ema_n);
                 pvec.push(prev_ema_p);
                 kvec.push(prev_ema_k);
-            },
+            }
         }
     }
     res.push(MaReturnTypes::Single(single_vec));
-    res.push(MaReturnTypes::Triple(TripleVec { n_vec: nvec, p_vec: pvec, k_vec: kvec }));
+    res.push(MaReturnTypes::Triple(TripleVec {
+        n_vec: nvec,
+        p_vec: pvec,
+        k_vec: kvec,
+    }));
 
     return res;
 }

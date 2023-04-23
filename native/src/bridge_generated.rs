@@ -51,14 +51,20 @@ fn wire_test_impl(port_: MessagePort) {
         move || move |task_callback| Ok(test()),
     )
 }
-fn wire_test_neural_impl(port_: MessagePort) {
+fn wire_get_static_average_impl(
+    port_: MessagePort,
+    data: impl Wire2Api<Vec<RtDeviceVec>> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
-            debug_name: "test_neural",
+            debug_name: "get_static_average",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(test_neural()),
+        move || {
+            let api_data = data.wire2api();
+            move |task_callback| Ok(get_static_average(api_data))
+        },
     )
 }
 fn wire_calculate_sma_impl(
