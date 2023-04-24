@@ -51,7 +51,6 @@ class FarmEditor extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(farm[index]),
-                  selected: true,
                   onTap: () => Navigator.pop(context, index),
                 );
               },
