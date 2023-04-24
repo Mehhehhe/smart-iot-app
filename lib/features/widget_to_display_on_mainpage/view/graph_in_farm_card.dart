@@ -145,6 +145,7 @@ class _LiveChartState extends State<LiveChart> {
 
     return Column(
       children: [
+        const Padding(padding: EdgeInsets.only(top: 20.0)),
         _toggleRangesRow(),
         displayGraph,
       ],
