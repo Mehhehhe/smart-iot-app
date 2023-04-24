@@ -27,9 +27,11 @@ class _DeviceEditor extends State<DeviceEditor> {
     String id = sha1.convert(utf8.encode(widget.deviceName)).toString();
 
     threshTextField(topicName, controller) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Text(topicName.toString()),
-            Expanded(
+            Container(
+              width: 50.0,
               child: TextFormField(
                 maxLines: 1,
                 keyboardType: TextInputType.number,
@@ -58,6 +60,7 @@ class _DeviceEditor extends State<DeviceEditor> {
           child: const Text("Save"),
         );
 
+    // ignore: long-method
     placeTextInForm() => FutureBuilder(
           future: thd.getThresh(id),
           builder: (context, snapshot) {
@@ -69,14 +72,14 @@ class _DeviceEditor extends State<DeviceEditor> {
                 dynamic data = snapshot.data.runtimeType == double
                     ? snapshot.data
                     : snapshot.data as Map;
+                print("[TheshSettings] $data");
 
-                Map value = data == Map
-                    ? data
-                    : {
-                        "N": 0.0,
-                        "P": 0.0,
-                        "K": 0.0,
-                      };
+                Map value = data ??
+                    {
+                      "N": 0.0,
+                      "P": 0.0,
+                      "K": 0.0,
+                    };
                 TextEditingController nSlot =
                     TextEditingController(text: value["N"].toString());
                 TextEditingController pSlot =
@@ -104,9 +107,12 @@ class _DeviceEditor extends State<DeviceEditor> {
                 ]);
               }
 
-              return ListView(
-                shrinkWrap: true,
-                children: [...widgetList],
+              return Container(
+                color: Colors.orange.shade100,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [...widgetList],
+                ),
               );
             }
 
@@ -125,8 +131,17 @@ class _DeviceEditor extends State<DeviceEditor> {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
-      title: const Text("Settings"),
+      title: const Text(
+        "Threshold Notifications",
+        style: TextStyle(
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       initiallyExpanded: false,
+      backgroundColor: Colors.orange.shade300,
+      collapsedBackgroundColor: Colors.orange.shade500,
+      textColor: Colors.black,
       children: [
         thresholdConfig(),
       ],
