@@ -73,13 +73,15 @@ indicatorOnAdd({
           ),
           window_size: int.parse(range),
         )
-      : await RustNativeCall().calculateEMA(
-          hist: RustNativeCall().generateVec(
-            hist: base,
-            multiValue: deviceName.contains("NPK") ? true : false,
-          ),
-          period: int.parse(range),
-        );
+      : whatIndicator == "ema"
+          ? await RustNativeCall().calculateEMA(
+              hist: RustNativeCall().generateVec(
+                hist: base,
+                multiValue: deviceName.contains("NPK") ? true : false,
+              ),
+              period: int.parse(range),
+            )
+          : [];
 
   DateTime indStart = DateTime.fromMillisecondsSinceEpoch(int.parse(
     base[base.length - int.parse(range) + 1].dateUnixAsId,
@@ -181,6 +183,7 @@ getAvgDisplay(instance, deviceName) async {
             },
           ],
         );
+  print("[getAVG] $avgField0List");
 
   if (deviceName.contains("NPK")) {
     return [
@@ -224,3 +227,31 @@ class GraphSettings {
         enablePanning: true,
       );
 }
+
+List<Widget> reportTabInstructions = const [
+  Text(
+    "Report",
+    style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+  ),
+  Text(
+    "The report is included some of the information such as farm name, devices and their types. To include graph in the pdf, you have to press `Export graph as jpeg` first and it will appear on this tab. You can check the path of the screenshot and also type in some notes.",
+    style: TextStyle(
+      fontSize: 14.0,
+    ),
+    overflow: TextOverflow.clip,
+  ),
+  Text(
+    "To create pdf file, press `Make` button",
+    style: TextStyle(
+      fontSize: 14.0,
+    ),
+    overflow: TextOverflow.clip,
+  ),
+  Text(
+    "",
+    style: TextStyle(
+      fontSize: 14.0,
+    ),
+    overflow: TextOverflow.clip,
+  ),
+];
