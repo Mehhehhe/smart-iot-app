@@ -55,6 +55,8 @@ class _AnalysisPage extends State<AnalysisPage> {
   late Uint8List _imageFile;
   ScreenshotController screenshotController = ScreenshotController();
   List<String> graphImgPaths = [];
+  Map<String, dynamic> commentOnPdf = {};
+  Map<String, dynamic> averageToDisplayInPdf = {};
 
   static const List<Tab> analyzeTab = <Tab>[
     Tab(
@@ -90,7 +92,7 @@ class _AnalysisPage extends State<AnalysisPage> {
       emaLines = await indicatorOnAdd(
         deviceName: deviceName,
         whatIndicator: "ema",
-        range: indicatorsSetMap[selectDevice]["sma"]["range"],
+        range: indicatorsSetMap[selectDevice]["ema"]["range"],
         base: base,
       );
     }
@@ -253,8 +255,13 @@ class _AnalysisPage extends State<AnalysisPage> {
     return DefaultTabController(
       length: analyzeTab.length,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          bottom: const TabBar(tabs: analyzeTab),
+          title: const TabBar(
+              tabs: analyzeTab,
+              indicatorColor: Colors.black,
+              labelColor: Colors.black),
+          backgroundColor: Colors.amber,
         ),
         body: TabBarView(
           children: analyzeTab.map((e) {
@@ -268,30 +275,104 @@ class _AnalysisPage extends State<AnalysisPage> {
                     child: Text("No data available"),
                   );
                 }
-                return Container(
-                  height: MediaQuery.of(context).size.height * 0.9,
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ReportPreview(
-                              reportCard: ReportCard(
-                                widget.devices[0]["Location"],
-                                widget.devices,
-                                graphImgPaths,
-                                // "",
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    print(averageToDisplayInPdf);
+
+                    return Container(
+                      height: MediaQuery.of(context).size.height * 0.9,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          ExpansionTile(
+                            title: const Text("Info"),
+                            children: [...reportTabInstructions],
+                          ),
+                          Builder(
+                            builder: (context) {
+                              List<Widget> images = [];
+                              for (var path in graphImgPaths) {
+                                images.add(Column(
+                                  children: [
+                                    Image.memory(File(path).readAsBytesSync()),
+                                    ListTile(
+                                      tileColor: Colors.white,
+                                      onLongPress: () => showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => setState(() {
+                                                graphImgPaths.remove(path);
+                                                Navigator.pop(context);
+                                              }),
+                                              child: const Text("Confirm"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text("Cancel"),
+                                            ),
+                                          ],
+                                          title: const Text(
+                                            "Remove ?",
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(path.toString()),
+                                      subtitle: Column(children: [
+                                        const Text(
+                                          "Write something about this image.",
+                                        ),
+                                        TextField(
+                                          controller: TextEditingController(
+                                            text: commentOnPdf[path] ?? "... ",
+                                          ),
+                                          onSubmitted: (value) => setState(() {
+                                            commentOnPdf.addEntries({
+                                              "${path}": value,
+                                            }.entries);
+                                          }),
+                                        ),
+                                      ]),
+                                    ),
+                                  ],
+                                ));
+                              }
+
+                              return ListView(
+                                primary: false,
+                                shrinkWrap: true,
+                                children: [...images],
+                              );
+                            },
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ReportPreview(
+                                  reportCard: ReportCard(
+                                    widget.devices[0]["Location"],
+                                    widget.devices,
+                                    graphImgPaths,
+                                    commentOnPdf.isEmpty ? null : commentOnPdf,
+                                    averageToDisplayInPdf.isEmpty
+                                        ? null
+                                        : averageToDisplayInPdf,
+                                    // "",
+                                  ),
+                                ),
                               ),
                             ),
+                            child: const Text(
+                              "Make",
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          "Make",
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
 
               default:
@@ -312,6 +393,9 @@ class _AnalysisPage extends State<AnalysisPage> {
     return ListView(
       shrinkWrap: true,
       children: [
+        const SizedBox(
+          height: 10,
+        ),
         graphScreen(),
         if (selectDevice != "")
           Row(
@@ -376,6 +460,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     );
   }
 
+  // ignore: long-method
   Widget deviceAvgSelector() {
     return Container(
       height: 100,
@@ -383,6 +468,7 @@ class _AnalysisPage extends State<AnalysisPage> {
       child: GridView.builder(
         shrinkWrap: true,
         itemCount: widget.devices.length,
+        primary: false,
         itemBuilder: (context, index) {
           // Build tile with average in it
           String name = widget.devices[index]["DeviceName"];
@@ -398,6 +484,18 @@ class _AnalysisPage extends State<AnalysisPage> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       List avg = snapshot.data as List;
+                      Map<String, dynamic> temp = {
+                        name: avg.length == 1
+                            ? double.parse(avg[0].toString())
+                                .toStringAsPrecision(2)
+                            : avg,
+                      };
+                      print("[TempMap] $temp");
+                      if (!averageToDisplayInPdf.containsKey(name)) {
+                        averageToDisplayInPdf.addEntries(temp.entries);
+                        print(
+                            "Added | $averageToDisplayInPdf ${averageToDisplayInPdf.containsKey(temp)}");
+                      }
 
                       return avg.length == 1
                           ? Text(double.parse(avg[0].toString())
@@ -423,6 +521,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     );
   }
 
+  // ignore: long-method
   Widget indicatorsInput({required String name}) {
     List<Widget> lts = [];
     dynamic temp = {
@@ -474,6 +573,7 @@ class _AnalysisPage extends State<AnalysisPage> {
 
     return ListView(
       shrinkWrap: true,
+      primary: false,
       children: [
         ...lts,
         ListTile(
