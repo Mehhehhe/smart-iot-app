@@ -277,15 +277,17 @@ class _AnalysisPage extends State<AnalysisPage> {
                 }
                 return StatefulBuilder(
                   builder: (context, setState) {
-                    print(averageToDisplayInPdf);
+                    // print(averageToDisplayInPdf);
 
                     return Container(
+                      color: Colors.orange.shade50,
                       height: MediaQuery.of(context).size.height * 0.9,
                       child: ListView(
                         shrinkWrap: true,
                         children: [
                           ExpansionTile(
                             title: const Text("Info"),
+                            // initiallyExpanded: true,
                             children: [...reportTabInstructions],
                           ),
                           Builder(
@@ -296,7 +298,13 @@ class _AnalysisPage extends State<AnalysisPage> {
                                   children: [
                                     Image.memory(File(path).readAsBytesSync()),
                                     ListTile(
-                                      tileColor: Colors.white,
+                                      tileColor: Colors.amberAccent,
+                                      enabled: true,
+                                      autofocus: true,
+                                      shape: RoundedRectangleBorder(
+                                        // side: BorderSide(color: Colors.black, width: 1),
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
                                       onLongPress: () => showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
@@ -324,16 +332,55 @@ class _AnalysisPage extends State<AnalysisPage> {
                                         const Text(
                                           "Write something about this image.",
                                         ),
-                                        TextField(
-                                          controller: TextEditingController(
-                                            text: commentOnPdf[path] ?? "... ",
-                                          ),
-                                          onSubmitted: (value) => setState(() {
-                                            commentOnPdf.addEntries({
-                                              "${path}": value,
-                                            }.entries);
-                                          }),
-                                        ),
+                                        TextButton.icon(
+                                            onPressed: () => showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    actions: [
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  context),
+                                                          child: Text("OK"))
+                                                    ],
+                                                    title:
+                                                        Text("Add Description"),
+                                                    content: Container(
+                                                      height: 200,
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                              "When completed, press the `tick` button on your keyboard."),
+                                                          TextField(
+                                                            autofocus: true,
+                                                            controller:
+                                                                TextEditingController(
+                                                              text: commentOnPdf[
+                                                                      path] ??
+                                                                  "",
+                                                            ),
+                                                            onSubmitted:
+                                                                (value) =>
+                                                                    setState(
+                                                                        () {
+                                                              commentOnPdf
+                                                                  .addEntries({
+                                                                "${path}":
+                                                                    value,
+                                                              }.entries);
+                                                            }),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            icon: Icon(Icons.edit),
+                                            label: Text("Write")),
                                       ]),
                                     ),
                                   ],
@@ -396,6 +443,11 @@ class _AnalysisPage extends State<AnalysisPage> {
         const SizedBox(
           height: 10,
         ),
+        if (selectDevice == "")
+          const Padding(
+            padding: EdgeInsets.all(10.0),
+            child: Text("Choose the below devices to display the graph."),
+          ),
         graphScreen(),
         if (selectDevice != "")
           Row(
@@ -410,7 +462,7 @@ class _AnalysisPage extends State<AnalysisPage> {
               ),
               TextButton(
                 onPressed: () async => await screenshotController
-                    .capture(delay: Duration(milliseconds: 10))
+                    .capture(delay: const Duration(milliseconds: 10))
                     .then((value) async {
                   // print(value);
                   if (value != null) {
@@ -465,6 +517,9 @@ class _AnalysisPage extends State<AnalysisPage> {
     return Container(
       height: 100,
       width: MediaQuery.of(context).size.width * 0.8,
+      decoration: BoxDecoration(
+        color: Colors.amber.shade100,
+      ),
       child: GridView.builder(
         shrinkWrap: true,
         itemCount: widget.devices.length,
@@ -474,6 +529,10 @@ class _AnalysisPage extends State<AnalysisPage> {
           String name = widget.devices[index]["DeviceName"];
 
           return ListTile(
+            shape: RoundedRectangleBorder(
+              // side: BorderSide(color: Colors.black, width: 1),
+              borderRadius: BorderRadius.circular(5),
+            ),
             tileColor: Colors.white,
             title: Text(name),
             subtitle: Row(
@@ -550,7 +609,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           lts.add(_indicatorTile(
             whatIndicator: "sma",
             textOnDelete:
-                "SMA; Simple Moving Average will disappear from the graph. You can still add it back later.",
+                "SMA; Simple Moving Average will disappear from the graph. \nYou can still add it back later.",
             deviceName: name,
             indicatorFullName: "Simple Moving Average",
           ));
@@ -562,7 +621,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           lts.add(_indicatorTile(
             whatIndicator: "ema",
             textOnDelete:
-                "EMA; Exponential Moving Average will disappear from the graph. You can still add it back later.",
+                "EMA; Exponential Moving Average will disappear from the graph. \nYou can still add it back later.",
             deviceName: name,
             indicatorFullName: "Exponential Moving Average",
           ));
@@ -575,17 +634,53 @@ class _AnalysisPage extends State<AnalysisPage> {
       shrinkWrap: true,
       primary: false,
       children: [
-        ...lts,
-        ListTile(
-          title: const Icon(Icons.add),
-          onTap: () => showModalBottomSheet(
-            context: context,
-            builder: (context) => ListView.builder(
-              itemCount: availableIndicators.length,
-              itemBuilder: (context, index) => _indicatorChoose(index),
+        if (lts.isNotEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+              child: Text("Press & Hold to remove the indicator"),
             ),
           ),
-        ),
+        if (lts.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+              child: Text("Empty indicator. Press below button to add some!"),
+            ),
+          ),
+        ...lts,
+        if (lts.length < availableIndicators.length && selectDevice != "")
+          Container(
+            width: 100.0,
+            child: ListTile(
+              tileColor: Colors.blue.shade300,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.add),
+                  Text(
+                    "Add indicator",
+                    style:
+                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              onTap: () => showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: availableIndicators.length,
+                  itemBuilder: (context, index) => _indicatorChoose(index),
+                ),
+              ),
+            ),
+          ),
+        if (lts.length == availableIndicators.length)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+              child: Text("Indicator reached maximum available length."),
+            ),
+          ),
       ],
     );
   }
@@ -594,6 +689,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     return ExpansionTile(
       title: Text(availableIndicators[index].toUpperCase()),
       children: [
+        IndicatorDescriptions(availableIndicators[index].toLowerCase()),
         ElevatedButton(
           onPressed: () {
             setState(() {
@@ -601,11 +697,13 @@ class _AnalysisPage extends State<AnalysisPage> {
                   .add(availableIndicators[index]);
               // enableSma = true;
             });
+            Navigator.pop(context);
           },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [Icon(Icons.add), Text("Choose")],
-          ),
+          child: Text("Choose"),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   children: const [Icon(Icons.add), Text("Choose")],
+          // ),
         ),
       ],
     );
@@ -617,22 +715,30 @@ class _AnalysisPage extends State<AnalysisPage> {
     required String deviceName,
     required String indicatorFullName,
   }) {
-    return ListTile(
-      onLongPress: () => showDialog(
-        context: context,
-        builder: (context) {
-          return _indicatorTileDelDialog(
-            context: context,
-            deviceName: deviceName,
-            whatIndicator: whatIndicator,
-            textOnDelete: textOnDelete,
-          );
-        },
-      ),
-      title: Text(indicatorFullName),
-      subtitle: _indicatorTileSettings(
-        deviceName: deviceName,
-        whatIndicator: whatIndicator,
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.black, width: 1),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        onLongPress: () => showDialog(
+          context: context,
+          builder: (context) {
+            return _indicatorTileDelDialog(
+              context: context,
+              deviceName: deviceName,
+              whatIndicator: whatIndicator,
+              textOnDelete: textOnDelete,
+            );
+          },
+        ),
+        title: Text(indicatorFullName),
+        subtitle: _indicatorTileSettings(
+          deviceName: deviceName,
+          whatIndicator: whatIndicator,
+        ),
+        tileColor: Colors.brown.shade200,
       ),
     );
   }
@@ -671,6 +777,7 @@ class _AnalysisPage extends State<AnalysisPage> {
     required String whatIndicator,
   }) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -700,14 +807,13 @@ class _AnalysisPage extends State<AnalysisPage> {
               isSelected: indicatorsSetMap[deviceName][whatIndicator]["bools"],
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               selectedBorderColor: Colors.green[700],
-              selectedColor: Colors.white,
+              selectedColor: Colors.black,
               fillColor: Colors.green[200],
-              color: Colors.green[400],
+              color: Colors.black,
               children: movingAverageRangeSelector,
             ),
           ],
         ),
-        const Text("Press & Hold to remove this indicator"),
       ],
     );
   }
