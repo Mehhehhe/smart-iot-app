@@ -233,25 +233,34 @@ List<Widget> reportTabInstructions = const [
     "Report",
     style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
   ),
+  Padding(padding: EdgeInsets.all(20.0)),
   Text(
-    "The report is included some of the information such as farm name, devices and their types. To include graph in the pdf, you have to press `Export graph as jpeg` first and it will appear on this tab. You can check the path of the screenshot and also type in some notes.",
-    style: TextStyle(
-      fontSize: 14.0,
-    ),
-    overflow: TextOverflow.clip,
-  ),
-  Text(
-    "To create pdf file, press `Make` button",
-    style: TextStyle(
-      fontSize: 14.0,
-    ),
-    overflow: TextOverflow.clip,
-  ),
-  Text(
-    "",
+    "The report is included some of the information such as farm name, devices and their types. \n\nTo include graph in the pdf, you have to press `Export graph as jpeg` first and it will appear on this tab. \n\nYou can check the path of the screenshot and also type in some notes. \n\nTo create pdf file, press `Make` button",
     style: TextStyle(
       fontSize: 14.0,
     ),
     overflow: TextOverflow.clip,
   ),
 ];
+
+IndicatorDescriptions(String ind) {
+  switch (ind) {
+    case "sma":
+      return const Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Text(
+          "Simple Moving Average (SMA); calculate a moving average for past data in the selected range. \n * Slowly react to data \n * No weight added to the data",
+          overflow: TextOverflow.clip,
+        ),
+      );
+    case "ema":
+      return const Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Text(
+          "Exponential Moving Average (EMA); calculate a moving average for past data in the selected range. \n * Quickly react to the recent data \n * Adds weight to the data \n * May not works with some devices",
+          overflow: TextOverflow.clip,
+        ),
+      );
+    default:
+  }
+}
