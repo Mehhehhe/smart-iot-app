@@ -75,6 +75,7 @@ class _LogIn extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       body: _awsAuth(),
     );
@@ -122,6 +123,7 @@ class _LogIn extends State<LogIn> {
       builder: Authenticator.builder(),
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Builder(
           builder: (context) {
             if (widget.onboard) {
