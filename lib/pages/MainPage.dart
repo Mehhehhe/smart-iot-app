@@ -83,6 +83,22 @@ class _MainPageState extends State<MainPage> {
         child: DefaultTabController(
           length: 2,
           child: Scaffold(
+            floatingActionButton: Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 200.0, 0.0, 0.0),
+              child: FloatingActionButton.extended(
+                backgroundColor: Colors.white,
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  builder: (context) => FarmEditor(farm: ownedFarm),
+                ).then((value) => onIndexSelection(value)),
+                label: const Text("Change Farm",
+                    style: TextStyle(color: Colors.black, fontSize: 16.0)),
+                icon: const Icon(Icons.change_circle, color: Colors.black),
+              ),
+            ),
+            floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+            resizeToAvoidBottomInset: false,
             appBar: AppBar(
               actions: [
                 IconButton(
@@ -93,134 +109,55 @@ class _MainPageState extends State<MainPage> {
                 ),
               ],
               backgroundColor: Colors.amber,
-              elevation: 0,
+              elevation: 5.0,
               title: const Text(
                 'Karriot',
                 style: TextStyle(color: Colors.black),
               ),
               titleSpacing: 47,
               leadingWidth: 80,
-              toolbarHeight: 80,
+              toolbarHeight: 65,
             ),
-            body: Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Colors.greenAccent,
-                    Colors.greenAccent,
-                    Colors.white,
-                    // Colors.white,
-                    // Colors.white,
-                  ],
-                ),
-              ),
-              child: BlocConsumer<FarmCardReBloc, FarmCardReState>(
-                bloc: context.read<FarmCardReBloc>(),
-                listener: (context, state) {
-                  if (state.farms.isNotEmpty) {
-                    ownedFarm = state.farms;
-                  }
-                },
-                builder: (context, state) {
-                  return farmCardView(
-                    username: accountName,
-                    overrideFarmIndex: farmInd,
-                    cli: widget.cli,
-                  );
-                },
-              ),
-            ),
-            backgroundColor: Colors.transparent,
-            drawer: Drawer(
-              elevation: 5.0,
-              child: Material(
-                child: Padding(
-                  padding: const EdgeInsets.all(0),
-                  child: ListView(
-                    children: [
-                      // Builder(
-                      //   builder: (context) {
-                      //     accountEmail = account["id"];
-                      //     accountName = account["name"];
-
-                      //     return UserAccountsDrawerHeader(
-                      //       accountName: Text(
-                      //         accountName,
-                      //         style: Theme.of(context).textTheme.headlineSmall,
-                      //       ),
-                      //       accountEmail: Text(
-                      //         accountEmail,
-                      //         style: const TextStyle(
-                      //           color: Colors.black,
-                      //           fontWeight: FontWeight.bold,
-                      //         ),
-                      //       ),
-                      //       decoration: const BoxDecoration(
-                      //         color: Colors.green,
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // UserAccountsDrawerHeader(
-                      //     accountName: Text(accountName ?? "Name",
-                      //         style: Theme.of(context).textTheme.headline5),
-                      //     accountEmail: Text(accountEmail ?? "Email",
-                      //         style: Theme.of(context).textTheme.headline6)),
-                      ListTile(
-                        title: const Text(
-                          "Change farm",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        isThreeLine: true,
-                        hoverColor: Colors.white70,
-                        subtitle: const Text(""),
-                        onTap: () async {
-                          // _displayFarmEditor(context, data);
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FarmEditor(farm: ownedFarm),
-                            ),
-                          ).then((value) {
-                            // context.read<FarmCardReBloc>().chooseIndex(index);
-                            onIndexSelection(value);
-                          });
-                        },
+            body: Stack(children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 200),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    //color: Colors.grey.shade200
+                    image: DecorationImage(
+                      //opacity: 100,
+                      image: NetworkImage(
+                        "https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg",
                       ),
-
-                      // ListTile(
-                      //   title: const Text(
-                      //     "Profile",
-                      //     style: TextStyle(fontSize: 22),
-                      //   ),
-                      //   isThreeLine: true,
-                      //   subtitle: const Text("ดูหน้าโปรไฟล์และแก้ไขข้อมูล"),
-                      //   hoverColor: Colors.white70,
-                      //   onTap: () {},
-                      // ),
-
-                      // ListTile(
-                      //   title: const Text(
-                      //     "Setting",
-                      //     style: TextStyle(fontSize: 22),
-                      //   ),
-                      //   isThreeLine: true,
-                      //   subtitle: const Text("การตั้งค่าภายในแอพและอื่นๆ"),
-                      //   hoverColor: Colors.white70,
-                      //   onTap: () => Navigator.of(context).push(
-                      //     MaterialPageRoute(
-                      //       builder: (context) => SettingPage(),
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
                   ),
                 ),
               ),
-            ),
+              Container(
+                height: MediaQuery.of(context).size.height,
+                child: BlocConsumer<FarmCardReBloc, FarmCardReState>(
+                  bloc: context.read<FarmCardReBloc>(),
+                  listener: (context, state) {
+                    if (state.farms.isNotEmpty) {
+                      ownedFarm = state.farms;
+                    }
+                  },
+                  builder: (context, state) {
+                    return farmCardView(
+                      username: accountName,
+                      overrideFarmIndex: farmInd,
+                      cli: widget.cli,
+                    );
+                  },
+                ),
+              ),
+            ]),
+            backgroundColor: Colors.grey.shade200,
           ),
         ),
       ),
