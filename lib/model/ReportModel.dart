@@ -67,6 +67,8 @@ class ReportCard {
     });
     for (var a in data) {
       tables.add(
+          pdf.Padding(padding: pdf.EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0)));
+      tables.add(
         pdf.Table.fromTextArray(
           data: List<List<dynamic>>.generate(
             1,
