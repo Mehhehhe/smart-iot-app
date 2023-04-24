@@ -15,6 +15,8 @@ class ReportCard {
   // Information
   List devicesWithType;
   List<String> imgPath;
+  Map<String, dynamic>? commentOnPdf;
+  Map<String, dynamic>? averageToDisplayInPdf;
   // String location;
   // Widget generatedChart;
   // List<Map> dataResponse;
@@ -22,12 +24,15 @@ class ReportCard {
   ReportCard(
     this.farmName,
     this.devicesWithType,
-    this.imgPath,
-    // this.generatedChart,
-    // this.location,
-    // this.whoGenerated,
-    // this.dataResponse,
-  );
+    this.imgPath, [
+    this.commentOnPdf,
+    this.averageToDisplayInPdf,
+  ]
+      // this.generatedChart,
+      // this.location,
+      // this.whoGenerated,
+      // this.dataResponse,
+      );
 
   _mapDevicesToTableRow() {
     return pdf.Table.fromTextArray(
@@ -49,6 +54,44 @@ class ReportCard {
       cellAlignment: pdf.Alignment.centerRight,
       cellAlignments: {0: pdf.Alignment.centerLeft},
     );
+  }
+
+  _mapDeviceAvg() {
+    List tables = [];
+    List data = [];
+    averageToDisplayInPdf!.forEach((key, value) {
+      data.add([
+        key,
+        value.runtimeType == String ? [value] : [value[0], value[1], value[2]],
+      ]);
+    });
+    for (var a in data) {
+      tables.add(
+        pdf.Table.fromTextArray(
+          data: List<List<dynamic>>.generate(
+            1,
+            (index) => [
+              a[0],
+              a[1].length > 1
+                  ? "N:${a[1][0]}, P:${a[1][1]}, K:${a[1][2]},"
+                  : "${a[1][0]}",
+            ],
+          ),
+          headers: ["Name", "Average"],
+          headerStyle: pdf.TextStyle(
+            color: PdfColors.white,
+            fontWeight: pdf.FontWeight.bold,
+          ),
+          headerDecoration: const pdf.BoxDecoration(
+            color: PdfColors.amberAccent,
+          ),
+          cellAlignment: pdf.Alignment.centerRight,
+          cellAlignments: {0: pdf.Alignment.centerLeft},
+        ),
+      );
+    }
+
+    return tables;
   }
 
   _graphImages(path) {
@@ -104,13 +147,18 @@ class ReportCard {
             ),
             pdf.Divider(),
             // Analyze section
+            pdf.Text("Device Value Average"),
+            pdf.Column(children: [..._mapDeviceAvg()]),
           ],
         ),
       ),
     );
     for (var path in imgPath) {
       pf.addPage(pdf.Page(
-        build: (context) => _graphImages(path),
+        build: (context) => pdf.Column(children: [
+          _graphImages(path),
+          pdf.Text(commentOnPdf != null ? commentOnPdf![path] : "")
+        ]),
       ));
     }
 
