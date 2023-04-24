@@ -78,6 +78,7 @@ class DeviceDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.amberAccent,
         elevation: 5,
         centerTitle: true,
         title: Text(
@@ -86,23 +87,20 @@ class DeviceDetail extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
       ),
       body: SafeArea(
         child: Container(
           child: Padding(
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.all(0),
             child: ListView(
               shrinkWrap: true,
               children: [
                 BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
                   builder: (context, state) {
-                    print(
-                        "[CheckLength] length = ${state.data.length}, [Details] : $detail");
                     if (state.data != "" || state.data != null) {
-                      // print(
-                      //     "[CheckDetail] .${state.data}. ${latestDatePlaceholder[0]}, device: ${state.location}");
                       if (state.data.isEmpty) {
                         liveData.add(latestDatePlaceholder[0]
                             [detail["SerialNumber"] ?? serial]);
@@ -122,22 +120,22 @@ class DeviceDetail extends StatelessWidget {
                       return Column(
                         children: [
                           ExpansionTile(
-                            title: const Text('Detail'),
-                            initiallyExpanded: false,
+                            title: const Text(
+                              'Details',
+                              style: TextStyle(
+                                  fontSize: 20.0, fontWeight: FontWeight.bold),
+                            ),
+                            initiallyExpanded: true,
+                            backgroundColor: Colors.orange.shade300,
+                            collapsedBackgroundColor: Colors.orange.shade500,
+                            textColor: Colors.black,
                             children: [
                               Container(
-                                width: MediaQuery.of(context).size.width * 0.9,
+                                // width: MediaQuery.of(context).size.width * 0.9,
                                 height:
                                     MediaQuery.of(context).size.height * 0.25,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 4,
-                                      color: Color(0x33000000),
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade100,
                                 ),
                                 child: ListView.builder(
                                   itemCount: detail.length,
@@ -202,11 +200,21 @@ class DeviceDetail extends StatelessWidget {
                           // ),
                           if (detail["Type"] == "MOISTURE" && liveData != null)
                             ExpansionTile(
-                              title: Text("Moisture Graph"),
+                              title: const Text(
+                                "Moisture Graph",
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              backgroundColor: Colors.orange.shade300,
+                              collapsedBackgroundColor: Colors.orange.shade500,
+                              textColor: Colors.black,
                               children: [
                                 Container(
                                   height: 400,
                                   width: MediaQuery.of(context).size.width,
+                                  color: Colors.white,
                                   child: BlocProvider(
                                     create: (_) =>
                                         LiveDataCubit(liveData, dataToPlot),
@@ -222,12 +230,24 @@ class DeviceDetail extends StatelessWidget {
                           else if (detail["Type"] == "NPKSENSOR" &&
                               liveData != null)
                             ExpansionTile(
-                              title: Text("NPK graph"),
+                              title: const Text(
+                                "NPK graph",
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               initiallyExpanded: false,
+                              backgroundColor: Colors.orange.shade300,
+                              collapsedBackgroundColor: Colors.orange.shade500,
+                              textColor: Colors.black,
                               children: [
+                                const Padding(
+                                    padding: EdgeInsets.only(top: 20.0)),
                                 Container(
                                   height: 400,
                                   width: MediaQuery.of(context).size.width,
+                                  color: Colors.white,
                                   child: BlocProvider(
                                     create: (_) => LiveDataCubit(
                                       liveData,
