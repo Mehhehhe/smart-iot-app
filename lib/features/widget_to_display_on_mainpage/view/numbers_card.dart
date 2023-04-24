@@ -17,6 +17,7 @@ class numberCard extends StatefulWidget {
   String whichFarm;
   MQTTClientWrapper existedCli;
   List? devicesData;
+  dynamic splByType;
 
   numberCard({
     Key? key,
@@ -24,6 +25,7 @@ class numberCard extends StatefulWidget {
     required this.whichFarm,
     required this.existedCli,
     required this.devicesData,
+    required this.splByType,
   }) : super(key: key);
 
   @override
@@ -49,7 +51,6 @@ class _numberCardState extends State<numberCard> {
       //     "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
       tempMap = {cardName: latestData[latestData.length - 1]};
       if (!latestList.contains(tempMap)) {
-        // print("[LatestList] $tempMap");
         // Check existing device
         for (var submap in latestList) {
           if (submap.containsKey(cardName)) {
@@ -101,15 +102,8 @@ class _numberCardState extends State<numberCard> {
     });
   }
 
-  // @override
-  // void dispose() {
-  //   data.clear();
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // return createStreamDataDisplay(context);
     return createStreamDataDisplay(context);
   }
 
@@ -126,7 +120,7 @@ class _numberCardState extends State<numberCard> {
 
   Widget buildSearchable(BuildContext contextP) {
     return Container(
-      height: 150,
+      height: MediaQuery.of(context).size.height * 0.4,
       width: double.infinity,
       child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
         builder: (context, state) {
@@ -138,7 +132,10 @@ class _numberCardState extends State<numberCard> {
               shrinkWrap: true,
               itemCount: state.items.length,
               itemBuilder: (context, index) {
-                return buildSearchFound(context);
+                return Container(
+                  // height: 150,
+                  child: buildSearchFound(context),
+                );
               },
             );
           } else if (state is SearchWidgetError) {
@@ -146,12 +143,18 @@ class _numberCardState extends State<numberCard> {
           }
 
           return ListView.builder(
-            scrollDirection: Axis.horizontal,
+            // scrollDirection: Axis.horizontal,
+            primary: false,
             physics: const BouncingScrollPhysics(),
             shrinkWrap: true,
-            itemCount: (data.isEmpty) ? 1 : data.length,
+            itemCount: (widget.splByType[widget.whichFarm].keys.length == 0)
+                ? 1
+                : widget.splByType[widget.whichFarm].keys.length,
             itemBuilder: (context, index) {
-              return buildSearchEmpty(context, index);
+              return Container(
+                height: 150,
+                child: buildSearchEmpty(context, index),
+              );
             },
           );
         },
@@ -160,6 +163,7 @@ class _numberCardState extends State<numberCard> {
   }
 
   // Default
+  // ignore: long-method
   Widget buildSearchEmpty(BuildContext contextP, index) {
     return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
       bloc: contextP.read<SearchWidgetBloc>(),
@@ -182,15 +186,41 @@ class _numberCardState extends State<numberCard> {
         }
         Map<String, dynamic> currMap = Map<String, dynamic>.from(data[index]);
         String name = currMap.keys.first;
-        // print("[CheckBuildCard] $name");
-        var currentValue = data[index][name]["Value"];
-        var details = getDetailOfDevice(name);
+        String pname = name.substring(0, 2);
+        List byTypeList = [];
+        for (var t in widget.splByType[widget.whichFarm].keys) {
+          if (t.contains(pname)) {
+            byTypeList = widget.splByType[widget.whichFarm][t]["data"];
+          }
+        }
+        print(byTypeList);
 
-        return _createCardDetailIfFound(
-          name,
-          currMap,
-          currentValue,
-          details,
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          shrinkWrap: true,
+          primary: false,
+          itemCount: byTypeList.length,
+          itemBuilder: (context, index) {
+            var ss = byTypeList[index];
+            var data = json.decode(ss["Data"]);
+            int lastIndex = data.length - 1;
+            var currentVal = data[lastIndex]["Value"];
+            // print("Type: ${ss["FromDevice"].runtimeType}");
+            var currName = ss["FromDevice"];
+            var details = getDetailOfDevice(currName);
+            Map currMap = {
+              currName: data[lastIndex],
+            };
+            // print(currMap);
+
+            return _createCardDetailIfFound(
+              currName,
+              currMap,
+              currentVal,
+              details,
+            );
+          },
         );
       },
     );
@@ -257,8 +287,8 @@ class _numberCardState extends State<numberCard> {
           ),
           onLongPress: () => showModalBottomSheet(
             context: context,
-            builder: (context) =>
-                _MainpageCardModal(currMap: currMap, name: name),
+            builder: (context) => _MainpageCardModal(
+                currMap: Map<String, dynamic>.from(currMap), name: name),
           ),
           child: SizedBox(
             // margin: const EdgeInsets.fromLTRB(50, 0.0, 0.0, 0.0),
@@ -287,7 +317,6 @@ class _numberCardState extends State<numberCard> {
           "Quick Settings",
           style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
         ),
-        const Text("The following settings "),
         ListTile(
           tileColor: Colors.white,
           title: Row(
@@ -422,42 +451,6 @@ class _numberCardState extends State<numberCard> {
       ]),
     );
   }
-
-// Builder(
-//             builder: (context) {
-//               TextEditingController valueController = TextEditingController();
-
-//               return AlertDialog(
-//                 title: Text("Value Control"),
-//                 content: Row(children: [
-//                   // minus
-//                   TextButton.icon(
-//                       onPressed: () => valueController.text =
-//                           (num.parse(valueController.text) - 0.1).toString(),
-//                       icon: Icon(Icons.remove),
-//                       label: Text("")),
-//                   // textfield
-//                   CupertinoTextField(
-//                     controller: valueController,
-//                     keyboardType: TextInputType.number,
-//                     maxLines: 1,
-//                   ),
-//                   // plus
-//                   TextButton.icon(
-//                       onPressed: () => valueController.text =
-//                           (num.parse(valueController.text) + 0.1).toString(),
-//                       icon: Icon(Icons.add),
-//                       label: Text("")),
-//                 ]),
-//                 actions: [
-//                   TextButton(onPressed: () => {}, child: Text("Send")),
-//                   TextButton(
-//                       onPressed: () => Navigator.pop(context),
-//                       child: Text("Cancel")),
-//                 ],
-//               );
-//             },
-//           )
 
   Widget buildSearchError(BuildContext contextP) {
     return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(

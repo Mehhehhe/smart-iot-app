@@ -89,6 +89,33 @@ class _farmCardViewState extends State<farmCardView> {
     }
   }
 
+  createNewFarmDataMapForNumCard(List s) {
+    Map temp = {tempLoc: {}};
+    for (var d in devices) {
+      Map t = {
+        d["Type"]: {
+          "prefix": d["Type"].toString().substring(0, 2),
+          "data": [],
+        },
+      };
+      temp[tempLoc].addEntries(t.entries);
+    }
+    for (var ss in s) {
+      temp.forEach((key, value) {
+        print("check data $ss");
+        for (var t in value.keys) {
+          if (temp.containsKey(ss["FromFarm"]) &&
+              ss["FromDevice"].contains(value[t]["prefix"]) &&
+              !value[t]["data"].contains(ss)) {
+            value[t]["data"].add(ss);
+          }
+        }
+      });
+    }
+
+    return temp;
+  }
+
   List localizedResponse() {
     var newDataArray = [];
     for (var m in dataResponse) {
@@ -132,8 +159,15 @@ class _farmCardViewState extends State<farmCardView> {
             SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
         child: Column(
           children: [
-            // Search bar\
+            // Search bar
             SearchBar(),
+            const SizedBox(
+              height: 20,
+            ),
+            SearchBody(),
+            const SizedBox(
+              height: 10,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -141,7 +175,6 @@ class _farmCardViewState extends State<farmCardView> {
                 historyWidget(),
               ],
             ),
-            SearchBody(),
           ],
         ),
       ),
@@ -209,10 +242,14 @@ class _farmCardViewState extends State<farmCardView> {
     return Card(
       margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       elevation: 5.0,
+      color: Colors.brown.shade100,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+          ),
           BlocBuilder<FarmCardReBloc, FarmCardReState>(
             builder: (context, state) {
               if (state.data != "") {
@@ -269,6 +306,9 @@ class _farmCardViewState extends State<farmCardView> {
           ),
           // const Divider(),
           // if (state.widgetIndex == 1)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 25, 0, 0),
+          ),
           generateNumberCards(searched),
           const Padding(
             padding: EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -288,13 +328,14 @@ class _farmCardViewState extends State<farmCardView> {
             BlocBuilder<FarmCardReBloc, FarmCardReState>(
               bloc: context.read<FarmCardReBloc>(),
               builder: (context, stateFarm) {
-                print(
-                    "Respond To Change: ${stateFarm.devices} \n\ntempLoc:=>$tempLoc");
-
+                // Query by farm
                 var selectedResponse = dataResponse
                     .where((element) => element["FromFarm"] == tempLoc)
                     .toList();
-                print("Select $selectedResponse");
+                // Query by type
+                var splDevByType =
+                    createNewFarmDataMapForNumCard(selectedResponse);
+
                 // Main generator
                 // Caution: dataResponse, selectedResponse
                 if (selectedResponse.isEmpty) {
@@ -310,7 +351,6 @@ class _farmCardViewState extends State<farmCardView> {
                       ),
                     ],
                   );
-                  ;
                 }
 
                 return BlocProvider(
@@ -318,24 +358,21 @@ class _farmCardViewState extends State<farmCardView> {
                   child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
                     builder: (context, state) {
                       if (state is SearchWidgetSuccess) {
-                        // print("Was searched $searched");
-
                         return numberCard(
                           inputData: selectedResponse,
                           whichFarm: tempLoc,
                           existedCli: client,
                           devicesData: searched,
+                          splByType: splDevByType,
                         );
                       }
-                      print(
-                        "Check on number card data, \n$tempLoc, \n$devices",
-                      );
 
                       return numberCard(
                         inputData: selectedResponse,
                         whichFarm: tempLoc,
                         existedCli: client,
                         devicesData: devices,
+                        splByType: splDevByType,
                       );
                     },
                   ),
@@ -369,8 +406,10 @@ class _farmCardViewState extends State<farmCardView> {
       // alignment: Alignment.centerLeft,
       width: MediaQuery.of(context).size.width * 0.45,
       child: ElevatedButton(
-        style: ButtonStyle(
-            backgroundColor: MaterialStatePropertyAll(Colors.brown)),
+        style: const ButtonStyle(
+          backgroundColor: MaterialStatePropertyAll(Colors.white),
+          elevation: MaterialStatePropertyAll(5.0),
+        ),
         onPressed: () {
           List deviceCheck = [];
 
@@ -392,8 +431,8 @@ class _farmCardViewState extends State<farmCardView> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.analytics_outlined),
-            Text("Analysis"),
+            Icon(Icons.analytics_outlined, color: Colors.black),
+            Text("Analysis", style: TextStyle(color: Colors.black)),
           ],
         ),
       ),
@@ -406,14 +445,16 @@ class _farmCardViewState extends State<farmCardView> {
       height: 60,
       width: MediaQuery.of(context).size.width * 0.45,
       child: ElevatedButton(
-        style: ButtonStyle(
-            backgroundColor: MaterialStatePropertyAll(Colors.lightBlue)),
+        style: const ButtonStyle(
+          backgroundColor: MaterialStatePropertyAll(Colors.white),
+          elevation: MaterialStatePropertyAll(5.0),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.wysiwyg),
-            Text("History"),
+            Icon(Icons.wysiwyg, color: Colors.black),
+            Text("History", style: TextStyle(color: Colors.black)),
           ],
         ),
         onPressed: () => showModalBottomSheet(
