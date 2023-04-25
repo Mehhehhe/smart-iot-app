@@ -9,6 +9,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_iot_app/db/local_history.dart';
 import 'package:smart_iot_app/db/threshold_settings.dart';
 
 // Future<void> main() async {
@@ -130,11 +131,12 @@ void onStart(ServiceInstance service) async {
     List thAll = await threshdb.getAllAvailableThresh();
     // print("[AllTHDB] $thAll");
     var activationTh = await threshdb.getThresh(currId);
+    String status = "";
 
     if (service is AndroidServiceInstance &&
         event["Value"].runtimeType == String) {
       if (await service.isForegroundService() &&
-          num.parse(event["value"]) > activationTh &&
+          num.parse(event["value"]) >= activationTh &&
           event["isMap"] == false) {
         flutterLocalNotificationsPlugin.show(
           888,
@@ -151,28 +153,15 @@ void onStart(ServiceInstance service) async {
             ),
           ),
         );
-      } else if (await service.isForegroundService() && event["isMap"]) {
-        // Transform
-        Map<String, dynamic> rMap = event["Value"];
-        String errName = "";
-        String errVal = "";
-        if (rMap["N"] > activationTh["N"]) {
-          errName += "N,";
-          errVal += "N => ${rMap["N"]}, ";
-        }
-        if (rMap["P"] > activationTh["P"]) {
-          errName += "P,";
-          errVal += "P => ${rMap["P"]}, ";
-        }
-        if (rMap["K"] > activationTh["K"]) {
-          errName += "K,";
-          errVal += "K => ${rMap["K"]}, ";
-        }
-
+        status = "Error";
+      } else if (await service.isForegroundService() &&
+          num.parse(event["value"]) < activationTh &&
+          event["isMap"] == false &&
+          num.parse(event["value"]) > activationTh - 5) {
         flutterLocalNotificationsPlugin.show(
           888,
           'KarrIoT',
-          "${event["name"]}'s $errName exceeds the set threshold with value $errVal",
+          "WARNING! ${event["name"]} was nearly reached the set threshold of $activationTh with value ${event["value"]}",
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'KarrIoT',
@@ -184,7 +173,89 @@ void onStart(ServiceInstance service) async {
             ),
           ),
         );
+        status = "Warning";
+      } else if (await service.isForegroundService() && event["isMap"]) {
+        // Transform
+        Map<String, dynamic> rMap = event["Value"];
+        String errName = "";
+        String errVal = "";
+        List statusCheck = [];
+        if (rMap["N"] >= activationTh["N"]) {
+          errName += "N,";
+          errVal += "N => ${rMap["N"]}, ";
+          statusCheck.add("Error");
+        } else if (rMap["N"] < activationTh["N"] &&
+            rMap["N"] > activationTh["N"] - 5) {
+          errName += "N,";
+          errVal += "N => ${rMap["N"]}, ";
+          statusCheck.add("Warning");
+        }
+        if (rMap["P"] >= activationTh["P"]) {
+          errName += "P,";
+          errVal += "P => ${rMap["P"]}, ";
+          statusCheck.add("Error");
+        } else if (rMap["P"] < activationTh["P"] &&
+            rMap["P"] > activationTh["P"] - 5) {
+          errName += "P,";
+          errVal += "P => ${rMap["P"]}, ";
+          statusCheck.add("Warning");
+        }
+        if (rMap["K"] >= activationTh["K"]) {
+          errName += "K,";
+          errVal += "K => ${rMap["K"]}, ";
+          statusCheck.add("Error");
+        } else if (rMap["K"] < activationTh["K"] &&
+            rMap["K"] > activationTh["K"] - 5) {
+          errName += "K,";
+          errVal += "K => ${rMap["K"]}, ";
+          statusCheck.add("Warning");
+        }
+        if (statusCheck.contains("Error")) {
+          flutterLocalNotificationsPlugin.show(
+            888,
+            'KarrIoT',
+            "${event["name"]}'s $errName exceeds the set threshold with value $errVal",
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                'KarrIoT',
+                'KarrIoT SERVICE',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+                importance: Importance.high,
+                priority: Priority.high,
+              ),
+            ),
+          );
+          status = "Error";
+        } else if (!statusCheck.contains("Error") &&
+            statusCheck.contains("Warning")) {
+          flutterLocalNotificationsPlugin.show(
+            888,
+            'KarrIoT',
+            "${event["name"]}'s $errName was nearly reached the set threshold with value $errVal",
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                'KarrIoT',
+                'KarrIoT SERVICE',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+                importance: Importance.high,
+                priority: Priority.high,
+              ),
+            ),
+          );
+          status = "Warning";
+        }
       }
+    }
+
+    if (status != "") {
+      // init hist db
+      final lc = LocalHistoryDatabase.instance;
+      lc.update({
+        "_id": event["id"],
+        "comment": status,
+      });
     }
   });
 }
