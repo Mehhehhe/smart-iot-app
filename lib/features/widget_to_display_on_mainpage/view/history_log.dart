@@ -28,6 +28,17 @@ class _historyLog extends State<historyLog> {
     Text("Warning"),
     Text("Error"),
   ];
+  String selectHistFilterRange = "days";
+  static const List<Widget> filterHistory = [
+    Text("Days"),
+    Text("Months"),
+    Text("Years"),
+  ];
+  List<bool> selectedHistFilter = [
+    true,
+    false,
+    false,
+  ];
   // String exposedFilter = "Default";
   Map<String, dynamic> exposedFilterMap = {};
 
@@ -41,6 +52,43 @@ class _historyLog extends State<historyLog> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Query button
+        Padding(
+          padding: EdgeInsets.all(10.0),
+          child: ToggleButtons(
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            constraints: const BoxConstraints(
+              minHeight: 40.0,
+              minWidth: 80.0,
+            ),
+            onPressed: (index) {
+              for (int i = 0; i < selectedHistFilter.length; i++) {
+                selectedHistFilter[i] = i == index;
+              }
+              switch (index) {
+                case 0:
+                  setState(() {
+                    selectHistFilterRange = "days";
+                  });
+                  break;
+                case 1:
+                  setState(() {
+                    selectHistFilterRange = "months";
+                  });
+                  break;
+                case 2:
+                  setState(() {
+                    selectHistFilterRange = "years";
+                  });
+                  break;
+                default:
+              }
+            },
+            isSelected: selectedHistFilter,
+            children: const [...filterHistory],
+          ),
+        ),
+
         Expanded(
           child: Container(
             color: Colors.white,
@@ -70,6 +118,18 @@ class _historyLog extends State<historyLog> {
                       DateTime date = DateTime.fromMillisecondsSinceEpoch(
                         int.parse(p0.dateUnixAsId),
                       );
+                      // Query here!
+                      switch (selectHistFilterRange) {
+                        case "days":
+                          return DateTime(date.year, date.month, date.day);
+                        // break;
+                        case "months":
+                          return DateTime(date.year, date.month);
+                        case "years":
+                          return DateTime(date.year);
+                        default:
+                      }
+                      // default: days
 
                       return DateTime(date.year, date.month, date.day);
                     },
@@ -81,7 +141,11 @@ class _historyLog extends State<historyLog> {
                     List<ListTile> subTile = [];
                     // is sorting enabled?
                     List<LocalHist> val = value.takeWhile((value) {
-                      String tempName = "${key.day}/${key.month}/${key.year}";
+                      String tempName = selectHistFilterRange == "days"
+                          ? "${key.day}/${key.month}/${key.year}"
+                          : selectHistFilterRange == "months"
+                              ? "${key.month}/${key.year}"
+                              : "${key.year}";
                       if (exposedFilterMap.containsKey(tempName)) {
                         if (exposedFilterMap[tempName]["filter"] == "Info") {
                           return !(value.comment.contains("Warning") ||
@@ -120,26 +184,46 @@ class _historyLog extends State<historyLog> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(
-                              "${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}  ${temp.millisecond},${temp.microsecond}",
-                            ),
+                            if (selectHistFilterRange == "days")
+                              Text(
+                                "${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}.${temp.millisecond}",
+                              ),
+                            if (selectHistFilterRange == "months" ||
+                                selectHistFilterRange == "years")
+                              Text(
+                                "${temp.day}/${temp.month}/${temp.year} ${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}",
+                              ),
                           ],
                         ),
                       ));
                     });
                     dayTile.add(ExpansionTile(
-                      title: Text("${key.day}/${key.month}/${key.year}"),
+                      title: Text(selectHistFilterRange == "days"
+                          ? "${key.day}/${key.month}/${key.year}"
+                          : selectHistFilterRange == "months"
+                              ? "${key.month}/${key.year}"
+                              : "${key.year}"),
                       onExpansionChanged: (value) {
                         setState(() {
                           expIndex = value
-                              ? "${key.day}/${key.month}/${key.year}"
+                              ? selectHistFilterRange == "days"
+                                  ? "${key.day}/${key.month}/${key.year}"
+                                  : selectHistFilterRange == "months"
+                                      ? "${key.month}/${key.year}"
+                                      : selectHistFilterRange == "years"
+                                          ? "${key.year}"
+                                          : "History"
                               : "History";
                           // exposedFilter = value ? exposedFilter : "Default";
                         });
                       },
                       children: [
                         _filterLogs(
-                          name: "${key.day}/${key.month}/${key.year}",
+                          name: selectHistFilterRange == "days"
+                              ? "${key.day}/${key.month}/${key.year}"
+                              : selectHistFilterRange == "months"
+                                  ? "${key.month}/${key.year}"
+                                  : "${key.year}",
                         ),
                         ...subTile,
                       ],
