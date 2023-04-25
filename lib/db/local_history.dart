@@ -36,7 +36,7 @@ class LocalHistoryDatabase {
       ${LocalHistFields.comment} $textType)''');
   }
 
-  Future<LocalHist> add(LocalHist local) async {
+  Future<LocalHist> add(LocalHist local, [cfg]) async {
     final db = await instance.database;
     final id = await db.insert(
       table,
@@ -45,6 +45,21 @@ class LocalHistoryDatabase {
     );
 
     return local.response(id: id.toString());
+  }
+
+  Future<Map> update(Map<String, dynamic> editValues) async {
+    final db = await instance.database;
+    final id = await db.update(
+      table,
+      editValues,
+      where: '_id = ?',
+      whereArgs: editValues["id"],
+    );
+
+    return {
+      "id": id,
+      "val": editValues,
+    };
   }
 
   Future<List<LocalHist>> getAllHistory() async {
