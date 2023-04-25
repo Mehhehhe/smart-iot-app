@@ -301,9 +301,6 @@ class _LiveChartState extends State<LiveChart> {
 
       tempArr = [];
     }
-    // print("[AddAll map] $temp");
-    // print("[TestEx] ${temp[0].dataSource[0]}");
-    print("[End Date] ${newDataList.last.date}");
 
     return {
       "series": temp,
@@ -448,65 +445,6 @@ class _LiveChartState extends State<LiveChart> {
 
     return threshLine(null);
   }
-
-  // _lineSeriesNPK(List<ChartData> data) {
-  //   List<LineSeries<ChartData, DateTime>> temp =
-  //       <LineSeries<ChartData, DateTime>>[];
-  //   List<String> places = [];
-  //   // Find all devices
-  //   for (var elm in data) {
-  //     print("Prepare data ${elm.place}, ${elm.values}");
-  //     if (!places.contains(elm.place)) {
-  //       places.add(elm.place);
-  //     }
-  //   }
-  //   // Seperate data for each NPK
-  //   for (var plc in places) {
-  //     List<ChartData> temp_arr = [];
-  //     for (var chrt in data) {
-  //       if (chrt.place == plc) {
-  //         temp_arr.add(chrt);
-  //       }
-  //     }
-  //     temp.add(LineSeries(
-  //       onRendererCreated: (controller) => _chartSeriesController = controller,
-  //       name: plc,
-  //       dataSource: temp_arr,
-  //       enableTooltip: true,
-  //       xValueMapper: (datum, index) => datum.date,
-  //       yValueMapper: (datum, index) => datum.values,
-  //     ));
-  //     temp_arr = [];
-  //   }
-  //   return temp;
-  // }
-
-  // SfSparkBarChart _buildBarChart(List<ChartData> data) {
-  //   return SfSparkBarChart(
-  //     data: _barSeries(data),
-  //   );
-  // }
-
-  // _barSeries(List<ChartData> data) {
-  //   List<num> newBar = [];
-  //   for (var cd in data) {
-  //     newBar.add(cd.values);
-  //   }
-
-  //   return newBar;
-  // }
-
-  // SfCircularChart _buildPieChart(List<ChartData> data) {
-  //   return SfCircularChart(
-  //     series: _circularSeries(data),
-  //   );
-  // }
-
-  // _circularSeries(List<ChartData> data) {
-  //   List<CircularSeries<ChartData, dynamic>> temp = [];
-
-  //   return temp;
-  // }
 
   @override
   Widget build(BuildContext context) {
