@@ -518,9 +518,10 @@ class _AnalysisPage extends State<AnalysisPage> {
       height: 100,
       width: MediaQuery.of(context).size.width * 0.8,
       decoration: BoxDecoration(
-        color: Colors.amber.shade100,
+        color: Colors.transparent,
       ),
       child: GridView.builder(
+        padding: EdgeInsets.all(5.0),
         shrinkWrap: true,
         itemCount: widget.devices.length,
         primary: false,
@@ -533,7 +534,11 @@ class _AnalysisPage extends State<AnalysisPage> {
               // side: BorderSide(color: Colors.black, width: 1),
               borderRadius: BorderRadius.circular(5),
             ),
-            tileColor: Colors.white,
+            tileColor: Colors.orange.shade100,
+            textColor: Colors.black45,
+            selected: selectDevice == name,
+            selectedColor: Colors.black,
+            selectedTileColor: Colors.orange.shade400,
             title: Text(name),
             subtitle: Row(
               children: [
@@ -549,17 +554,22 @@ class _AnalysisPage extends State<AnalysisPage> {
                                 .toStringAsPrecision(2)
                             : avg,
                       };
-                      print("[TempMap] $temp");
                       if (!averageToDisplayInPdf.containsKey(name)) {
                         averageToDisplayInPdf.addEntries(temp.entries);
-                        print(
-                            "Added | $averageToDisplayInPdf ${averageToDisplayInPdf.containsKey(temp)}");
                       }
 
                       return avg.length == 1
-                          ? Text(double.parse(avg[0].toString())
-                              .toStringAsPrecision(2))
-                          : Text("N: ${avg[0]}, P: ${avg[1]},K: ${avg[2]}");
+                          ? Text(
+                              double.parse(avg[0].toString())
+                                  .toStringAsPrecision(2),
+                              softWrap: true,
+                              style: TextStyle(fontSize: 12.0),
+                            )
+                          : Text(
+                              "N: ${avg[0]}, P: ${avg[1]},K: ${avg[2]}",
+                              softWrap: true,
+                              style: TextStyle(fontSize: 12.0),
+                            );
                     }
 
                     return Container();
@@ -574,7 +584,7 @@ class _AnalysisPage extends State<AnalysisPage> {
         },
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisExtent: 60.0,
+          mainAxisExtent: 75.0,
         ),
       ),
     );
