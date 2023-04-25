@@ -88,7 +88,7 @@ class ThresholdDatabase {
   Future<Map> edit(Map<String, dynamic> map) async {
     final db = await instance.database;
     final id =
-        await db.update('thresh', map, where: '_id = ?', whereArgs: map["id"]);
+        await db.update('thresh', map, where: '_id = ?', whereArgs: map["_id"]);
 
     return {
       "id": id,
