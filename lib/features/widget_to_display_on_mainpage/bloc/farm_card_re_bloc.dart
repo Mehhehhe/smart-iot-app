@@ -132,8 +132,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
 
   _devicesToList(farm) async {
     var tempDevices = await getDevicesByFarmName(farm);
-    // devices = temp_devices;
-    // print("Cubit fetch devices : => $tempDevices");
+
     emit(FarmCardReState.loaded(
       currentIndex(),
       state.farms,
@@ -182,22 +181,19 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
         h[v]["Value"].toString(),
         "",
       );
-      // print("[ID] ${h[v]["TimeStamp"].toString()}");
       var res = await lc.add(tempForSav);
 
-      triggerThreshCheck(dev, h[v]["Value"]);
-      // print(res.toJson());
-      // var allHist = await lc.getAllHistory();
-      // print("[Hist] ${}");
+      triggerThreshCheck(dev, h[v]["Value"], h[v]["TimeStamp"].toString());
     }
   }
 
-  void triggerThreshCheck(String dev, value) {
+  void triggerThreshCheck(String dev, value, String id) {
     var enc = sha1.convert(utf8.encode(dev)).toString();
     // print("[BFonstart] $value , ${value.runtimeType}");
     FlutterBackgroundService().invoke('threshDiff', {
       "encryptedKey": enc,
       "name": dev,
+      "id": id,
       "value": value.runtimeType == double ? value.toString() : value,
       "isMap": value.runtimeType == double ? false : true,
     });
