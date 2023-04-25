@@ -45,7 +45,7 @@ class ReportCard {
       ),
       headers: ["Name", "Type"],
       headerStyle: pdf.TextStyle(
-        color: PdfColors.white,
+        color: PdfColors.black,
         fontWeight: pdf.FontWeight.bold,
       ),
       headerDecoration: const pdf.BoxDecoration(
@@ -70,6 +70,7 @@ class ReportCard {
           pdf.Padding(padding: pdf.EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0)));
       tables.add(
         pdf.Table.fromTextArray(
+          tableWidth: pdf.TableWidth.min,
           data: List<List<dynamic>>.generate(
             1,
             (index) => [
@@ -81,7 +82,7 @@ class ReportCard {
           ),
           headers: ["Name", "Average"],
           headerStyle: pdf.TextStyle(
-            color: PdfColors.white,
+            color: PdfColors.black,
             fontWeight: pdf.FontWeight.bold,
           ),
           headerDecoration: const pdf.BoxDecoration(
