@@ -218,9 +218,17 @@ class _LogIn extends State<LogIn> {
                     ),
                   ),
                   // Replace logo here!
-                  const Center(
-                    child: FlutterLogo(
-                      size: 100,
+                  Center(
+                    child: Container(
+                      height: 100.0,
+                      width: 100.0,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/appicon.jpg'),
+                          fit: BoxFit.fill,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                 ],
@@ -300,9 +308,17 @@ class _LogIn extends State<LogIn> {
                   ),
 
                   // Logo replace here!
-                  const Center(
-                    child: FlutterLogo(
-                      size: 100,
+                  Center(
+                    child: Container(
+                      height: 100.0,
+                      width: 100.0,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/appicon.jpg'),
+                          fit: BoxFit.fill,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                   // Center(

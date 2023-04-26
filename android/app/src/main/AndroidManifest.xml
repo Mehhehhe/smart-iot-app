@@ -18,7 +18,7 @@
 </queries> -->
    <application
         tools:replace="android:label"
-        android:label="smart_iot_app"
+        android:label="Karriot"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -96,6 +96,7 @@ dependencies:
   ffi: ^2.0.1
   freezed_annotation: ^2.2.0
   json_annotation: ^4.8.0
+  flutter_launcher_icons:
 
 dev_dependencies:
 
@@ -113,6 +114,9 @@ dev_dependencies:
   freezed: ^2.3.2
   json_serializable: ^6.6.1
 
+flutter_launcher_icons:
+  android: true
+  image_path_android: "assets/images/appicon.jpg"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -136,6 +140,7 @@ flutter:
     - assets/images/onboarding2.png
     - assets/saves/history.txt
     - assets/certificates/
+    - assets/images/appicon.jpg
     # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
