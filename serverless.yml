@@ -191,6 +191,7 @@ functions:
       - http:
           path: /liveData
           method: POST
+          cors: true
   createFarmAsTable:
     handler: handler.createFarmAsTable
     description: (For web only!) Create a farm table which used for logging live data for each device.
