@@ -124,17 +124,17 @@ void onStart(ServiceInstance service) async {
 
   // Fetching `threshold` sql, display notification
   service.on('threshDiff').listen((event) async {
-    // Compare to thresh
+    // Compare to thresh0
     final threshdb = ThresholdDatabase.instance;
     String currId = event!["encryptedKey"];
-    // print("[Background] $currId , ${event["name"]}");
+    // print("[Background] $currId , ${event["value"].runtimeType}");
     List thAll = await threshdb.getAllAvailableThresh();
     // print("[AllTHDB] $thAll");
     var activationTh = await threshdb.getThresh(currId);
     String status = "";
 
     if (service is AndroidServiceInstance &&
-        event["Value"].runtimeType == String) {
+        event["value"].runtimeType == String) {
       if (await service.isForegroundService() &&
           num.parse(event["value"]) >= activationTh &&
           event["isMap"] == false) {
@@ -150,6 +150,13 @@ void onStart(ServiceInstance service) async {
               ongoing: true,
               importance: Importance.high,
               priority: Priority.high,
+              actions: [
+                AndroidNotificationAction(
+                  'KarrIoT',
+                  'Exit',
+                  cancelNotification: true,
+                ),
+              ],
             ),
           ),
         );
@@ -248,7 +255,7 @@ void onStart(ServiceInstance service) async {
         }
       }
     }
-
+    // print("status noti => $status");
     if (status != "") {
       // init hist db
       final lc = LocalHistoryDatabase.instance;
