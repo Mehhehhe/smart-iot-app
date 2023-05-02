@@ -296,31 +296,29 @@ class _historyLog extends State<historyLog> {
     return ToggleButtons(
       direction: Axis.horizontal,
       onPressed: (index) {
-        setState(() {
-          String filter = filterTexts[index]
-              .toString()
-              .substring(6, filterTexts[index].toString().length - 2);
+        String filter = filterTexts[index]
+            .toString()
+            .substring(6, filterTexts[index].toString().length - 2);
 
-          for (int i = 0; i < exposedFilterMap[name]["bool_list"].length; i++) {
-            exposedFilterMap[name]["bool_list"][i] = i == index;
-          }
+        for (int i = 0; i < exposedFilterMap[name]["bool_list"].length; i++) {
+          exposedFilterMap[name]["bool_list"][i] = i == index;
+        }
 
-          switch (filter) {
-            case "Default":
-              exposedFilterMap[name]["filter"] = "Default";
-              break;
-            case "Info":
-              exposedFilterMap[name]["filter"] = "Info";
-              break;
-            case "Warning":
-              exposedFilterMap[name]["filter"] = "Warning";
-              break;
-            case "Error":
-              exposedFilterMap[name]["filter"] = "Error";
-              break;
-            default:
-          }
-        });
+        switch (filter) {
+          case "Default":
+            setState(() => exposedFilterMap[name]["filter"] = "Default");
+            break;
+          case "Info":
+            setState(() => exposedFilterMap[name]["filter"] = "Info");
+            break;
+          case "Warning":
+            setState(() => exposedFilterMap[name]["filter"] = "Warning");
+            break;
+          case "Error":
+            setState(() => exposedFilterMap[name]["filter"] = "Error");
+            break;
+          default:
+        }
       },
       isSelected: exposedFilterMap.containsKey(name)
           ? exposedFilterMap[name]["bool_list"]
