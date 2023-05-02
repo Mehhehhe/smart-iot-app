@@ -58,16 +58,25 @@ class ThresholdDatabase {
 
   Future<dynamic> getThresh(String id) async {
     final db = await instance.database;
-    // String enc = sha1.convert(utf8.encode(id)).toString();
+    String enc = sha1.convert(utf8.encode(id)).toString();
     final result = await db.query(
       'thresh',
       where: '_id = ?',
-      whereArgs: [id],
+      whereArgs: [enc],
     );
     if (result.isEmpty) {
+      // print("Get id $id");
+      if (id.contains("NPK")) {
+        return {
+          "N": 100000.0,
+          "P": 100000.0,
+          "K": 100000.0,
+        };
+      }
+
       return 100000.0;
     }
-    print("[DB] $result , $id");
+    // print("[DB] $result , $id");
     // String to num
     bool isConvertableToMap = result[0]["_threshVal"].toString().contains("/");
     if (isConvertableToMap) {
