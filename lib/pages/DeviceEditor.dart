@@ -24,7 +24,7 @@ class _DeviceEditor extends State<DeviceEditor> {
     // Input: deviceName
 
     ThresholdDatabase thd = ThresholdDatabase.instance;
-    String id = sha1.convert(utf8.encode(widget.deviceName)).toString();
+    // String id = sha1.convert(utf8.encode(widget.deviceName)).toString();
 
     threshTextField(topicName, controller) => Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -53,7 +53,7 @@ class _DeviceEditor extends State<DeviceEditor> {
                 : texts.text;
 
             thd.add({
-              "_id": id,
+              "_id": sha1.convert(utf8.encode(widget.deviceName)).toString(),
               "_threshVal": isMulti ? val : texts.text,
             });
           },
@@ -62,61 +62,54 @@ class _DeviceEditor extends State<DeviceEditor> {
 
     // ignore: long-method
     placeTextInForm() => FutureBuilder(
-          future: thd.getThresh(id),
+          future: thd.getThresh(widget.deviceName),
           builder: (context, snapshot) {
             // check
-            if (snapshot.hasData) {
-              List<Widget> widgetList = [];
-              if (widget.deviceName.contains("NPK")) {
-                // multi
-                dynamic data = snapshot.data.runtimeType == double
-                    ? snapshot.data
-                    : snapshot.data as Map;
-                print("[TheshSettings] $data");
+            List<Widget> widgetList = [];
+            if (widget.deviceName.contains("NPK")) {
+              // multi
+              print("fetch get ${snapshot.data}");
+              Map value = snapshot.data as Map? ??
+                  {
+                    "N": 0.0,
+                    "P": 0.0,
+                    "K": 0.0,
+                  };
 
-                Map value = data ??
-                    {
-                      "N": 0.0,
-                      "P": 0.0,
-                      "K": 0.0,
-                    };
-                TextEditingController nSlot =
-                    TextEditingController(text: value["N"].toString());
-                TextEditingController pSlot =
-                    TextEditingController(text: value["P"].toString());
-                TextEditingController kSlot =
-                    TextEditingController(text: value["K"].toString());
+              TextEditingController nSlot =
+                  TextEditingController(text: value["N"].toString());
+              TextEditingController pSlot =
+                  TextEditingController(text: value["P"].toString());
+              TextEditingController kSlot =
+                  TextEditingController(text: value["K"].toString());
 
-                widgetList.addAll([
-                  threshTextField("N", nSlot),
-                  threshTextField("P", pSlot),
-                  threshTextField("K", kSlot),
-                  saveButton(combineForSave(
-                    nSlot,
-                    pSlot,
-                    kSlot,
-                  )),
-                ]);
-              } else {
-                // single
-                TextEditingController defaultController =
-                    TextEditingController(text: snapshot.data.toString());
-                widgetList.addAll([
-                  threshTextField("Threshold", defaultController),
-                  saveButton(defaultController),
-                ]);
-              }
-
-              return Container(
-                color: Colors.orange.shade100,
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [...widgetList],
-                ),
-              );
+              widgetList.addAll([
+                threshTextField("N", nSlot),
+                threshTextField("P", pSlot),
+                threshTextField("K", kSlot),
+                saveButton(combineForSave(
+                  nSlot,
+                  pSlot,
+                  kSlot,
+                )),
+              ]);
+            } else {
+              // single
+              TextEditingController defaultController =
+                  TextEditingController(text: snapshot.data.toString());
+              widgetList.addAll([
+                threshTextField("Threshold", defaultController),
+                saveButton(defaultController),
+              ]);
             }
 
-            return Container();
+            return Container(
+              color: Colors.orange.shade100,
+              child: ListView(
+                shrinkWrap: true,
+                children: [...widgetList],
+              ),
+            );
           },
         );
 
