@@ -45,7 +45,7 @@ class _numberCardState extends State<numberCard> {
     for (var data_map in target) {
       var tempMap = {};
       final cardName = data_map["FromDevice"];
-      final latestData = json.decode(data_map["Data"]);
+      final latestData = data_map["Data"];
       final lat = latestData[0];
       // print(
       //     "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
@@ -193,7 +193,7 @@ class _numberCardState extends State<numberCard> {
             byTypeList = widget.splByType[widget.whichFarm][t]["data"];
           }
         }
-        print(byTypeList);
+        // print(byTypeList);
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -203,7 +203,10 @@ class _numberCardState extends State<numberCard> {
           itemCount: byTypeList.length,
           itemBuilder: (context, index) {
             var ss = byTypeList[index];
-            var data = json.decode(ss["Data"]);
+            var data = ss["Data"];
+            if (ss["Data"] == null) {
+              return Container();
+            }
             int lastIndex = data.length - 1;
             var currentVal = data[lastIndex]["Value"];
             // print("Type: ${ss["FromDevice"].runtimeType}");

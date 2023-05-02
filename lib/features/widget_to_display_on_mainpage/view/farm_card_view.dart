@@ -102,12 +102,34 @@ class _farmCardViewState extends State<farmCardView> {
     }
     for (var ss in s) {
       temp.forEach((key, value) {
-        print("check data $ss");
+        // print("check data $ss");
         for (var t in value.keys) {
           if (temp.containsKey(ss["FromFarm"]) &&
-              ss["FromDevice"].contains(value[t]["prefix"]) &&
-              !value[t]["data"].contains(ss)) {
-            value[t]["data"].add(ss);
+              ss["FromDevice"].contains(value[t]["prefix"])) {
+            if (value[t]["data"].isEmpty) {
+              // print("is ss string? ${json.decode(ss)["Data"].runtimeType}, ");
+              if (ss["Data"].runtimeType == String) {
+                ss["Data"] = json.decode(ss["Data"]);
+              }
+              value[t]["data"].add(ss);
+              break;
+            }
+
+            // print(
+            //     "check condition :=> ${temp.containsKey(ss["FromFarm"])}, ${ss["FromDevice"].contains(value[t]["prefix"])}, ${!value[t]["data"].contains(ss)} , \n\n\nvalue = ${value[t]["data"]}");
+            List temp = [];
+            for (int i = 0; i < value[t]["data"].length; i++) {
+              if (value[t]["data"][i]["FromDevice"] == ss["FromDevice"]) {
+                temp.addAll(
+                  ss["Data"].runtimeType == String
+                      ? json.decode(ss["Data"])
+                      : ss["Data"],
+                );
+              }
+            }
+            if (temp.isNotEmpty) {
+              value[t]["data"].addAll(temp);
+            }
           }
         }
       });
