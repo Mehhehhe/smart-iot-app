@@ -62,9 +62,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 } else {
                   _storeOnboardingStatus();
                   // Navigator.of(context).pushReplacementNamed('/home');
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => farmCard(),
-                  ));
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => farmCard(),
+                    ),
+                  );
                 }
               },
               child: Text(
