@@ -135,6 +135,7 @@ class MQTTClientWrapper {
       ..secure = true
       ..setProtocolV311()
       ..logging(on: false)
+      ..autoReconnect = true
       // ..securityContext = SecurityContext.defaultContext
       ..keepAlivePeriod = 60
       ..onDisconnected = _onDisconnected
