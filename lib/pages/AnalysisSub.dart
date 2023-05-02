@@ -36,7 +36,7 @@ LineSeries<ChartData, DateTime> createSeries(
 
       return datum.values[0][name.characters.first];
     },
-    trendlines: !multiValue
+    trendlines: (!multiValue && !isIndicator)
         ? [
             Trendline(
               isVisible: true,

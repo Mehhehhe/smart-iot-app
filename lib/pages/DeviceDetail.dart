@@ -38,10 +38,11 @@ class DeviceDetail extends StatelessWidget {
     DateTime deviceTimeStamp =
         DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toUtc();
     // print("[ValueCheckType] ${temp} ${temp["Value"].runtimeType}");
-
-    if (temp["Value"].runtimeType == double) {
+    print("\n\n[Debug] ${temp["Value"].runtimeType}, ${temp["Value"]}\n\n");
+    if (temp["Value"].runtimeType == double ||
+        temp["Value"].runtimeType == int) {
       // double
-      double v = temp["Value"];
+      double v = double.parse(temp["Value"].toString());
       // Although the value is single, the value must still pass on as List.
       List value = [v];
 
@@ -51,10 +52,7 @@ class DeviceDetail extends StatelessWidget {
         detail["Location"] ?? location,
       ));
     } else {
-      if (temp["Value"]["N"] == null ||
-          temp["Value"]["P"] == null ||
-          temp["Value"]["K"] == null ||
-          temp["Value"] == null) {
+      if (temp["Value"] == null) {
         return;
       }
       // print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");

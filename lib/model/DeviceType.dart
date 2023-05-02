@@ -105,7 +105,7 @@ class DeviceWidgetGenerator {
     required dynamic value,
     required Map props,
   }) {
-    double v = value.runtimeType == String ? double.parse(value) : value;
+    double v = double.parse(value.toString());
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.2,
@@ -121,7 +121,7 @@ class DeviceWidgetGenerator {
             showTicks: false,
             pointers: <GaugePointer>[
               RangePointer(
-                value: value,
+                value: v,
                 width: 18,
                 color: Colors.greenAccent,
               ),
