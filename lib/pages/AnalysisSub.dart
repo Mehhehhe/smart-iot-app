@@ -6,6 +6,21 @@ import 'package:smart_iot_app/modules/native_call.dart';
 import 'package:smart_iot_app/src/native/bridge_definitions.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+Map<String, dynamic> getIndicatorTemplate(name) => {
+      name: {
+        "indicators": [],
+        "sma": {
+          "range": "5",
+          "bools": [true, false, false, false],
+        },
+        "ema": {
+          "range": "5",
+          "bools": [true, false, false, false],
+        },
+        "legend": true,
+      },
+    };
+
 LineSeries<ChartData, DateTime> createSeries(
   List<ChartData> tempArr,
   String name, {

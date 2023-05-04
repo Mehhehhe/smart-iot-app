@@ -28,6 +28,12 @@ class _historyLog extends State<historyLog> {
     Text("Warning"),
     Text("Error"),
   ];
+  static const List<String> rangeFilters = [
+    "Default",
+    "Info",
+    "Warning",
+    "Error",
+  ];
   String selectHistFilterRange = "days";
   static const List<Widget> filterHistory = [
     Text("Days"),
@@ -296,9 +302,8 @@ class _historyLog extends State<historyLog> {
     return ToggleButtons(
       direction: Axis.horizontal,
       onPressed: (index) {
-        String filter = filterTexts[index]
-            .toString()
-            .substring(6, filterTexts[index].toString().length - 2);
+        // print("[Toggle] ${filterTexts}");
+        String filter = rangeFilters[index];
 
         for (int i = 0; i < exposedFilterMap[name]["bool_list"].length; i++) {
           exposedFilterMap[name]["bool_list"][i] = i == index;

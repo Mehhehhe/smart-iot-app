@@ -44,6 +44,13 @@ class _AnalysisPage extends State<AnalysisPage> {
     Text("25"),
     Text("50"),
   ];
+  static const List<String> movingAverageRange = [
+    "5",
+    "10",
+    "25",
+    "50",
+  ];
+
   static const List<String> availableIndicators = ["sma", "ema"];
   // TODO: implement each device's own settings of indicator
   // give each one, default setting like in the history page.
@@ -593,22 +600,8 @@ class _AnalysisPage extends State<AnalysisPage> {
   // ignore: long-method
   Widget indicatorsInput({required String name}) {
     List<Widget> lts = [];
-    dynamic temp = {
-      name: {
-        "indicators": [],
-        "sma": {
-          "range": "5",
-          "bools": [true, false, false, false],
-        },
-        "ema": {
-          "range": "5",
-          "bools": [true, false, false, false],
-        },
-        "legend": true,
-      },
-    };
     if (!indicatorsSetMap.containsKey(name)) {
-      indicatorsSetMap.addEntries(temp.entries);
+      indicatorsSetMap[name] = (getIndicatorTemplate(name))[name];
     }
     for (String i in indicatorsSetMap[name]["indicators"]) {
       switch (i) {
@@ -805,13 +798,7 @@ class _AnalysisPage extends State<AnalysisPage> {
                         i == index;
                   }
                   indicatorsSetMap[deviceName][whatIndicator]["range"] =
-                      movingAverageRangeSelector[index].toString().substring(
-                            6,
-                            movingAverageRangeSelector[index]
-                                    .toString()
-                                    .length -
-                                2,
-                          );
+                      movingAverageRange[index];
                 });
               },
               isSelected: indicatorsSetMap[deviceName][whatIndicator]["bools"],
