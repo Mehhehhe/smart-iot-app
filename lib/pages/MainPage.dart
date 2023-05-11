@@ -9,6 +9,8 @@ import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_e
 import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:smart_iot_app/services/lambdaCaller.dart';
 
+import 'onboard.dart';
+
 class MainPage extends StatefulWidget {
   MQTTClientWrapper cli;
   MainPage(this.cli, {Key? key}) : super(key: key);
@@ -79,11 +81,11 @@ class _MainPageState extends State<MainPage> {
     return DefaultTextStyle(
       style: const TextStyle(decoration: TextDecoration.none),
       child: Material(
-        color: Colors.black,
+        //color: Colors.black,
         child: DefaultTabController(
           length: 2,
-          child: Scaffold(
-            floatingActionButton: Padding(
+          child: Scaffold(extendBodyBehindAppBar: true,
+            /*floatingActionButton: Padding(
               padding: EdgeInsets.fromLTRB(0.0, 200.0, 0.0, 0.0),
               child: FloatingActionButton.extended(
                 backgroundColor: Colors.white,
@@ -97,30 +99,56 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,*/
             resizeToAvoidBottomInset: false,
             appBar: AppBar(
-              actions: [
-                IconButton(
-                  onPressed: () => signOutCurrentUser(),
-                  icon: const Icon(
-                    Icons.logout,
-                  ),
+                iconTheme: IconThemeData(color: Colors.white),
+
+                actions: [
+                  IconButton(onPressed: () async {
+                // _displayFarmEditor(context, data);
+                await Navigator.push(
+                context,
+                MaterialPageRoute(
+                builder: (context) => FarmEditor(farm: ownedFarm),
                 ),
-              ],
-              backgroundColor: Colors.amber,
-              elevation: 5.0,
-              title: const Text(
-                'Karriot',
-                style: TextStyle(color: Colors.black),
+                ).then((value) {
+                // context.read<FarmCardReBloc>().chooseIndex(index);
+                onIndexSelection(value);
+                });
+                }, icon: Icon(Icons.cached)),
+                  IconButton(onPressed: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => OnboardingPage()));},
+                      icon: Icon(Icons.question_mark)),
+                  IconButton(onPressed: () => signOutCurrentUser(), icon: Icon(Icons.logout)),
+                ],
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                title: const Text(
+                  'Karriot',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 35,
+                    fontWeight: 
+                    FontWeight.bold,
+                    letterSpacing: 5,
+                    shadows: <Shadow>[
+      Shadow(
+        offset: Offset(2.0, 2.0),
+        blurRadius: 5,
+        color: Colors.orange
+      ),
+    ],
+                    ),
+
+                ),
+                //titleSpacing: 47,
+              //leadingWidth: 80,
+                toolbarHeight: 70,
               ),
-              titleSpacing: 47,
-              leadingWidth: 80,
-              toolbarHeight: 65,
-            ),
             body: Stack(children: [
+              
               Padding(
-                padding: const EdgeInsets.only(top: 200),
+                padding: const EdgeInsets.only(bottom:340),
                 child: Container(
                   decoration: const BoxDecoration(
                     //color: Colors.grey.shade200
@@ -132,8 +160,8 @@ class _MainPageState extends State<MainPage> {
                       fit: BoxFit.cover,
                     ),
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      topRight: Radius.circular(15),
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
                     ),
                   ),
                 ),

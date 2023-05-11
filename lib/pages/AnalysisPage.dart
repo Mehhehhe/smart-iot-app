@@ -264,11 +264,21 @@ class _AnalysisPage extends State<AnalysisPage> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const TabBar(
-              tabs: analyzeTab,
-              indicatorColor: Colors.black,
-              labelColor: Colors.black),
-          backgroundColor: Colors.amber,
+          flexibleSpace: Container(
+          decoration: BoxDecoration(
+            //color: Colors.grey.shade200
+              image: DecorationImage(
+                //opacity: 100,
+                  image: NetworkImage("https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
+                  fit: BoxFit.cover),
+
+          ),
+        ),
+          centerTitle: true,
+          elevation: 10,
+          title: Text("Analysis"),
+          backgroundColor: Colors.orange,
+          bottom: const TabBar(tabs: analyzeTab),
         ),
         body: TabBarView(
           children: analyzeTab.map((e) {
@@ -494,6 +504,7 @@ class _AnalysisPage extends State<AnalysisPage> {
 
   Widget graphScreen() {
     return Container(
+      
       height: 300,
       width: MediaQuery.of(context).size.width * 0.8,
       child: FutureBuilder(
@@ -541,12 +552,12 @@ class _AnalysisPage extends State<AnalysisPage> {
               // side: BorderSide(color: Colors.black, width: 1),
               borderRadius: BorderRadius.circular(5),
             ),
-            tileColor: Colors.orange.shade100,
-            textColor: Colors.black45,
+            tileColor: Colors.orange.shade600,
+            textColor: Colors.white,
             selected: selectDevice == name,
-            selectedColor: Colors.black,
-            selectedTileColor: Colors.orange.shade400,
-            title: Text(name),
+            selectedColor: Colors.white,
+            selectedTileColor: Colors.orange.shade900,
+            title: Text(name,style: TextStyle(fontWeight:FontWeight.bold ),),
             subtitle: Row(
               children: [
                 const Text("Average: "),

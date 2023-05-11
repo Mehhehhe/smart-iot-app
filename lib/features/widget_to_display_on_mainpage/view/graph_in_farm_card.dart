@@ -145,9 +145,10 @@ class _LiveChartState extends State<LiveChart> {
 
     return Column(
       children: [
-        const Padding(padding: EdgeInsets.only(top: 20.0)),
-        _toggleRangesRow(),
+        const Padding(padding: EdgeInsets.only(top: 10.0)),
         displayGraph,
+        _toggleRangesRow(),
+        
       ],
     );
   }
@@ -191,10 +192,10 @@ class _LiveChartState extends State<LiveChart> {
       },
       isSelected: selectedInterval,
       borderRadius: const BorderRadius.all(Radius.circular(8)),
-      selectedBorderColor: Colors.green[700],
+      //selectedBorderColor: Colors.green[700],
       selectedColor: Colors.white,
-      fillColor: Colors.green[200],
-      color: Colors.green[400],
+      fillColor: Colors.deepOrange,
+      color: Colors.orange[400],
       constraints: const BoxConstraints(
         minHeight: 40.0,
         minWidth: 80.0,
