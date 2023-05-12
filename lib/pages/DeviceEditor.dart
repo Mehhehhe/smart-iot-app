@@ -29,32 +29,35 @@ class _DeviceEditor extends State<DeviceEditor> {
     threshTextField(topicName, controller) => Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(topicName.toString() + '    : ',style: TextStyle(fontSize: 16, color: Colors.black,fontWeight: FontWeight.w500)),
+            Text(topicName.toString() + '    : ',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500)),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20,5,0,2),
+              padding: const EdgeInsets.fromLTRB(20, 5, 0, 2),
               child: Container(
                 height: 35,
                 width: 150.0,
                 decoration: BoxDecoration(
-                      border: Border.all(
-      width: 0.8,color: Colors.black
-    ),
-                      color: Colors.white60,
-                      borderRadius: BorderRadius.all(Radius.circular(10) ),
-                     
+                  border: Border.all(width: 0.8, color: Colors.black),
+                  color: Colors.white60,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 15,bottom: 2),
+                  padding: const EdgeInsets.only(left: 15, bottom: 2),
                   child: TextFormField(
                     decoration: InputDecoration(
-        border: InputBorder.none,
-      ),
+                      border: InputBorder.none,
+                    ),
                     maxLines: 1,
                     keyboardType: TextInputType.number,
                     enabled: true,
                     controller: controller,
-                    style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 6, 57, 145),fontWeight: FontWeight.w500),
-                    
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 6, 57, 145),
+                        fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
@@ -118,7 +121,7 @@ class _DeviceEditor extends State<DeviceEditor> {
               TextEditingController defaultController =
                   TextEditingController(text: snapshot.data.toString());
               widgetList.addAll([
-                threshTextField("Threshaold", defaultController),
+                threshTextField("Threshold", defaultController),
                 saveButton(defaultController),
               ]);
             }
@@ -126,10 +129,10 @@ class _DeviceEditor extends State<DeviceEditor> {
             return Container(
               //height: 200,
               decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
-         
-        ),
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(30)),
+              ),
               //color: Colors.white,
               child: ListView(
                 shrinkWrap: true,
