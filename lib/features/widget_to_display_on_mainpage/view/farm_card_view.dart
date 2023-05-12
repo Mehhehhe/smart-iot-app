@@ -398,17 +398,34 @@ Row(
                   // Main generator
                   // Caution: dataResponse, selectedResponse
                   if (selectedResponse.isEmpty) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Center(
-                          widthFactor: 1.8,
-                          child: Text(
-                            "No data found.",
-                            textAlign: TextAlign.center,
+                    return Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10) ),
+          boxShadow: [
+      BoxShadow(
+        color: Colors.orange.shade700,
+        blurRadius: 10,
+        offset: Offset(4, 8), // Shadow position
+      ),
+    ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Center(
+                            widthFactor: 1.8,
+                            child: Text(
+                              "No data found.",style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   }
             

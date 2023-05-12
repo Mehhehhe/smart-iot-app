@@ -29,14 +29,34 @@ class _DeviceEditor extends State<DeviceEditor> {
     threshTextField(topicName, controller) => Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(topicName.toString()),
-            Container(
-              width: 50.0,
-              child: TextFormField(
-                maxLines: 1,
-                keyboardType: TextInputType.number,
-                enabled: true,
-                controller: controller,
+            Text(topicName.toString() + '    : ',style: TextStyle(fontSize: 16, color: Colors.black,fontWeight: FontWeight.w500)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20,5,0,2),
+              child: Container(
+                height: 35,
+                width: 150.0,
+                decoration: BoxDecoration(
+                      border: Border.all(
+      width: 0.8,color: Colors.black
+    ),
+                      color: Colors.white60,
+                      borderRadius: BorderRadius.all(Radius.circular(10) ),
+                     
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 15,bottom: 2),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+        border: InputBorder.none,
+      ),
+                    maxLines: 1,
+                    keyboardType: TextInputType.number,
+                    enabled: true,
+                    controller: controller,
+                    style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 6, 57, 145),fontWeight: FontWeight.w500),
+                    
+                  ),
+                ),
               ),
             ),
           ],
@@ -84,9 +104,9 @@ class _DeviceEditor extends State<DeviceEditor> {
                   TextEditingController(text: value["K"].toString());
 
               widgetList.addAll([
-                threshTextField("N", nSlot),
-                threshTextField("P", pSlot),
-                threshTextField("K", kSlot),
+                threshTextField("Nitrogen       (N) ", nSlot),
+                threshTextField("Phosphorus (P)", pSlot),
+                threshTextField("Potassium  (K)", kSlot),
                 saveButton(combineForSave(
                   nSlot,
                   pSlot,
@@ -98,13 +118,19 @@ class _DeviceEditor extends State<DeviceEditor> {
               TextEditingController defaultController =
                   TextEditingController(text: snapshot.data.toString());
               widgetList.addAll([
-                threshTextField("Threshold", defaultController),
+                threshTextField("Threshaold", defaultController),
                 saveButton(defaultController),
               ]);
             }
 
             return Container(
-              color: Colors.orange.shade100,
+              //height: 200,
+              decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+         
+        ),
+              //color: Colors.white,
               child: ListView(
                 shrinkWrap: true,
                 children: [...widgetList],
@@ -123,21 +149,52 @@ class _DeviceEditor extends State<DeviceEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: const Text(
-        "Threshold Notifications",
-        style: TextStyle(
-          fontSize: 20.0,
-          fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+        ),
+        child: Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(0),
+                  bottomRight: Radius.circular(30))),
+          child: ExpansionTile(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(30))),
+            title: const Text(
+              "Threshold Notifications",
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            initiallyExpanded: false,
+            collapsedBackgroundColor: Colors.orange.shade600,
+            collapsedTextColor: Colors.white,
+            textColor: Colors.orange.shade600,
+            backgroundColor: Colors.white,
+            collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(30))),
+            children: [
+              thresholdConfig(),
+            ],
+          ),
         ),
       ),
-      initiallyExpanded: false,
-      backgroundColor: Colors.orange.shade300,
-      collapsedBackgroundColor: Colors.orange.shade500,
-      textColor: Colors.black,
-      children: [
-        thresholdConfig(),
-      ],
     );
   }
 }

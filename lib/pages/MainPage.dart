@@ -84,28 +84,32 @@ class _MainPageState extends State<MainPage> {
         //color: Colors.black,
         child: DefaultTabController(
           length: 2,
-          child: Scaffold(extendBodyBehindAppBar: true,
-            /*floatingActionButton: Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 200.0, 0.0, 0.0),
-              child: FloatingActionButton.extended(
-                backgroundColor: Colors.white,
-                onPressed: () => showModalBottomSheet(
-                  context: context,
-                  builder: (context) => FarmEditor(farm: ownedFarm),
-                ).then((value) => onIndexSelection(value)),
-                label: const Text("Change Farm",
-                    style: TextStyle(color: Colors.black, fontSize: 16.0)),
-                icon: const Icon(Icons.change_circle, color: Colors.black),
+          child: Scaffold(
+            extendBodyBehindAppBar: true,
+            floatingActionButton: Padding(
+              padding: EdgeInsets.fromLTRB(50.0, 50.0, 0.0, 0.0),
+              child: Container(
+                height: 33,
+                child: FloatingActionButton.extended(
+                  backgroundColor: Colors.white,
+                  onPressed: () => showModalBottomSheet(
+                    context: context,
+                    builder: (context) => FarmEditor(farm: ownedFarm),
+                  ).then((value) => onIndexSelection(value)),
+                  label: const Text("Change Farm",
+                      style: TextStyle(color: Colors.black, fontSize: 14.0,fontWeight: FontWeight.bold)),
+                  
+                ),
               ),
             ),
             floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,*/
+            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
             resizeToAvoidBottomInset: false,
             appBar: AppBar(
                 iconTheme: IconThemeData(color: Colors.white),
 
                 actions: [
-                  IconButton(onPressed: () async {
+                  /*IconButton(onPressed: () async {
                 // _displayFarmEditor(context, data);
                 await Navigator.push(
                 context,
@@ -116,7 +120,7 @@ class _MainPageState extends State<MainPage> {
                 // context.read<FarmCardReBloc>().chooseIndex(index);
                 onIndexSelection(value);
                 });
-                }, icon: Icon(Icons.cached)),
+                }, icon: Icon(Icons.cached)),*/
                   IconButton(onPressed: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => OnboardingPage()));},
                       icon: Icon(Icons.question_mark)),
                   IconButton(onPressed: () => signOutCurrentUser(), icon: Icon(Icons.logout)),

@@ -123,7 +123,7 @@ class _LogIn extends State<LogIn> {
       builder: Authenticator.builder(),
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        //resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: false,
         body: Builder(
           builder: (context) {
             if (widget.onboard) {

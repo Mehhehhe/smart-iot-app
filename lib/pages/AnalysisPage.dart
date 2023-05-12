@@ -465,6 +465,7 @@ class _AnalysisPage extends State<AnalysisPage> {
             padding: EdgeInsets.all(10.0),
             child: Text("Choose the below devices to display the graph."),
           ),
+          if (widget.devices.isNotEmpty) deviceAvgSelector(),
         graphScreen(),
         if (selectDevice != "")
           Row(
@@ -496,7 +497,8 @@ class _AnalysisPage extends State<AnalysisPage> {
               ),
             ],
           ),
-        if (widget.devices.isNotEmpty) deviceAvgSelector(),
+        
+        
         if (widget.devices.isNotEmpty) indicatorsInput(name: selectDevice),
       ],
     );
@@ -505,7 +507,7 @@ class _AnalysisPage extends State<AnalysisPage> {
   Widget graphScreen() {
     return Container(
       
-      height: 300,
+      height: 260,
       width: MediaQuery.of(context).size.width * 0.8,
       child: FutureBuilder(
         future: lineSeries(selectDevice),
@@ -603,6 +605,7 @@ class _AnalysisPage extends State<AnalysisPage> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           mainAxisExtent: 75.0,
+          crossAxisSpacing: 15
         ),
       ),
     );
@@ -644,82 +647,131 @@ class _AnalysisPage extends State<AnalysisPage> {
       }
     }
 
-    return ListView(
-      shrinkWrap: true,
-      primary: false,
-      children: [
-        if (lts.isNotEmpty)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-              child: Text("Press & Hold to remove the indicator"),
-            ),
-          ),
-        if (lts.isEmpty)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-              child: Text("Empty indicator. Press below button to add some!"),
-            ),
-          ),
-        ...lts,
-        if (lts.length < availableIndicators.length && selectDevice != "")
-          Container(
-            width: 100.0,
-            child: ListTile(
-              tileColor: Colors.blue.shade300,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.add),
-                  Text(
-                    "Add indicator",
-                    style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              onTap: () => showModalBottomSheet(
-                context: context,
-                builder: (context) => ListView.builder(
-                  itemCount: availableIndicators.length,
-                  itemBuilder: (context, index) => _indicatorChoose(index),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Container(decoration: BoxDecoration(
+            
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(10) ),
+            boxShadow: [
+        BoxShadow(
+          color: Colors.grey,
+          blurRadius: 10,
+          offset: Offset(4, 8), // Shadow position
+        ),
+      ],
+      ),
+        child: ListView(
+          shrinkWrap: true,
+          primary: false,
+          children: [
+            if (lts.isNotEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+                  child: Text("Press & Hold to remove the indicator",style: TextStyle(color: Colors.grey),),
                 ),
               ),
-            ),
-          ),
-        if (lts.length == availableIndicators.length)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-              child: Text("Indicator reached maximum available length."),
-            ),
-          ),
-      ],
+            if (lts.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+                  child: Text("Empty indicator. Press below button to add some!"),
+                ),
+              ),
+            ...lts,
+            if (lts.length < availableIndicators.length && selectDevice != "")
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+
+                  child: TextButton(
+                    onPressed: ()   => showModalBottomSheet(
+                      context: context,
+                      builder: (context) => ListView.builder(
+                        itemCount: availableIndicators.length,
+                        itemBuilder: (context, index) => _indicatorChoose(index),
+                      ),
+                    ),  child: Text("Add indicator", style:
+                              TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600,color: Color.fromARGB(255, 13, 119, 206)),),
+
+                   
+                    
+                  ),
+               
+              ),
+            if (lts.length == availableIndicators.length)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+                  child: Text("Indicator reached maximum available length."),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _indicatorChoose(index) {
-    return ExpansionTile(
-      title: Text(availableIndicators[index].toUpperCase()),
-      children: [
-        IndicatorDescriptions(availableIndicators[index].toLowerCase()),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              indicatorsSetMap[selectDevice]["indicators"]
-                  .add(availableIndicators[index]);
-              // enableSma = true;
-            });
-            Navigator.pop(context);
-          },
-          child: Text("Choose"),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.end,
-          //   children: const [Icon(Icons.add), Text("Choose")],
-          // ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
         ),
-      ],
+        child: Card(shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30))),
+          child: ExpansionTile(
+            collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                    )),
+            collapsedBackgroundColor: Colors.orange.shade900,
+                collapsedTextColor: Colors.white,
+                textColor: Colors.orange.shade900,
+            title: Text(availableIndicators[index].toUpperCase()),
+            children: [
+              IndicatorDescriptions(availableIndicators[index].toLowerCase()),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(width: 230,),
+                  Container(
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          indicatorsSetMap[selectDevice]["indicators"]
+                              .add(availableIndicators[index]);
+                          // enableSma = true;
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Text("Choose"),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.end,
+                      //   children: const [Icon(Icons.add), Text("Choose")],
+                      // ),
+                    ),
+                  ),
+                ],
+              ),
+              
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -747,7 +799,10 @@ class _AnalysisPage extends State<AnalysisPage> {
             );
           },
         ),
-        title: Text(indicatorFullName),
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0,0,0,15),
+          child: Text(indicatorFullName),
+        ),
         subtitle: _indicatorTileSettings(
           deviceName: deviceName,
           whatIndicator: whatIndicator,
@@ -814,10 +869,10 @@ class _AnalysisPage extends State<AnalysisPage> {
               },
               isSelected: indicatorsSetMap[deviceName][whatIndicator]["bools"],
               borderRadius: const BorderRadius.all(Radius.circular(8)),
-              selectedBorderColor: Colors.green[700],
-              selectedColor: Colors.black,
-              fillColor: Colors.green[200],
-              color: Colors.black,
+              //selectedBorderColor: Colors.green[700],
+              selectedColor: Colors.white,
+      fillColor: Colors.deepOrange,
+      color: Colors.orange[400],
               children: movingAverageRangeSelector,
             ),
           ],

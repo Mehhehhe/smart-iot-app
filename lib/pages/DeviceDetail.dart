@@ -79,11 +79,11 @@ class DeviceDetail extends StatelessWidget {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             //color: Colors.grey.shade200
-              image: DecorationImage(
+            image: DecorationImage(
                 //opacity: 100,
-                  image: NetworkImage("https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
-                  fit: BoxFit.cover),
-
+                image: NetworkImage(
+                    "https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
+                fit: BoxFit.cover),
           ),
         ),
         elevation: 5,
@@ -126,9 +126,7 @@ class DeviceDetail extends StatelessWidget {
 
                       return Column(
                         children: [
-                          DeviceEditor(
-                  deviceName: detail["SerialNumber"] ?? serial,
-                ),
+                          Device_Detail(),
                           // DropdownButton(
                           //   items: graphTypes
                           //       .map((e) => DropdownMenuItem(
@@ -139,13 +137,148 @@ class DeviceDetail extends StatelessWidget {
                           //   onChanged: (value) => print(value),
                           // ),
                           if (detail["Type"] == "MOISTURE" && liveData != null)
-                            Moi_Graph()
+                            //Moi_Graph()
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(30)),
+                                  boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+                                ),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0),
+                                          bottomRight: Radius.circular(30))),
+                                  child: ExpansionTile(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    title: const Text(
+                                      'NPK Graph',
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    initiallyExpanded: false,
+                                    collapsedBackgroundColor:
+                                        Colors.orange.shade800,
+                                    collapsedTextColor: Colors.white,
+                                    textColor: Colors.orange.shade800,
+                                    //backgroundColor: Colors.red,
+                                    collapsedShape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    children: [
+                                      Container(decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+         
+        ),
+                                        height: 370,
+                                        width: MediaQuery.of(context).size.width,
+                                  //color: Colors.white,
+                                  child: BlocProvider(
+                                    create: (_) =>
+                                        LiveDataCubit(liveData, dataToPlot),
+                                    child: LiveChart(
+                                      type: 'line',
+                                      devices: liveData,
+                                      detail: detail,
+                                    ),
+                                  ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
                           else if (detail["Type"] == "NPKSENSOR" &&
                               liveData != null)
-                            NPK_Graph()
+                            //NPK_Graph()
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(30)),
+                                  boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+                                ),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0),
+                                          bottomRight: Radius.circular(30))),
+                                  child: ExpansionTile(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    title: const Text(
+                                      'NPK Graph',
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    initiallyExpanded: false,
+                                    collapsedBackgroundColor:
+                                        Colors.orange.shade800,
+                                    collapsedTextColor: Colors.white,
+                                    textColor: Colors.orange.shade800,
+                                    //backgroundColor: Colors.red,
+                                    collapsedShape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    children: [
+                                      Container(decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+         
+        ),
+                                        height: 370,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        //color: Colors.white,
+                                        child: BlocProvider(
+                                          create: (_) => LiveDataCubit(
+                                            liveData,
+                                            multiDataToPlot,
+                                          ),
+                                          child: LiveChart(
+                                            type: 'line',
+                                            devices: liveData,
+                                            detail: detail,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
                           else
                             const CircularProgressIndicator(),
-                          Device_Detail(),
+                          DeviceEditor(
+                            deviceName: detail["SerialNumber"] ?? serial,
+                          ),
                         ],
                       );
                     }
@@ -154,7 +287,6 @@ class DeviceDetail extends StatelessWidget {
                   },
                 ),
                 // Redirect to device editor page.
-                
               ],
             ),
           ),
@@ -163,88 +295,106 @@ class DeviceDetail extends StatelessWidget {
     );
   }
 
-
-Widget Device_Detail(){
-  return Container(
-                            child: Column(children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(10,0,10,15),
-                                child: Container(
-                                  // width: MediaQuery.of(context).size.width * 0.9,
-                                  height:
-                                      170,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey,width: 0.1),
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+  Widget Device_Detail() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
           boxShadow: [
-      BoxShadow(
-        color: Colors.grey,
-        blurRadius: 10,
-        offset: Offset(4, 8), // Shadow position
-      ),
-    ],
-                                  ),
-                                  child: ListView.builder(
-                                    itemCount: detail.length,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      var dateCreate = "";
-                                      if (detail.entries.elementAt(index).key ==
-                                          "CreateAt") {
-                                        dateCreate =
-                                            DateTime.fromMillisecondsSinceEpoch(
-                                          detail.entries.elementAt(index).value,
-                                        ).toLocal().toString();
-                                      }
-                              
-                                      return Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                20, 5, 20, 0),
-                                            child: Text(
-                                              detail.entries
-                                                  .elementAt(index)
-                                                  .key
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                20, 5, 20, 0),
-                                            child: Text(
-                                              dateCreate == ""
-                                                  ? detail.entries
-                                                      .elementAt(index)
-                                                      .value
-                                                      .toString()
-                                                  : dateCreate,
-                                              style:
-                                                  const TextStyle(fontSize: 16),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+        ),
+        child: Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(0),
+                  bottomRight: Radius.circular(30))),
+          child: ExpansionTile(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0))),
+            title: const Text(
+              'Details',
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            ),
+            initiallyExpanded: false,
+            collapsedBackgroundColor: Colors.orange.shade900,
+            collapsedTextColor: Colors.white,
+            textColor: Colors.orange.shade900,
+            //backgroundColor: Colors.red,
+            collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(30))),
+            children: [
+              Column(children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 15),
+                  child: Container(
+                    // width: MediaQuery.of(context).size.width * 0.9,
+                    height: 170,
+
+                    child: ListView.builder(
+                      itemCount: detail.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        var dateCreate = "";
+                        if (detail.entries.elementAt(index).key == "CreateAt") {
+                          dateCreate = DateTime.fromMillisecondsSinceEpoch(
+                            detail.entries.elementAt(index).value,
+                          ).toLocal().toString();
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                              child: Text(
+                                detail.entries.elementAt(index).key.toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ]),
-                          );
-}
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                              child: Text(
+                                dateCreate == ""
+                                    ? detail.entries
+                                        .elementAt(index)
+                                        .value
+                                        .toString()
+                                    : dateCreate,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-
-Widget Moi_Graph(){
+/*Widget Moi_Graph(){
   return Container(
                                   height: 370,
-                                  width: double.infinity,
+                                  width: MediaQuery.of(context).size.width,
                                   color: Colors.white,
                                   child: BlocProvider(
                                     create: (_) =>
@@ -256,9 +406,9 @@ Widget Moi_Graph(){
                                     ),
                                   ),
                             );
-}
+}*/
 
-Widget NPK_Graph(){
+/*Widget NPK_Graph(){
   return Column(
                               
                               children: [
@@ -282,5 +432,7 @@ Widget NPK_Graph(){
                                 ),
                               ],
                             );
+}*/
 }
-}
+
+
