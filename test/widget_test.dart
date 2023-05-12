@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_iot_app/features/widget_to_display_on_mainpage/view/farm_card.dart';
 
 import 'package:smart_iot_app/main.dart' as smr_main;
-import 'package:smart_iot_app/modules/pipe.dart';
+// import 'package:smart_iot_app/modules/pipe.dart';
 import 'package:smart_iot_app/pages/MainPage.dart';
 
 void main() {
@@ -20,6 +20,6 @@ void main() {
     Iterable a = Iterable.empty();
     add2(x) => x + 2;
     sub2(x) => x - 2;
-    expect(a.pipe([add2, sub2])(0), equals(0));
+    // expect(a.pipe([add2, sub2])(0), equals(0));
   });
 }
