@@ -75,9 +75,15 @@ class _LiveChartState extends State<LiveChart> {
   ];
   static const List<Widget> intervalTexts = <Widget>[
     Text("1 Hour"),
-    Text("3 days"),
-    Text("1 week"),
-    Text("3 month"),
+    Text("3 Days"),
+    Text("1 Week"),
+    Text("3 Months"),
+  ];
+  static const List<String> intervalStrings = [
+    "1 Hour",
+    "3 Days",
+    "1 Week",
+    "3 Months",
   ];
 
   @override
@@ -148,7 +154,6 @@ class _LiveChartState extends State<LiveChart> {
         const Padding(padding: EdgeInsets.only(top: 10.0)),
         displayGraph,
         _toggleRangesRow(),
-        
       ],
     );
   }
@@ -159,30 +164,24 @@ class _LiveChartState extends State<LiveChart> {
       direction: Axis.horizontal,
       onPressed: (int index) {
         setState(() {
-          // print(intervalTexts[index].hashCode);
           for (int i = 0; i < selectedInterval.length; i++) {
             selectedInterval[i] = i == index;
           }
-          print(intervalTexts[index]
-              .toString()
-              .substring(6, intervalTexts[index].toString().length - 2));
-          switch (intervalTexts[index]
-              .toString()
-              .substring(6, intervalTexts[index].toString().length - 2)) {
+          switch (intervalStrings[index]) {
             // today
             case "1 Hour":
               _start = _end.subtract(const Duration(hours: 1));
               break;
             // 3 days
-            case "3 days":
+            case "3 Days":
               _start = _end.subtract(const Duration(days: 3));
               break;
             // 1 week
-            case "1 week":
+            case "1 Week":
               _start = _end.subtract(const Duration(days: 7));
               break;
             // 1 month
-            case "3 month":
+            case "3 Months":
               _start = _end.subtract(const Duration(days: 90));
               break;
             default:
