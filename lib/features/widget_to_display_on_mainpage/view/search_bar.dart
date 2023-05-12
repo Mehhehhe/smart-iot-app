@@ -29,9 +29,9 @@ class _SearchBarState extends State<SearchBar> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width*0.898,
             height: 50,
             decoration: BoxDecoration(
               color: Colors.white,
@@ -42,7 +42,7 @@ class _SearchBarState extends State<SearchBar> {
                   offset: Offset(0, 2),
                 )
               ],
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Stack(
               children: [
@@ -100,7 +100,7 @@ class _SearchBarState extends State<SearchBar> {
                         ),
                       ),
                       prefixIcon: const Icon(
-                        Icons.send_sharp,
+                        Icons.search,color: Colors.amber,
                       ),
                       suffixIcon: _textController.text.isNotEmpty
                           ? InkWell(

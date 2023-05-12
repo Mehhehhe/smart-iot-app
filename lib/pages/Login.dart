@@ -202,7 +202,7 @@ class _LogIn extends State<LogIn> {
                           children: [
                             const Text(
                               "Already have an account? ",
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14,color: Colors.white),
                             ),
                             TextButton(
                               onPressed: () =>
@@ -219,15 +219,18 @@ class _LogIn extends State<LogIn> {
                   ),
                   // Replace logo here!
                   Center(
-                    child: Container(
-                      height: 100.0,
-                      width: 100.0,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/appicon.jpg'),
-                          fit: BoxFit.fill,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Container(
+                        height: 100.0,
+                        width: 100.0,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/appicon.jpg'),
+                            fit: BoxFit.fill,
+                          ),
+                          shape: BoxShape.circle,
                         ),
-                        shape: BoxShape.circle,
                       ),
                     ),
                   ),
@@ -243,13 +246,14 @@ class _LogIn extends State<LogIn> {
   // ignore: long-method
   Widget _signInForm(EdgeInsets padding, AuthenticatorState state) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration:  BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.fromARGB(255, 248, 236, 194),
-            Color.fromARGB(255, 197, 171, 127),
+            Colors.black87,
+              Colors.black87,
+              Colors.black,
           ],
         ),
       ),
@@ -259,46 +263,45 @@ class _LogIn extends State<LogIn> {
           child: Column(
             children: [
               Stack(
-                children: [
+                children: [all_box(),
                   Container(
                     // height: MediaQuery.of(context).size.height * 0.7,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: Colors.white,
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.blueGrey,
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          blurStyle: BlurStyle.normal,
-                        ),
-                      ],
-                    ),
+                    
                     padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-                    margin: const EdgeInsets.only(top: 70),
+                    margin: const EdgeInsets.only(top: 90),
                     child: Column(
                       children: [
-                        const Text(
+                        SizedBox(
+                          height: 80.0,
+                        ),
+                        /*const Text(
                           "Karriot",
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
-                        ),
+                        ),*/
                         SignInForm(includeDefaultSocialProviders: true),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
                               "Don't have an account? ",
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'OpenSans',
+                              fontSize: 14,),
                             ),
                             TextButton(
                               onPressed: () =>
                                   state.changeStep(AuthenticatorStep.signUp),
                               child: const Text(
                                 "Sign up",
-                                style: TextStyle(fontSize: 14),
+                                style: TextStyle(
+                                  color: Colors.orange,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'OpenSans',
+                              fontSize: 14,),
                               ),
                             ),
                           ],
@@ -308,16 +311,26 @@ class _LogIn extends State<LogIn> {
                   ),
 
                   // Logo replace here!
-                  Center(
-                    child: Container(
-                      height: 100.0,
-                      width: 100.0,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/appicon.jpg'),
-                          fit: BoxFit.fill,
+                   Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40.0),
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration:  BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/appicon.jpg'),
+                            fit: BoxFit.fill,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+      BoxShadow(
+        color: Colors.black54,
+        blurRadius: 15,
+        offset: Offset(5, 5), // Shadow position
+      ),
+    ],
                         ),
-                        shape: BoxShape.circle,
                       ),
                     ),
                   ),
@@ -330,4 +343,176 @@ class _LogIn extends State<LogIn> {
       ),
     );
   }
+}
+
+Widget all_box() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 203),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Email_box(),
+        SizedBox(
+          height: 7,
+        ),
+        Password_box(),
+        SizedBox(
+          height: 183,
+        ),
+        hotmail_box(),
+      ],
+    ),
+  );
+}
+
+Widget Email_box() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          '  Email',
+          style: TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'OpenSans',
+              fontSize: 15
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          height: 55,
+
+        )
+      ],
+    ),
+  );
+}
+
+Widget Password_box() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          '  Password',
+          style: TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'OpenSans',
+              fontSize: 15
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          height: 55,
+
+        )
+      ],
+    ),
+  );
+}
+
+Widget Sign_in() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 396),
+    child: Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: Colors.blue  ,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          height: 37,
+
+        )
+
+  );
+}
+
+Widget hotmail_box() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.only(top: 0),
+        child: Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: Colors.white  ,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          height: 43,width: 320,
+
+        )
+    ),
+  );
+}
+
+Widget box() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 190),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          height: 220,
+
+        ),
+      ],
+    ),
+  );
 }

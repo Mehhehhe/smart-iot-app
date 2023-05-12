@@ -76,7 +76,16 @@ class DeviceDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.amberAccent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            //color: Colors.grey.shade200
+            image: DecorationImage(
+                //opacity: 100,
+                image: NetworkImage(
+                    "https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
+                fit: BoxFit.cover),
+          ),
+        ),
         elevation: 5,
         centerTitle: true,
         title: Text(
@@ -85,7 +94,7 @@ class DeviceDetail extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
       ),
@@ -117,76 +126,7 @@ class DeviceDetail extends StatelessWidget {
 
                       return Column(
                         children: [
-                          ExpansionTile(
-                            title: const Text(
-                              'Details',
-                              style: TextStyle(
-                                  fontSize: 20.0, fontWeight: FontWeight.bold),
-                            ),
-                            initiallyExpanded: true,
-                            backgroundColor: Colors.orange.shade300,
-                            collapsedBackgroundColor: Colors.orange.shade500,
-                            textColor: Colors.black,
-                            children: [
-                              Container(
-                                // width: MediaQuery.of(context).size.width * 0.9,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.25,
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade100,
-                                ),
-                                child: ListView.builder(
-                                  itemCount: detail.length,
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, index) {
-                                    var dateCreate = "";
-                                    if (detail.entries.elementAt(index).key ==
-                                        "CreateAt") {
-                                      dateCreate =
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                        detail.entries.elementAt(index).value,
-                                      ).toLocal().toString();
-                                    }
-
-                                    return Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              20, 5, 20, 0),
-                                          child: Text(
-                                            detail.entries
-                                                .elementAt(index)
-                                                .key
-                                                .toString(),
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              20, 5, 20, 0),
-                                          child: Text(
-                                            dateCreate == ""
-                                                ? detail.entries
-                                                    .elementAt(index)
-                                                    .value
-                                                    .toString()
-                                                : dateCreate,
-                                            style:
-                                                const TextStyle(fontSize: 16),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+                          Device_Detail(),
                           // DropdownButton(
                           //   items: graphTypes
                           //       .map((e) => DropdownMenuItem(
@@ -197,20 +137,263 @@ class DeviceDetail extends StatelessWidget {
                           //   onChanged: (value) => print(value),
                           // ),
                           if (detail["Type"] == "MOISTURE" && liveData != null)
-                            ExpansionTile(
-                              title: const Text(
-                                "Moisture Graph",
-                                style: TextStyle(
-                                  fontSize: 20.0,
+                            //Moi_Graph()
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(30)),
+                                  boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+                                ),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0),
+                                          bottomRight: Radius.circular(30))),
+                                  child: ExpansionTile(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    title: const Text(
+                                      'NPK Graph',
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    initiallyExpanded: false,
+                                    collapsedBackgroundColor:
+                                        Colors.orange.shade800,
+                                    collapsedTextColor: Colors.white,
+                                    textColor: Colors.orange.shade800,
+                                    //backgroundColor: Colors.red,
+                                    collapsedShape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    children: [
+                                      Container(decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+         
+        ),
+                                        height: 370,
+                                        width: MediaQuery.of(context).size.width,
+                                  //color: Colors.white,
+                                  child: BlocProvider(
+                                    create: (_) =>
+                                        LiveDataCubit(liveData, dataToPlot),
+                                    child: LiveChart(
+                                      type: 'line',
+                                      devices: liveData,
+                                      detail: detail,
+                                    ),
+                                  ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          else if (detail["Type"] == "NPKSENSOR" &&
+                              liveData != null)
+                            //NPK_Graph()
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(30)),
+                                  boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+                                ),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0),
+                                          bottomRight: Radius.circular(30))),
+                                  child: ExpansionTile(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    title: const Text(
+                                      'NPK Graph',
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    initiallyExpanded: false,
+                                    collapsedBackgroundColor:
+                                        Colors.orange.shade800,
+                                    collapsedTextColor: Colors.white,
+                                    textColor: Colors.orange.shade800,
+                                    //backgroundColor: Colors.red,
+                                    collapsedShape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    children: [
+                                      Container(decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+         
+        ),
+                                        height: 370,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        //color: Colors.white,
+                                        child: BlocProvider(
+                                          create: (_) => LiveDataCubit(
+                                            liveData,
+                                            multiDataToPlot,
+                                          ),
+                                          child: LiveChart(
+                                            type: 'line',
+                                            devices: liveData,
+                                            detail: detail,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            const CircularProgressIndicator(),
+                          DeviceEditor(
+                            deviceName: detail["SerialNumber"] ?? serial,
+                          ),
+                        ],
+                      );
+                    }
+
+                    return const Text("Fetching data ... ");
+                  },
+                ),
+                // Redirect to device editor page.
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget Device_Detail() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5,
+              offset: Offset(5, 5), // Shadow position
+            ),
+          ],
+        ),
+        child: Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(0),
+                  bottomRight: Radius.circular(30))),
+          child: ExpansionTile(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0))),
+            title: const Text(
+              'Details',
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            ),
+            initiallyExpanded: false,
+            collapsedBackgroundColor: Colors.orange.shade900,
+            collapsedTextColor: Colors.white,
+            textColor: Colors.orange.shade900,
+            //backgroundColor: Colors.red,
+            collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(30))),
+            children: [
+              Column(children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 15),
+                  child: Container(
+                    // width: MediaQuery.of(context).size.width * 0.9,
+                    height: 170,
+
+                    child: ListView.builder(
+                      itemCount: detail.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        var dateCreate = "";
+                        if (detail.entries.elementAt(index).key == "CreateAt") {
+                          dateCreate = DateTime.fromMillisecondsSinceEpoch(
+                            detail.entries.elementAt(index).value,
+                          ).toLocal().toString();
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                              child: Text(
+                                detail.entries.elementAt(index).key.toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              backgroundColor: Colors.orange.shade300,
-                              collapsedBackgroundColor: Colors.orange.shade500,
-                              textColor: Colors.black,
-                              children: [
-                                Container(
-                                  height: 400,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                              child: Text(
+                                dateCreate == ""
+                                    ? detail.entries
+                                        .elementAt(index)
+                                        .value
+                                        .toString()
+                                    : dateCreate,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+/*Widget Moi_Graph(){
+  return Container(
+                                  height: 370,
                                   width: MediaQuery.of(context).size.width,
                                   color: Colors.white,
                                   child: BlocProvider(
@@ -222,29 +405,18 @@ class DeviceDetail extends StatelessWidget {
                                       detail: detail,
                                     ),
                                   ),
-                                ),
-                              ],
-                            )
-                          else if (detail["Type"] == "NPKSENSOR" &&
-                              liveData != null)
-                            ExpansionTile(
-                              title: const Text(
-                                "NPK graph",
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              initiallyExpanded: false,
-                              backgroundColor: Colors.orange.shade300,
-                              collapsedBackgroundColor: Colors.orange.shade500,
-                              textColor: Colors.black,
+                            );
+}*/
+
+/*Widget NPK_Graph(){
+  return Column(
+                              
                               children: [
                                 const Padding(
                                     padding: EdgeInsets.only(top: 20.0)),
                                 Container(
-                                  height: 400,
-                                  width: MediaQuery.of(context).size.width,
+                                  height: 370,
+                                  width: double.infinity,
                                   color: Colors.white,
                                   child: BlocProvider(
                                     create: (_) => LiveDataCubit(
@@ -259,25 +431,8 @@ class DeviceDetail extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                            )
-                          else
-                            const CircularProgressIndicator(),
-                        ],
-                      );
-                    }
-
-                    return const Text("Fetching data ... ");
-                  },
-                ),
-                // Redirect to device editor page.
-                DeviceEditor(
-                  deviceName: detail["SerialNumber"] ?? serial,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+                            );
+}*/
 }
+
+

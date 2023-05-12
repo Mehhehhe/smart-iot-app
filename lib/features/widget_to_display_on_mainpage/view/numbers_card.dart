@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -151,9 +152,32 @@ class _numberCardState extends State<numberCard> {
                 ? 1
                 : widget.splByType[widget.whichFarm].keys.length,
             itemBuilder: (context, index) {
-              return Container(
-                height: 150,
-                child: buildSearchEmpty(context, index),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+               
+                  child: Container(
+                    height: 140,
+                   
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                     borderRadius: BorderRadius.all(Radius.circular(15)),
+                     boxShadow: [
+      BoxShadow(
+        color: Colors.orange.shade800,
+        blurRadius: 15,
+        offset: Offset(5, 5), // Shadow position
+      ),
+    ],
+                    ),
+                    
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        buildSearchEmpty(context, index),
+                        
+                      ],
+                    ),
+                  ),
+              
               );
             },
           );
@@ -268,7 +292,7 @@ class _numberCardState extends State<numberCard> {
     return SizedBox(
       width: 250,
       child: Card(
-        elevation: 5.0,
+        //elevation: 5.0,
         child: InkWell(
           onTap: () => Navigator.push(
             context,

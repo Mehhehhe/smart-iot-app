@@ -179,24 +179,35 @@ class _farmCardViewState extends State<farmCardView> {
       child: BlocProvider(
         create: (_) =>
             SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
-        child: Column(
+        child: Stack(
           children: [
            //hello world im tired.
-            SearchBar(),
-            const SizedBox(
-              height: 20,
+           
+            /*Padding(
+              padding: const EdgeInsets.only(top: 120),
+              child: SearchBar(),
+            ),*/
+            
+            Padding(
+              padding: const EdgeInsets.only(top: 0),
+              child: SearchBody(),
             ),
-            SearchBody(),
-            const SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                analysisWidget(),
-                historyWidget(),
-              ],
-            ),
+          
+            /*Padding(
+              padding: const EdgeInsets.only(top: 220),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //analysisWidget(),
+                  //historyWidget(),
+                  analysisWidget_New(),
+                  historyWidget_New()
+                ],
+              ),
+            ),*/
+
+
+            
           ],
         ),
       ),
@@ -263,15 +274,15 @@ class _farmCardViewState extends State<farmCardView> {
   ]) {
     return Card(
       margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-      elevation: 5.0,
-      color: Colors.brown.shade100,
+      elevation: 0,
+      color: Colors.transparent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+          /*const Padding(
             padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-          ),
+          ),*/
           BlocBuilder<FarmCardReBloc, FarmCardReState>(
             builder: (context, state) {
               if (state.data != "") {
@@ -291,10 +302,18 @@ class _farmCardViewState extends State<farmCardView> {
                 // print("In farm target, [devices] $devices");
 
                 return Text(
-                  farmTarget,
+                  'Farm : '+farmTarget,
                   style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w500,
+                    shadows: <Shadow>[
+      Shadow(
+        offset: Offset(2.0, 2.0),
+        blurRadius: 5,
+        color: Colors.orange
+      ),
+    ],
                   ),
                 );
               } else if (widget.overrideFarmIndex == null &&
@@ -329,12 +348,11 @@ class _farmCardViewState extends State<farmCardView> {
           // const Divider(),
           // if (state.widgetIndex == 1)
           const Padding(
-            padding: EdgeInsets.fromLTRB(0, 25, 0, 0),
+            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
           ),
-          generateNumberCards(searched),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(0, 25, 0, 0),
-          ),
+          Center(child: generateNumberCards(searched)),
+          
+          
         ],
       ),
     );
@@ -343,63 +361,102 @@ class _farmCardViewState extends State<farmCardView> {
 // ignore: long-method
   Widget generateNumberCards([List<ResultItem>? searched]) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      child: Stack(
+      
+      width: MediaQuery.of(context).size.width,  //*0.635
+      child: Column(
         children: [
+          SearchBar(),
+          SizedBox(
+                  height: 20,
+                ),
+Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //analysisWidget(),
+                  //historyWidget(),
+                  analysisWidget_New(),
+                  historyWidget_New()
+                ],
+              ),
+              SizedBox(
+                  height: 30,
+                ),
           if (dataResponse.isNotEmpty)
-            BlocBuilder<FarmCardReBloc, FarmCardReState>(
-              bloc: context.read<FarmCardReBloc>(),
-              builder: (context, stateFarm) {
-                // Query by farm
-                var selectedResponse = dataResponse
-                    .where((element) => element["FromFarm"] == tempLoc)
-                    .toList();
-                // Query by type
-                var splDevByType =
-                    createNewFarmDataMapForNumCard(selectedResponse);
-
-                // Main generator
-                // Caution: dataResponse, selectedResponse
-                if (selectedResponse.isEmpty) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Center(
-                        widthFactor: 1.8,
-                        child: Text(
-                          "No data found on this farm.",
-                          textAlign: TextAlign.center,
-                        ),
+            Padding(
+              padding: const EdgeInsets.only(top: 0),
+              child: BlocBuilder<FarmCardReBloc, FarmCardReState>(
+                bloc: context.read<FarmCardReBloc>(),
+                builder: (context, stateFarm) {
+                  // Query by farm
+                  var selectedResponse = dataResponse
+                      .where((element) => element["FromFarm"] == tempLoc)
+                      .toList();
+                  // Query by type
+                  var splDevByType =
+                      createNewFarmDataMapForNumCard(selectedResponse);
+            
+                  // Main generator
+                  // Caution: dataResponse, selectedResponse
+                  if (selectedResponse.isEmpty) {
+                    return Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10) ),
+          boxShadow: [
+      BoxShadow(
+        color: Colors.orange.shade700,
+        blurRadius: 10,
+        offset: Offset(4, 8), // Shadow position
+      ),
+    ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Center(
+                            widthFactor: 1.8,
+                            child: Text(
+                              "No data found.",style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+            
+                  return Container(
+                    child: BlocProvider(
+                      create: (_) => LiveDataCubit(selectedResponse),
+                      child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+                        builder: (context, state) {
+                          if (state is SearchWidgetSuccess) {
+                            return numberCard(
+                              inputData: selectedResponse,
+                              whichFarm: tempLoc,
+                              existedCli: client,
+                              devicesData: searched,
+                              splByType: splDevByType,
+                            );
+                          }
+                  
+                          return numberCard(
+                            inputData: selectedResponse,
+                            whichFarm: tempLoc,
+                            existedCli: client,
+                            devicesData: devices,
+                            splByType: splDevByType,
+                          );
+                        },
+                      ),
+                    ),
                   );
-                }
-
-                return BlocProvider(
-                  create: (_) => LiveDataCubit(selectedResponse),
-                  child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
-                    builder: (context, state) {
-                      if (state is SearchWidgetSuccess) {
-                        return numberCard(
-                          inputData: selectedResponse,
-                          whichFarm: tempLoc,
-                          existedCli: client,
-                          devicesData: searched,
-                          splByType: splDevByType,
-                        );
-                      }
-
-                      return numberCard(
-                        inputData: selectedResponse,
-                        whichFarm: tempLoc,
-                        existedCli: client,
-                        devicesData: devices,
-                        splByType: splDevByType,
-                      );
-                    },
-                  ),
-                );
-              },
+                },
+              ),
             )
           else
             Center(
@@ -499,4 +556,108 @@ class _farmCardViewState extends State<farmCardView> {
       ),
     );
   }
+
+Widget analysisWidget_New() {
+    return Container(
+      height: 50,
+      width: 200,
+      decoration: BoxDecoration(
+          
+          color: Colors.deepOrange.shade600,
+          borderRadius: BorderRadius.all(Radius.circular(10) ),
+          boxShadow: [
+      BoxShadow(
+        color: Colors.orange.shade700,
+        blurRadius: 10,
+        offset: Offset(4, 8), // Shadow position
+      ),
+    ],
+    ),
+      child: Center(
+          child: TextButton(
+            onPressed: () {
+          List deviceCheck = [];
+
+          for (var d in devices) {
+            if (d["Location"] == tempLoc) {
+              deviceCheck.add(d);
+            }
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AnalysisPage(
+                devices: deviceCheck,
+              ),
+            ),
+          );
+        },
+            child: Row(mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Analysis',style: TextStyle(fontSize: 16, color: Colors.white),),
+                SizedBox(width: 15,),
+                Icon(Icons.auto_graph,
+                    size: 22,
+                    color: Colors.white
+                ),
+
+              ],
+            ),
+          )
+      ),
+    );
+  }
+
+  Widget historyWidget_New() {
+    return Container(
+      height: 50,
+      width: 120,
+      decoration: BoxDecoration(
+         
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          boxShadow: [
+      BoxShadow(
+        color: Colors.orange.shade700,
+        blurRadius: 10,
+        offset: Offset(4, 8), // Shadow position
+      ),
+    ],
+          
+          ),
+      child: Center(
+          child: TextButton(
+            onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            constraints: const BoxConstraints(),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+            ),
+            child: historyLog(farmName: tempLoc),
+          ),
+        ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+              Text('History',style: TextStyle(fontSize: 16, color: Colors.orange),),
+            SizedBox(width: 5,),
+            Icon(Icons.history,
+                size: 19,
+                color: Colors.orange
+            ),
+
+            ],
+          )
+          )
+      ),
+    );
+  }
+  
 }

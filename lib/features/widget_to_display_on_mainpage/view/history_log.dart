@@ -179,7 +179,8 @@ class _historyLog extends State<historyLog> {
                       ).toLocal();
 
                       subTile.add(ListTile(
-                        title: Text(tileData["device"]),
+                        leading: Icon(Icons.phone_android,size: 28,),
+                        title: Text(tileData["device"],style: TextStyle(fontWeight: FontWeight.bold),),
                         subtitle: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -187,7 +188,8 @@ class _historyLog extends State<historyLog> {
                               tileData["value"],
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                                //fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 0, 122, 2)
                               ),
                             ),
                             if (selectHistFilterRange == "days")
@@ -329,10 +331,10 @@ class _historyLog extends State<historyLog> {
           ? exposedFilterMap[name]["bool_list"]
           : temp[name]["bool_list"],
       borderRadius: const BorderRadius.all(Radius.circular(8)),
-      selectedBorderColor: Colors.green[700],
+      
       selectedColor: Colors.white,
-      fillColor: Colors.green[200],
-      color: Colors.green[400],
+      fillColor: Colors.deepOrange,
+      color: Colors.orange[400],
       constraints: const BoxConstraints(
         minHeight: 40.0,
         minWidth: 80.0,
