@@ -137,7 +137,9 @@ flutter:
     - assets/images/bg_setting.jpg
     - assets/images/bg_contact.jpg
     - assets/images/onboarding0.png
+    - assets/images/onboarding1.png
     - assets/images/onboarding2.png
+    - assets/images/onboarding_lastscreen.png
     - assets/saves/history.txt
     - assets/certificates/
     - assets/images/appicon.jpg

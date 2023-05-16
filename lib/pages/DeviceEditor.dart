@@ -118,7 +118,7 @@ class _DeviceEditor extends State<DeviceEditor> {
               TextEditingController defaultController =
                   TextEditingController(text: snapshot.data.toString());
               widgetList.addAll([
-                threshTextField("Threshaold", defaultController),
+                threshTextField("Threshold", defaultController),
                 saveButton(defaultController),
               ]);
             }
