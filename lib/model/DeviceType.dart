@@ -1,5 +1,7 @@
 // ignore: file_names
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_iot_app/services/MQTTClientHandler.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
@@ -8,6 +10,7 @@ enum DeviceValType {
   humidity,
   npk,
   unknown,
+  fan,
   // HUMIDITY_IN_SOIL
 }
 
@@ -35,6 +38,13 @@ class DeviceType {
       'max': 100000.0,
       'unit': 'lx',
     },
+    'DeviceValType.fan': {
+      'min': 0,
+      'max': 1,
+      'unit': '-',
+      'value_type': bool,
+      'control': true,
+    },
   };
 
   Map<String, Object>? getProps(String type) => properties[type];
@@ -46,24 +56,30 @@ class DeviceWidgetGenerator {
   DeviceValType _translate({required String deviceName}) {
     // convert to all lowercase
     String dev_name = deviceName.toLowerCase();
+    print(dev_name.contains("fan"));
     if (dev_name.contains("moist") || dev_name.contains("humid")) {
       return DeviceValType.humidity;
     } else if (dev_name.contains("npk")) {
       return DeviceValType.npk;
     } else if (dev_name.contains("temp")) {
       return DeviceValType.temperature;
+    } else if (dev_name.contains("fan")) {
+      return DeviceValType.fan;
     }
 
     return DeviceValType.unknown;
   }
 
+  //ignore: long-parameter-list
   Widget buildMainpageCardDisplay({
     required String deviceSerial,
     required dynamic currentValue,
     BuildContext? context,
     bool state = true,
+    required MQTTClientWrapper client,
   }) {
     // fetch props
+    print("Building display for $deviceSerial");
     // print(
     //     "[Translator: $deviceSerial] ${_translate(deviceName: deviceSerial)}");
     Map props =
@@ -74,6 +90,7 @@ class DeviceWidgetGenerator {
       );
     }
     bool isMultiValuesDevice = props['value_type'] == Map;
+    print("Properties: $props");
     // convert current value if a single value
     if (state) {
       if (isMultiValuesDevice) {
@@ -82,6 +99,13 @@ class DeviceWidgetGenerator {
           serial: deviceSerial,
           values: currentValue,
           props: props,
+        );
+      } else if (props.containsKey("control") && props["control"]) {
+        return _controlStateLike(
+          cli: client,
+          serial: deviceSerial,
+          controlMap: currentValue,
+          context: context!,
         );
       }
 
@@ -105,6 +129,7 @@ class DeviceWidgetGenerator {
     required dynamic value,
     required Map props,
   }) {
+    print("Display value $value , ${value.runtimeType}");
     double v = double.parse(value.toString());
 
     return SizedBox(
@@ -140,6 +165,28 @@ class DeviceWidgetGenerator {
           ),
         ],
       ),
+    );
+  }
+
+  // sub widget for control
+  _controlStateLike({
+    required MQTTClientWrapper cli,
+    required String serial,
+    required dynamic controlMap,
+    context,
+  }) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.2,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text(serial),
+        SizedBox(
+          height: 10.0,
+        ),
+        CupertinoSwitch(
+          value: controlMap == 1.0 ? true : false,
+          onChanged: (value) {},
+        ),
+      ]),
     );
   }
 
