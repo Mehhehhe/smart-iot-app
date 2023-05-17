@@ -38,7 +38,7 @@ class DeviceDetail extends StatelessWidget {
     DateTime deviceTimeStamp =
         DateTime.fromMillisecondsSinceEpoch(temp["TimeStamp"]).toUtc();
     // print("[ValueCheckType] ${temp} ${temp["Value"].runtimeType}");
-    print("\n\n[Debug] ${temp["Value"].runtimeType}, ${temp["Value"]}\n\n");
+    // print("\n\n[Debug] ${temp["Value"].runtimeType}, ${temp["Value"]}\n\n");
     if (temp["Value"].runtimeType == double ||
         temp["Value"].runtimeType == int) {
       // double
@@ -146,12 +146,12 @@ class DeviceDetail extends StatelessWidget {
                                       bottomLeft: Radius.circular(0),
                                       bottomRight: Radius.circular(30)),
                                   boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade400,
-              blurRadius: 5,
-              offset: Offset(5, 5), // Shadow position
-            ),
-          ],
+                                    BoxShadow(
+                                      color: Colors.grey.shade400,
+                                      blurRadius: 5,
+                                      offset: Offset(5, 5), // Shadow position
+                                    ),
+                                  ],
                                 ),
                                 child: Card(
                                   shape: RoundedRectangleBorder(
@@ -164,7 +164,7 @@ class DeviceDetail extends StatelessWidget {
                                             bottomLeft: Radius.circular(0),
                                             bottomRight: Radius.circular(30))),
                                     title: const Text(
-                                      'NPK Graph',
+                                      'Moisture Graph',
                                       style: TextStyle(
                                           fontSize: 20.0,
                                           fontWeight: FontWeight.bold),
@@ -180,23 +180,25 @@ class DeviceDetail extends StatelessWidget {
                                             bottomLeft: Radius.circular(0),
                                             bottomRight: Radius.circular(30))),
                                     children: [
-                                      Container(decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
-         
-        ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(0),
+                                              bottomRight: Radius.circular(30)),
+                                        ),
                                         height: 370,
-                                        width: MediaQuery.of(context).size.width,
-                                  //color: Colors.white,
-                                  child: BlocProvider(
-                                    create: (_) =>
-                                        LiveDataCubit(liveData, dataToPlot),
-                                    child: LiveChart(
-                                      type: 'line',
-                                      devices: liveData,
-                                      detail: detail,
-                                    ),
-                                  ),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        //color: Colors.white,
+                                        child: BlocProvider(
+                                          create: (_) => LiveDataCubit(
+                                              liveData, dataToPlot),
+                                          child: LiveChart(
+                                            type: 'line',
+                                            devices: liveData,
+                                            detail: detail,
+                                          ),
+                                        ),
                                       )
                                     ],
                                   ),
@@ -214,12 +216,12 @@ class DeviceDetail extends StatelessWidget {
                                       bottomLeft: Radius.circular(0),
                                       bottomRight: Radius.circular(30)),
                                   boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade400,
-              blurRadius: 5,
-              offset: Offset(5, 5), // Shadow position
-            ),
-          ],
+                                    BoxShadow(
+                                      color: Colors.grey.shade400,
+                                      blurRadius: 5,
+                                      offset: Offset(5, 5), // Shadow position
+                                    ),
+                                  ],
                                 ),
                                 child: Card(
                                   shape: RoundedRectangleBorder(
@@ -248,11 +250,12 @@ class DeviceDetail extends StatelessWidget {
                                             bottomLeft: Radius.circular(0),
                                             bottomRight: Radius.circular(30))),
                                     children: [
-                                      Container(decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(0), bottomRight: Radius.circular(30)),
-         
-        ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(0),
+                                              bottomRight: Radius.circular(30)),
+                                        ),
                                         height: 370,
                                         width:
                                             MediaQuery.of(context).size.width,
@@ -295,6 +298,7 @@ class DeviceDetail extends StatelessWidget {
     );
   }
 
+  //ignore: long-method
   Widget Device_Detail() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
@@ -390,49 +394,4 @@ class DeviceDetail extends StatelessWidget {
       ),
     );
   }
-
-/*Widget Moi_Graph(){
-  return Container(
-                                  height: 370,
-                                  width: MediaQuery.of(context).size.width,
-                                  color: Colors.white,
-                                  child: BlocProvider(
-                                    create: (_) =>
-                                        LiveDataCubit(liveData, dataToPlot),
-                                    child: LiveChart(
-                                      type: 'line',
-                                      devices: liveData,
-                                      detail: detail,
-                                    ),
-                                  ),
-                            );
-}*/
-
-/*Widget NPK_Graph(){
-  return Column(
-                              
-                              children: [
-                                const Padding(
-                                    padding: EdgeInsets.only(top: 20.0)),
-                                Container(
-                                  height: 370,
-                                  width: double.infinity,
-                                  color: Colors.white,
-                                  child: BlocProvider(
-                                    create: (_) => LiveDataCubit(
-                                      liveData,
-                                      multiDataToPlot,
-                                    ),
-                                    child: LiveChart(
-                                      type: 'line',
-                                      devices: liveData,
-                                      detail: detail,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-}*/
 }
-
-
