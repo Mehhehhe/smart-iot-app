@@ -96,7 +96,7 @@ class MQTTClientWrapper {
   }
 
   Future<bool> publishToControlValue(
-      String farmName, String device, double value) async {
+      String farmName, String device, dynamic value) async {
     _publishMessage(
         json.encode({"controlValue": value}), "$farmName/$device/controlValue");
 
