@@ -265,15 +265,15 @@ class _AnalysisPage extends State<AnalysisPage> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           flexibleSpace: Container(
-          decoration: BoxDecoration(
-            //color: Colors.grey.shade200
+            decoration: BoxDecoration(
+              //color: Colors.grey.shade200
               image: DecorationImage(
-                //opacity: 100,
-                  image: NetworkImage("https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
+                  //opacity: 100,
+                  image: NetworkImage(
+                      "https://t4.ftcdn.net/jpg/05/42/77/55/360_F_542775509_kukwGVyxAEiLtbWF54xIHtQzil8QAwLC.jpg"),
                   fit: BoxFit.cover),
-
+            ),
           ),
-        ),
           centerTitle: true,
           elevation: 10,
           title: Text("Analysis"),
@@ -465,8 +465,8 @@ class _AnalysisPage extends State<AnalysisPage> {
             padding: EdgeInsets.all(10.0),
             child: Text("Choose the below devices to display the graph."),
           ),
-          if (widget.devices.isNotEmpty) deviceAvgSelector(),
         graphScreen(),
+        if (widget.devices.isNotEmpty) deviceAvgSelector(),
         if (selectDevice != "")
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -497,8 +497,6 @@ class _AnalysisPage extends State<AnalysisPage> {
               ),
             ],
           ),
-        
-        
         if (widget.devices.isNotEmpty) indicatorsInput(name: selectDevice),
       ],
     );
@@ -506,7 +504,6 @@ class _AnalysisPage extends State<AnalysisPage> {
 
   Widget graphScreen() {
     return Container(
-      
       height: 260,
       width: MediaQuery.of(context).size.width * 0.8,
       child: FutureBuilder(
@@ -535,7 +532,7 @@ class _AnalysisPage extends State<AnalysisPage> {
   // ignore: long-method
   Widget deviceAvgSelector() {
     return Container(
-      height: 100,
+      height: 150,
       width: MediaQuery.of(context).size.width * 0.8,
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -559,7 +556,10 @@ class _AnalysisPage extends State<AnalysisPage> {
             selected: selectDevice == name,
             selectedColor: Colors.white,
             selectedTileColor: Colors.orange.shade900,
-            title: Text(name,style: TextStyle(fontWeight:FontWeight.bold ),),
+            title: Text(
+              name,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Row(
               children: [
                 const Text("Average: "),
@@ -603,10 +603,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           );
         },
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisExtent: 75.0,
-          crossAxisSpacing: 15
-        ),
+            crossAxisCount: 2, mainAxisExtent: 75.0, crossAxisSpacing: 15),
       ),
     );
   }
@@ -649,18 +646,18 @@ class _AnalysisPage extends State<AnalysisPage> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Container(decoration: BoxDecoration(
-            
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(10) ),
-            boxShadow: [
-        BoxShadow(
-          color: Colors.grey,
-          blurRadius: 10,
-          offset: Offset(4, 8), // Shadow position
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 10,
+              offset: Offset(4, 8), // Shadow position
+            ),
+          ],
         ),
-      ],
-      ),
         child: ListView(
           shrinkWrap: true,
           primary: false,
@@ -669,35 +666,40 @@ class _AnalysisPage extends State<AnalysisPage> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-                  child: Text("Press & Hold to remove the indicator",style: TextStyle(color: Colors.grey),),
+                  child: Text(
+                    "Press & Hold to remove the indicator",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
               ),
             if (lts.isEmpty)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-                  child: Text("Empty indicator. Press below button to add some!"),
+                  child:
+                      Text("Empty indicator. Press below button to add some!"),
                 ),
               ),
             ...lts,
             if (lts.length < availableIndicators.length && selectDevice != "")
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-
-                  child: TextButton(
-                    onPressed: ()   => showModalBottomSheet(
-                      context: context,
-                      builder: (context) => ListView.builder(
-                        itemCount: availableIndicators.length,
-                        itemBuilder: (context, index) => _indicatorChoose(index),
-                      ),
-                    ),  child: Text("Add indicator", style:
-                              TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600,color: Color.fromARGB(255, 13, 119, 206)),),
-
-                   
-                    
+                child: TextButton(
+                  onPressed: () => showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: availableIndicators.length,
+                      itemBuilder: (context, index) => _indicatorChoose(index),
+                    ),
                   ),
-               
+                  child: Text(
+                    "Add indicator",
+                    style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                        color: Color.fromARGB(255, 13, 119, 206)),
+                  ),
+                ),
               ),
             if (lts.length == availableIndicators.length)
               const Center(
@@ -719,7 +721,9 @@ class _AnalysisPage extends State<AnalysisPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30)),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.shade400,
@@ -728,26 +732,30 @@ class _AnalysisPage extends State<AnalysisPage> {
             ),
           ],
         ),
-        child: Card(shape: RoundedRectangleBorder(
+        child: Card(
+          shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30))),
           child: ExpansionTile(
             collapsedShape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
-                    Radius.circular(10),
-                    )),
+              Radius.circular(10),
+            )),
             collapsedBackgroundColor: Colors.orange.shade900,
-                collapsedTextColor: Colors.white,
-                textColor: Colors.orange.shade900,
+            collapsedTextColor: Colors.white,
+            textColor: Colors.orange.shade900,
             title: Text(availableIndicators[index].toUpperCase()),
             children: [
               IndicatorDescriptions(availableIndicators[index].toLowerCase()),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox(width: 230,),
+                  SizedBox(
+                    width: 230,
+                  ),
                   Container(
                     child: TextButton(
                       onPressed: () {
@@ -767,7 +775,6 @@ class _AnalysisPage extends State<AnalysisPage> {
                   ),
                 ],
               ),
-              
             ],
           ),
         ),
@@ -800,7 +807,7 @@ class _AnalysisPage extends State<AnalysisPage> {
           },
         ),
         title: Padding(
-          padding: const EdgeInsets.fromLTRB(0,0,0,15),
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
           child: Text(indicatorFullName),
         ),
         subtitle: _indicatorTileSettings(
@@ -871,8 +878,8 @@ class _AnalysisPage extends State<AnalysisPage> {
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               //selectedBorderColor: Colors.green[700],
               selectedColor: Colors.white,
-      fillColor: Colors.deepOrange,
-      color: Colors.orange[400],
+              fillColor: Colors.deepOrange,
+              color: Colors.orange[400],
               children: movingAverageRangeSelector,
             ),
           ],
