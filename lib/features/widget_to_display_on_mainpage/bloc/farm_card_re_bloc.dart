@@ -50,13 +50,13 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
         autoSaveLocal(pt, originalPos, originFarm);
       }
     });
-    // Fetch farm first by default
-    _getOwnedFarmsList();
     // Handle based on events
     _handleChoosingIndex();
     _handleFetchingFarm();
     _handleFetchingDevice();
     _handlePassCompleteData();
+    // Fetch farm first by default
+    _getOwnedFarmsList();
   }
 
   void chooseIndex(int index) {
@@ -132,6 +132,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
 
   _devicesToList(farm) async {
     var tempDevices = await getDevicesByFarmName(farm);
+    // print("Farm devices: $tempDevices");
 
     emit(FarmCardReState.loaded(
       currentIndex(),
@@ -150,7 +151,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
       );
 
   decodeAndRemovePadding(String encodedFarmName) {
-    print("Decoding $encodedFarmName");
+    // print("Decoding $encodedFarmName");
     var dec = utf8.decode(base64.decode(encodedFarmName));
     // Check empty farm
     if (dec.contains("Wait for")) return "Wait for update";
