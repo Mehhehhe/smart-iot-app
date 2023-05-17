@@ -54,20 +54,30 @@ class LogIn extends StatefulWidget {
   State<LogIn> createState() => _LogIn();
 }
 
-class _LogIn extends State<LogIn> {
+class _LogIn extends State<LogIn> with SingleTickerProviderStateMixin {
   // User variables
   Map<String, dynamic> account = {"name": "", "id": ""};
   late SharedPreferences prefs;
+  bool pageSwitch = false;
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+    _controller.forward();
     _configureAmplify();
   }
 
   @override
   void dispose() {
     super.dispose();
+    _controller.dispose();
   }
 
   // User-related methods
@@ -81,6 +91,7 @@ class _LogIn extends State<LogIn> {
     );
   }
 
+  //ignore: long-method
   Widget _awsAuth() {
     return Authenticator(
       authenticatorBuilder: (p0, p1) {
@@ -92,9 +103,33 @@ class _LogIn extends State<LogIn> {
           case AuthenticatorStep.onboarding:
             break;
           case AuthenticatorStep.signUp:
-            return _signUpForm(padding, p1);
+            return AnimatedSwitcher(
+              duration: const Duration(
+                milliseconds: 100,
+              ),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: _animation,
+                  child: child,
+                );
+              },
+              child: _signUpForm(padding, p1),
+            );
+          // return _signUpForm(padding, p1);
           case AuthenticatorStep.signIn:
-            return _signInForm(padding, p1);
+            return AnimatedSwitcher(
+              duration: const Duration(
+                milliseconds: 100,
+              ),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: _animation,
+                  child: child,
+                );
+                // return ScaleTransition(scale: _animation, child: child);
+              },
+              child: _signInForm(padding, p1),
+            );
           case AuthenticatorStep.confirmSignUp:
             break;
           case AuthenticatorStep.confirmSignInCustomAuth:
@@ -148,13 +183,14 @@ class _LogIn extends State<LogIn> {
   // ignore: long-method
   Widget _signUpForm(EdgeInsets padding, AuthenticatorState state) {
     return Container(
+      height: MediaQuery.of(context).size.height,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.fromARGB(255, 248, 236, 194),
-            Color.fromARGB(255, 197, 171, 127),
+            Color.fromRGBO(253, 167, 102, 0.2),
+            Color.fromRGBO(253, 183, 119, 1.0),
           ],
         ),
       ),
@@ -182,13 +218,13 @@ class _LogIn extends State<LogIn> {
                     margin: const EdgeInsets.only(top: 70),
                     child: Column(
                       children: [
-                        const Text(
-                          "Karriot",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        // const Text(
+                        //   "Karriot",
+                        //   style: TextStyle(
+                        //     fontSize: 24,
+                        //     fontWeight: FontWeight.bold,
+                        //   ),
+                        // ),
                         SignUpForm.custom(
                           fields: [
                             SignUpFormField.username(),
@@ -203,11 +239,14 @@ class _LogIn extends State<LogIn> {
                             const Text(
                               "Already have an account? ",
                               style:
-                                  TextStyle(fontSize: 14, color: Colors.white),
+                                  TextStyle(fontSize: 14, color: Colors.black),
                             ),
                             TextButton(
-                              onPressed: () =>
-                                  state.changeStep(AuthenticatorStep.signIn),
+                              onPressed: () {
+                                _controller.reset();
+                                _controller.forward();
+                                state.changeStep(AuthenticatorStep.signIn);
+                              },
                               child: const Text(
                                 "Sign in",
                                 style: TextStyle(fontSize: 14),
@@ -223,8 +262,8 @@ class _LogIn extends State<LogIn> {
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Container(
-                        height: 100.0,
-                        width: 100.0,
+                        height: 150.0,
+                        width: 150.0,
                         decoration: const BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage('assets/images/appicon.jpg'),
@@ -247,6 +286,7 @@ class _LogIn extends State<LogIn> {
   // ignore: long-method
   Widget _signInForm(EdgeInsets padding, AuthenticatorState state) {
     return Container(
+      height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -297,8 +337,11 @@ class _LogIn extends State<LogIn> {
                               ),
                             ),
                             TextButton(
-                              onPressed: () =>
-                                  state.changeStep(AuthenticatorStep.signUp),
+                              onPressed: () {
+                                _controller.reset();
+                                _controller.forward();
+                                state.changeStep(AuthenticatorStep.signUp);
+                              },
                               child: const Text(
                                 "Sign up",
                                 style: TextStyle(
