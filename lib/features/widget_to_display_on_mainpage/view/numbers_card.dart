@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -47,9 +46,7 @@ class _numberCardState extends State<numberCard> {
       var tempMap = {};
       final cardName = data_map["FromDevice"];
       final latestData = data_map["Data"];
-      final lat = latestData[0];
-      // print(
-      //     "set latest loop:= $cardName: ${latestData[latestData.length - 1]}");
+      print("\n\nset latest loop:= $cardName: ${latestData.runtimeType}\n\n");
       tempMap = {cardName: latestData[latestData.length - 1]};
       if (!latestList.contains(tempMap)) {
         // Check existing device
@@ -64,6 +61,7 @@ class _numberCardState extends State<numberCard> {
 
       tempMap = {};
     }
+    print("[LatestListLength] ${latestList.length}");
 
     setState(() {
       data = latestList;
@@ -99,6 +97,7 @@ class _numberCardState extends State<numberCard> {
 
     setState(() {
       data = widget.inputData;
+      // print("[Ongoing] $data");
       _setLatest(data);
     });
   }
@@ -119,25 +118,26 @@ class _numberCardState extends State<numberCard> {
     );
   }
 
+  //ignore: long-method
   Widget buildSearchable(BuildContext contextP) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
+      height: MediaQuery.of(context).size.height * 0.6,
       width: double.infinity,
       child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
         builder: (context, state) {
-          // print("[SearchState] $state");
+          print("[SearchState] ${widget.splByType[widget.whichFarm].keys}");
           if (state is SearchWidgetSuccess) {
-            return ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: state.items.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  // height: 150,
-                  child: buildSearchFound(context),
-                );
-              },
+            return Container(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: state.items.length,
+                itemBuilder: (context, index) {
+                  return buildSearchFound(context);
+                },
+              ),
             );
           } else if (state is SearchWidgetError) {
             return buildSearchError(context);
@@ -154,30 +154,26 @@ class _numberCardState extends State<numberCard> {
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-               
-                  child: Container(
-                    height: 140,
-                   
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                     borderRadius: BorderRadius.all(Radius.circular(15)),
-                     boxShadow: [
-      BoxShadow(
-        color: Colors.orange.shade800,
-        blurRadius: 15,
-        offset: Offset(5, 5), // Shadow position
-      ),
-    ],
-                    ),
-                    
-                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        buildSearchEmpty(context, index),
-                        
-                      ],
-                    ),
+                child: Container(
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.shade800,
+                        blurRadius: 15,
+                        offset: Offset(5, 5), // Shadow position
+                      ),
+                    ],
                   ),
-              
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildSearchEmpty(context, index),
+                    ],
+                  ),
+                ),
               );
             },
           );
@@ -208,16 +204,27 @@ class _numberCardState extends State<numberCard> {
             ],
           );
         }
-        Map<String, dynamic> currMap = Map<String, dynamic>.from(data[index]);
+        // print("\n\n[Index] ${data[index]}\n\n");
+        Map<String, dynamic> currMap = Map<String, dynamic>.from(
+          index <= data.length - 1 ? data[index] : {},
+        );
+        if (currMap.isEmpty) {
+          return Container(
+            child: const Text("Incompleted device data."),
+          );
+        }
+        print(widget.splByType);
         String name = currMap.keys.first;
         String pname = name.substring(0, 2);
+        print("[pname] $pname");
         List byTypeList = [];
         for (var t in widget.splByType[widget.whichFarm].keys) {
+          print("[tloop] $t");
           if (t.contains(pname)) {
             byTypeList = widget.splByType[widget.whichFarm][t]["data"];
           }
         }
-        // print(byTypeList);
+        print("byTypeList $byTypeList");
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -227,6 +234,7 @@ class _numberCardState extends State<numberCard> {
           itemCount: byTypeList.length,
           itemBuilder: (context, index) {
             var ss = byTypeList[index];
+            print("\n\n[ss] $ss\n\n");
             var data = ss["Data"];
             if (ss["Data"] == null) {
               return Container();
@@ -315,7 +323,9 @@ class _numberCardState extends State<numberCard> {
           onLongPress: () => showModalBottomSheet(
             context: context,
             builder: (context) => _MainpageCardModal(
-                currMap: Map<String, dynamic>.from(currMap), name: name),
+              currMap: Map<String, dynamic>.from(currMap),
+              name: name,
+            ),
           ),
           child: SizedBox(
             // margin: const EdgeInsets.fromLTRB(50, 0.0, 0.0, 0.0),
@@ -325,6 +335,7 @@ class _numberCardState extends State<numberCard> {
               currentValue: currentValue,
               context: context,
               state: currMap[name]!["State"],
+              client: widget.existedCli,
             ),
           ),
         ),
@@ -386,6 +397,48 @@ class _numberCardState extends State<numberCard> {
           onTap: () => showDialog(
             context: context,
             builder: (context) {
+              // For control only 2 values
+              print("Dialog of $name");
+              if (name.contains("FAN")) {
+                return AlertDialog(
+                  title: Text("Toggle Control"),
+                  content: Container(
+                    height: 100,
+                    child: Column(
+                      children: [
+                        Text(
+                            "The current state is ${currMap[name]["Value"] == 1.0 ? "on" : "off"}"),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          widget.existedCli.publishToControlValue(
+                            widget.whichFarm,
+                            name,
+                            1.0,
+                          );
+                          Navigator.pop(context);
+                        },
+                        child: Text("On")),
+                    TextButton(
+                        onPressed: () {
+                          widget.existedCli.publishToControlValue(
+                            widget.whichFarm,
+                            name,
+                            0.0,
+                          );
+                          Navigator.pop(context);
+                        },
+                        child: Text("Off")),
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("Cancel")),
+                  ],
+                );
+              }
+
               return AlertDialog(
                 title: Text("Value Control"),
                 content: Container(
