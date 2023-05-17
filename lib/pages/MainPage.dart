@@ -97,8 +97,10 @@ class _MainPageState extends State<MainPage> {
                     builder: (context) => FarmEditor(farm: ownedFarm),
                   ).then((value) => onIndexSelection(value)),
                   label: const Text("Change Farm",
-                      style: TextStyle(color: Colors.black, fontSize: 14.0,fontWeight: FontWeight.bold)),
-                  
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -106,53 +108,48 @@ class _MainPageState extends State<MainPage> {
             floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
             resizeToAvoidBottomInset: false,
             appBar: AppBar(
-                iconTheme: IconThemeData(color: Colors.white),
+              iconTheme: IconThemeData(color: Colors.white),
 
-                actions: [
-                  /*IconButton(onPressed: () async {
-                // _displayFarmEditor(context, data);
-                await Navigator.push(
-                context,
-                MaterialPageRoute(
-                builder: (context) => FarmEditor(farm: ownedFarm),
+              actions: [
+                IconButton(
+                    onPressed: () => setState(() {
+                          context.read<FarmCardReBloc>().getDeviceData();
+                        }),
+                    icon: Icon(Icons.cached)),
+                IconButton(
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => OnboardingPage()));
+                    },
+                    icon: Icon(Icons.question_mark)),
+                IconButton(
+                    onPressed: () => signOutCurrentUser(),
+                    icon: Icon(Icons.logout)),
+              ],
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text(
+                'Karriot',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 5,
+                  shadows: <Shadow>[
+                    Shadow(
+                        offset: Offset(2.0, 2.0),
+                        blurRadius: 5,
+                        color: Colors.orange),
+                  ],
                 ),
-                ).then((value) {
-                // context.read<FarmCardReBloc>().chooseIndex(index);
-                onIndexSelection(value);
-                });
-                }, icon: Icon(Icons.cached)),*/
-                  IconButton(onPressed: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => OnboardingPage()));},
-                      icon: Icon(Icons.question_mark)),
-                  IconButton(onPressed: () => signOutCurrentUser(), icon: Icon(Icons.logout)),
-                ],
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                title: const Text(
-                  'Karriot',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 35,
-                    fontWeight: 
-                    FontWeight.bold,
-                    letterSpacing: 5,
-                    shadows: <Shadow>[
-      Shadow(
-        offset: Offset(2.0, 2.0),
-        blurRadius: 5,
-        color: Colors.orange
-      ),
-    ],
-                    ),
-
-                ),
-                //titleSpacing: 47,
-              //leadingWidth: 80,
-                toolbarHeight: 70,
               ),
+              //titleSpacing: 47,
+              //leadingWidth: 80,
+              toolbarHeight: 70,
+            ),
             body: Stack(children: [
-              
               Padding(
-                padding: const EdgeInsets.only(bottom:340),
+                padding: const EdgeInsets.only(bottom: 340),
                 child: Container(
                   decoration: const BoxDecoration(
                     //color: Colors.grey.shade200
