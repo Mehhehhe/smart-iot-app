@@ -89,7 +89,8 @@ class _farmCardViewState extends State<farmCardView> {
     }
   }
 
-  createNewFarmDataMapForNumCard(List s) {
+  //ignore: long-method
+  Future<Map> createNewFarmDataMapForNumCard(List s) async {
     Map temp = {tempLoc: {}};
     for (var d in devices) {
       Map t = {
@@ -105,35 +106,35 @@ class _farmCardViewState extends State<farmCardView> {
         // print("check data $ss");
         for (var t in value.keys) {
           if (temp.containsKey(ss["FromFarm"]) &&
-              ss["FromDevice"].contains(value[t]["prefix"])) {
+              ss["FromDevice"]
+                  .contains(value[t]["prefix"].toString().toUpperCase())) {
             if (value[t]["data"].isEmpty) {
-              // print("is ss string? ${json.decode(ss)["Data"].runtimeType}, ");
               if (ss["Data"].runtimeType == String) {
                 ss["Data"] = json.decode(ss["Data"]);
               }
               value[t]["data"].add(ss);
+              print(value[t]);
               break;
             }
-
-            // print(
-            //     "check condition :=> ${temp.containsKey(ss["FromFarm"])}, ${ss["FromDevice"].contains(value[t]["prefix"])}, ${!value[t]["data"].contains(ss)} , \n\n\nvalue = ${value[t]["data"]}");
-            List temp = [];
+            List temp2 = [];
             for (int i = 0; i < value[t]["data"].length; i++) {
               if (value[t]["data"][i]["FromDevice"] == ss["FromDevice"]) {
-                temp.addAll(
+                temp2.addAll(
                   ss["Data"].runtimeType == String
                       ? json.decode(ss["Data"])
                       : ss["Data"],
                 );
               }
             }
-            if (temp.isNotEmpty) {
-              value[t]["data"].addAll(temp);
+            if (temp2.isNotEmpty) {
+              value[t]["data"].addAll(temp2);
+              print("Another cond: ${value[t]}");
             }
           }
         }
       });
     }
+    print("[temp] $temp");
 
     return temp;
   }
@@ -181,18 +182,18 @@ class _farmCardViewState extends State<farmCardView> {
             SearchWidgetBloc(searchDev: SearchDevice(SearchCache(), devices)),
         child: Stack(
           children: [
-           //hello world im tired.
-           
+            //hello world im tired.
+
             /*Padding(
               padding: const EdgeInsets.only(top: 120),
               child: SearchBar(),
             ),*/
-            
+
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: SearchBody(),
             ),
-          
+
             /*Padding(
               padding: const EdgeInsets.only(top: 220),
               child: Row(
@@ -205,9 +206,6 @@ class _farmCardViewState extends State<farmCardView> {
                 ],
               ),
             ),*/
-
-
-            
           ],
         ),
       ),
@@ -241,6 +239,8 @@ class _farmCardViewState extends State<farmCardView> {
   Widget normalCard([List<ResultItem>? items]) {
     return ListView.builder(
       // testing fetch new farm
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: widget.overrideFarmIndex != null
           ? 1
           : context.read<FarmCardReBloc>().userFarmList().length,
@@ -286,7 +286,7 @@ class _farmCardViewState extends State<farmCardView> {
           BlocBuilder<FarmCardReBloc, FarmCardReState>(
             builder: (context, state) {
               if (state.data != "") {
-                if (!dataResponse.contains(state.data)) {
+                if (!dataResponse.contains(state.pt)) {
                   dataResponse.add(state.pt);
                 }
               }
@@ -302,18 +302,17 @@ class _farmCardViewState extends State<farmCardView> {
                 // print("In farm target, [devices] $devices");
 
                 return Text(
-                  'Farm : '+farmTarget,
+                  'Farm : ' + farmTarget,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 26,
                     fontWeight: FontWeight.w500,
                     shadows: <Shadow>[
-      Shadow(
-        offset: Offset(2.0, 2.0),
-        blurRadius: 5,
-        color: Colors.orange
-      ),
-    ],
+                      Shadow(
+                          offset: Offset(2.0, 2.0),
+                          blurRadius: 5,
+                          color: Colors.orange),
+                    ],
                   ),
                 );
               } else if (widget.overrideFarmIndex == null &&
@@ -351,8 +350,6 @@ class _farmCardViewState extends State<farmCardView> {
             padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
           ),
           Center(child: generateNumberCards(searched)),
-          
-          
         ],
       ),
     );
@@ -361,26 +358,25 @@ class _farmCardViewState extends State<farmCardView> {
 // ignore: long-method
   Widget generateNumberCards([List<ResultItem>? searched]) {
     return Container(
-      
-      width: MediaQuery.of(context).size.width,  //*0.635
+      width: MediaQuery.of(context).size.width, //*0.635
       child: Column(
         children: [
           SearchBar(),
           SizedBox(
-                  height: 20,
-                ),
-Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  //analysisWidget(),
-                  //historyWidget(),
-                  analysisWidget_New(),
-                  historyWidget_New()
-                ],
-              ),
-              SizedBox(
-                  height: 30,
-                ),
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              //analysisWidget(),
+              //historyWidget(),
+              analysisWidget_New(),
+              historyWidget_New()
+            ],
+          ),
+          SizedBox(
+            height: 30,
+          ),
           if (dataResponse.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 0),
@@ -392,9 +388,11 @@ Row(
                       .where((element) => element["FromFarm"] == tempLoc)
                       .toList();
                   // Query by type
-                  var splDevByType =
-                      createNewFarmDataMapForNumCard(selectedResponse);
-            
+                  // Map splDevByType =
+                  //     await createNewFarmDataMapForNumCard(selectedResponse);
+                  // print(
+                  //     "\n\n[Split] ${splDevByType["Farmtest"]["NPKSENSOR"]} \n\n");
+
                   // Main generator
                   // Caution: dataResponse, selectedResponse
                   if (selectedResponse.isEmpty) {
@@ -402,14 +400,14 @@ Row(
                       height: 150,
                       decoration: BoxDecoration(
                         color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(10) ),
-          boxShadow: [
-      BoxShadow(
-        color: Colors.orange.shade700,
-        blurRadius: 10,
-        offset: Offset(4, 8), // Shadow position
-      ),
-    ],
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.shade700,
+                            blurRadius: 10,
+                            offset: Offset(4, 8), // Shadow position
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -417,10 +415,9 @@ Row(
                           Center(
                             widthFactor: 1.8,
                             child: Text(
-                              "No data found.",style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400
-                              ),
+                              "No data found.",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w400),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -428,33 +425,41 @@ Row(
                       ),
                     );
                   }
-            
-                  return Container(
-                    child: BlocProvider(
-                      create: (_) => LiveDataCubit(selectedResponse),
-                      child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
-                        builder: (context, state) {
-                          if (state is SearchWidgetSuccess) {
-                            return numberCard(
-                              inputData: selectedResponse,
-                              whichFarm: tempLoc,
-                              existedCli: client,
-                              devicesData: searched,
-                              splByType: splDevByType,
-                            );
-                          }
-                  
-                          return numberCard(
-                            inputData: selectedResponse,
-                            whichFarm: tempLoc,
-                            existedCli: client,
-                            devicesData: devices,
-                            splByType: splDevByType,
-                          );
-                        },
+
+                  return FutureBuilder(
+                    future: Future.delayed(
+                      const Duration(
+                        milliseconds: 200,
                       ),
+                      () {
+                        // context.read<FarmCardReBloc>().getDeviceData();
+
+                        return futureCard(
+                          selectedResponse,
+                          searched,
+                        );
+                      },
                     ),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<dynamic> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Column(
+                          children: const [
+                            CircularProgressIndicator(),
+                            Text("Refreshing ... "),
+                          ],
+                        ); // Placeholder widget while waiting for the future to complete
+                      } else if (snapshot.hasError) {
+                        return Text(
+                            'Error: ${snapshot.error}'); // Widget to display an error message if the future throws an error
+                      } else {
+                        return snapshot
+                            .data!; // Widget to display when the future completes successfully
+                      }
+                    },
                   );
+
+                  // return const CircularProgressIndicator();
                 },
               ),
             )
@@ -473,6 +478,46 @@ Row(
             ),
         ],
       ),
+    );
+  }
+
+  Widget futureCard(selectedResponse, searched) {
+    return FutureBuilder(
+      future: createNewFarmDataMapForNumCard(selectedResponse),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasData) {
+          var splDevByType = snapshot.data;
+
+          return Container(
+            child: BlocProvider(
+              create: (_) => LiveDataCubit(selectedResponse),
+              child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+                builder: (context, state) {
+                  if (state is SearchWidgetSuccess) {
+                    return numberCard(
+                      inputData: selectedResponse,
+                      whichFarm: tempLoc,
+                      existedCli: client,
+                      devicesData: searched,
+                      splByType: splDevByType,
+                    );
+                  }
+
+                  return numberCard(
+                    inputData: selectedResponse,
+                    whichFarm: tempLoc,
+                    existedCli: client,
+                    devicesData: devices,
+                    splByType: splDevByType,
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        return Container();
+      },
     );
   }
 
@@ -557,25 +602,24 @@ Row(
     );
   }
 
-Widget analysisWidget_New() {
+  Widget analysisWidget_New() {
     return Container(
       height: 50,
       width: 200,
       decoration: BoxDecoration(
-          
-          color: Colors.deepOrange.shade600,
-          borderRadius: BorderRadius.all(Radius.circular(10) ),
-          boxShadow: [
-      BoxShadow(
-        color: Colors.orange.shade700,
-        blurRadius: 10,
-        offset: Offset(4, 8), // Shadow position
+        color: Colors.deepOrange.shade600,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.shade700,
+            blurRadius: 10,
+            offset: Offset(4, 8), // Shadow position
+          ),
+        ],
       ),
-    ],
-    ),
       child: Center(
           child: TextButton(
-            onPressed: () {
+        onPressed: () {
           List deviceCheck = [];
 
           for (var d in devices) {
@@ -592,19 +636,20 @@ Widget analysisWidget_New() {
             ),
           );
         },
-            child: Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Analysis',style: TextStyle(fontSize: 16, color: Colors.white),),
-                SizedBox(width: 15,),
-                Icon(Icons.auto_graph,
-                    size: 22,
-                    color: Colors.white
-                ),
-
-              ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Analysis',
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
-          )
-      ),
+            SizedBox(
+              width: 15,
+            ),
+            Icon(Icons.auto_graph, size: 22, color: Colors.white),
+          ],
+        ),
+      )),
     );
   }
 
@@ -613,51 +658,48 @@ Widget analysisWidget_New() {
       height: 50,
       width: 120,
       decoration: BoxDecoration(
-         
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          boxShadow: [
-      BoxShadow(
-        color: Colors.orange.shade700,
-        blurRadius: 10,
-        offset: Offset(4, 8), // Shadow position
-      ),
-    ],
-          
+        color: Colors.white,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.shade700,
+            blurRadius: 10,
+            offset: Offset(4, 8), // Shadow position
           ),
+        ],
+      ),
       child: Center(
           child: TextButton(
-            onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.85,
-            constraints: const BoxConstraints(),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
-            ),
-            child: historyLog(farmName: tempLoc),
-          ),
-        ),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-              Text('History',style: TextStyle(fontSize: 16, color: Colors.orange),),
-            SizedBox(width: 5,),
-            Icon(Icons.history,
-                size: 19,
-                color: Colors.orange
-            ),
-
-            ],
-          )
-          )
-      ),
+              onPressed: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => Container(
+                      height: MediaQuery.of(context).size.height * 0.85,
+                      constraints: const BoxConstraints(),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(25),
+                          topRight: Radius.circular(25),
+                        ),
+                      ),
+                      child: historyLog(farmName: tempLoc),
+                    ),
+                  ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'History',
+                    style: TextStyle(fontSize: 16, color: Colors.orange),
+                  ),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Icon(Icons.history, size: 19, color: Colors.orange),
+                ],
+              ))),
     );
   }
-  
 }
