@@ -121,23 +121,27 @@ class _historyLog extends State<historyLog> {
                   Map<DateTime, List<LocalHist>> groupedData = groupBy(
                     dataArray,
                     (LocalHist p0) {
-                      DateTime date = DateTime.fromMillisecondsSinceEpoch(
-                        int.parse(p0.dateUnixAsId),
-                      );
-                      // Query here!
-                      switch (selectHistFilterRange) {
-                        case "days":
-                          return DateTime(date.year, date.month, date.day);
-                        // break;
-                        case "months":
-                          return DateTime(date.year, date.month);
-                        case "years":
-                          return DateTime(date.year);
-                        default:
-                      }
-                      // default: days
+                      if (p0.dateUnixAsId != "null") {
+                        DateTime date = DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(p0.dateUnixAsId),
+                        );
+                        // Query here!
+                        switch (selectHistFilterRange) {
+                          case "days":
+                            return DateTime(date.year, date.month, date.day);
+                          // break;
+                          case "months":
+                            return DateTime(date.year, date.month);
+                          case "years":
+                            return DateTime(date.year);
+                          default:
+                        }
+                        // default: days
 
-                      return DateTime(date.year, date.month, date.day);
+                        return DateTime(date.year, date.month, date.day);
+                      } else {
+                        return DateTime(DateTime.now().year);
+                      }
                     },
                   );
 
@@ -174,36 +178,43 @@ class _historyLog extends State<historyLog> {
                     }
                     val.forEach((element) {
                       Map tileData = element.toJson();
-                      DateTime temp = DateTime.fromMillisecondsSinceEpoch(
-                        int.parse(tileData["_id"]),
-                      ).toLocal();
+                      if (tileData["_id"] != "null") {
+                        DateTime temp = DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(tileData["_id"]),
+                        ).toLocal();
 
-                      subTile.add(ListTile(
-                        leading: Icon(Icons.phone_android,size: 28,),
-                        title: Text(tileData["device"],style: TextStyle(fontWeight: FontWeight.bold),),
-                        subtitle: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              tileData["value"],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                //fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 0, 122, 2)
-                              ),
-                            ),
-                            if (selectHistFilterRange == "days")
+                        subTile.add(ListTile(
+                          leading: Icon(
+                            Icons.phone_android,
+                            size: 28,
+                          ),
+                          title: Text(
+                            tileData["device"],
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
                               Text(
-                                "${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}.${temp.millisecond}",
+                                tileData["value"],
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    //fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 0, 122, 2)),
                               ),
-                            if (selectHistFilterRange == "months" ||
-                                selectHistFilterRange == "years")
-                              Text(
-                                "${temp.day}/${temp.month}/${temp.year} ${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}",
-                              ),
-                          ],
-                        ),
-                      ));
+                              if (selectHistFilterRange == "days")
+                                Text(
+                                  "${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}.${temp.millisecond}",
+                                ),
+                              if (selectHistFilterRange == "months" ||
+                                  selectHistFilterRange == "years")
+                                Text(
+                                  "${temp.day}/${temp.month}/${temp.year} ${temp.hour}:${temp.minute}:${temp.second < 10 ? "0${temp.second}" : temp.second}",
+                                ),
+                            ],
+                          ),
+                        ));
+                      }
                     });
                     dayTile.add(ExpansionTile(
                       title: Text(selectHistFilterRange == "days"
@@ -331,7 +342,6 @@ class _historyLog extends State<historyLog> {
           ? exposedFilterMap[name]["bool_list"]
           : temp[name]["bool_list"],
       borderRadius: const BorderRadius.all(Radius.circular(8)),
-      
       selectedColor: Colors.white,
       fillColor: Colors.deepOrange,
       color: Colors.orange[400],
