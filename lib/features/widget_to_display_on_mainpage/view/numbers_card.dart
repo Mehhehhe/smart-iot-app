@@ -97,7 +97,7 @@ class _numberCardState extends State<numberCard> {
 
     setState(() {
       data = widget.inputData;
-      // print("[Ongoing] $data");
+      print("[Ongoing] $data");
       _setLatest(data);
     });
   }
@@ -121,11 +121,11 @@ class _numberCardState extends State<numberCard> {
   //ignore: long-method
   Widget buildSearchable(BuildContext contextP) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.65,
       width: double.infinity,
       child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
         builder: (context, state) {
-          print("[SearchState] ${widget.splByType[widget.whichFarm].keys}");
+          // print("[SearchState] ${state.}");
           if (state is SearchWidgetSuccess) {
             return Container(
               height: 200,
@@ -135,7 +135,7 @@ class _numberCardState extends State<numberCard> {
                 shrinkWrap: true,
                 itemCount: state.items.length,
                 itemBuilder: (context, index) {
-                  return buildSearchFound(context);
+                  return buildSearchFound(context, index);
                 },
               ),
             );
@@ -189,7 +189,7 @@ class _numberCardState extends State<numberCard> {
       bloc: contextP.read<SearchWidgetBloc>(),
       buildWhen: (previous, current) => current is SearchStateEmpty,
       builder: (context, state) {
-        // print("[BuildBloc] $data");
+        print("[BuildBloc] $data");
         if (data.isEmpty) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -204,22 +204,26 @@ class _numberCardState extends State<numberCard> {
             ],
           );
         }
-        // print("\n\n[Index] ${data[index]}\n\n");
+        print("\n\n[Index] ${data[index]}\n\n");
         Map<String, dynamic> currMap = Map<String, dynamic>.from(
           index <= data.length - 1 ? data[index] : {},
         );
+        bool defaultPlaceholder = false;
         if (currMap.isEmpty) {
+          // return default place holder of that device
+          defaultPlaceholder = true;
+
           return Container(
             child: const Text("Incompleted device data."),
           );
         }
-        print(widget.splByType);
+
         String name = currMap.keys.first;
         String pname = name.substring(0, 2);
-        print("[pname] $pname");
+        // print("[pname] $pname");
         List byTypeList = [];
         for (var t in widget.splByType[widget.whichFarm].keys) {
-          print("[tloop] $t");
+          // print("[tloop] $t");
           if (t.contains(pname)) {
             byTypeList = widget.splByType[widget.whichFarm][t]["data"];
           }
@@ -234,8 +238,10 @@ class _numberCardState extends State<numberCard> {
           itemCount: byTypeList.length,
           itemBuilder: (context, index) {
             var ss = byTypeList[index];
-            print("\n\n[ss] $ss\n\n");
-            var data = ss["Data"];
+            // print("\n\n[ss] $ss\n\n");
+            var data = ss["Data"].runtimeType == String
+                ? json.decode(ss["Data"])
+                : ss["Data"];
             if (ss["Data"] == null) {
               return Container();
             }
@@ -244,10 +250,11 @@ class _numberCardState extends State<numberCard> {
             // print("Type: ${ss["FromDevice"].runtimeType}");
             var currName = ss["FromDevice"];
             var details = getDetailOfDevice(currName);
+            print("\n\n[CheckLatestLength] ${data.length}\n\n");
             Map currMap = {
               currName: data[lastIndex],
             };
-            // print(currMap);
+            print("CurrentMap $currMap");
 
             return _createCardDetailIfFound(
               currName,
@@ -261,17 +268,21 @@ class _numberCardState extends State<numberCard> {
     );
   }
 
-  Widget buildSearchFound(BuildContext context) {
+  Widget buildSearchFound(BuildContext context, int index) {
     return BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
       bloc: context.read<SearchWidgetBloc>(),
       buildWhen: (previous, current) =>
           previous != current && current is SearchWidgetSuccess,
       builder: (context, state) {
         if (state is SearchWidgetSuccess && state.items.isNotEmpty) {
-          String name = state.items[0].deviceName;
-          Map<String, dynamic> currMap = Map<String, dynamic>.from(data
+          String name = state.items[index].deviceName;
+          List tempList = data
               .where((element) => element.keys.toString() == "($name)")
-              .toList()[0]);
+              .toList();
+          // print();
+          Map<String, dynamic> currMap =
+              Map<String, dynamic>.from(tempList[tempList.length - 1]);
+          // print(currMap);
           var currentValue = currMap[name]["Value"];
           if (currentValue == null) {
             return Container();
@@ -330,7 +341,7 @@ class _numberCardState extends State<numberCard> {
           child: SizedBox(
             // margin: const EdgeInsets.fromLTRB(50, 0.0, 0.0, 0.0),
             height: 100,
-            child: DeviceWidgetGenerator().buildMainpageCardDisplay(
+            child: DeviceWidgetGenerator(
               deviceSerial: name,
               currentValue: currentValue,
               context: context,
@@ -403,35 +414,38 @@ class _numberCardState extends State<numberCard> {
                 return AlertDialog(
                   title: Text("Toggle Control"),
                   content: Container(
-                    height: 100,
+                    height: 200,
                     child: Column(
                       children: [
                         Text(
-                            "The current state is ${currMap[name]["Value"] == 1.0 ? "on" : "off"}"),
+                            "The current state is ${currMap[name]["Value"] ? "on" : "off"}"),
+                        Text(
+                          "\nThis device will be updated in the next time. You may have to restart the application to see new value.",
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              widget.existedCli.publishToControlValue(
+                                widget.whichFarm,
+                                name,
+                                "true",
+                              );
+                              Navigator.pop(context);
+                            },
+                            child: Text("On")),
+                        ElevatedButton(
+                            onPressed: () {
+                              widget.existedCli.publishToControlValue(
+                                widget.whichFarm,
+                                name,
+                                "false",
+                              );
+                              Navigator.pop(context);
+                            },
+                            child: Text("Off")),
                       ],
                     ),
                   ),
                   actions: [
-                    TextButton(
-                        onPressed: () {
-                          widget.existedCli.publishToControlValue(
-                            widget.whichFarm,
-                            name,
-                            1.0,
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: Text("On")),
-                    TextButton(
-                        onPressed: () {
-                          widget.existedCli.publishToControlValue(
-                            widget.whichFarm,
-                            name,
-                            0.0,
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: Text("Off")),
                     TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: Text("Cancel")),
