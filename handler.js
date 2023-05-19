@@ -776,19 +776,41 @@ module.exports.writeDataFromIOT = async (event, context, callback) => {
     },
     ProjectionExpression: "DeviceID, DeviceValue"
   };
-  var currentData = dynamoDb.get(paramsDeviceInFarm).promise().then(
+  console.info(["Checking db"]);
+  // Check the metadata table
+  await dynamoDb.scan({ TableName: FarmDeviceTable }).promise().then(res => {
+    if (res.Items.every((i) => i.DeviceName !== targetDevice)) {
+      console.info([res.Items.every((i) => i.DeviceName !== targetDevice), targetDevice]);
+      throw new Error("Id not exist in the table");
+    }
+  });
+  // await dynamoDb.get({
+  //   TableName: FarmDeviceTable,
+  //   Key: {
+  //     ID: targetDevice
+  //   },
+  //   ProjectionExpression: "ID, DeviceName"
+  // }).promise().then(result => {
+  //   console.info(["Track", targetDevice, result.Item]);
+  //   if (result.Item == undefined || result.Item.DeviceName == undefined) {
+  //     callback(new Error("Couldn't fetch id from the table"));
+  //   }
+  // }).catch((err) => callback(new Error(err)));
+
+  await dynamoDb.get(paramsDeviceInFarm).promise().then(
     result => {
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify(result.Item)
-      };
-      noData = false;
+      console.info(result.Item);
+      if (result.Item == undefined || result.Item.DeviceValue == undefined) {
+        noData = true;
+      }
       // callback(null, response);
     }).catch((err) => {
       console.error(err);
       noData = true;
       // callback(new Error("Couldn't fetch data from given params"));
     });
+
+  console.info("Checked !");
 
   const submitDevice = device => {
     console.log("Submitting device data ... :noData = ", noData);
@@ -894,21 +916,117 @@ module.exports.changeDeviceStatusByMobile = async (event, context, callback) => 
 };
 
 module.exports.sendControlValue = async (event, context, callback) => {
-  if (event.controlValue == null || event.controlValue == "") {
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
+
+  let isWebPlatform = event.body != undefined;
+  let requestBody = isWebPlatform ? JSON.parse(event.body) : event;
+
+  console.info([requestBody]);
+
+  if (requestBody.controlValue == null || requestBody.controlValue == "" || requestBody.controlValue == undefined) {
     return Error("Unknown value");
   }
-  let splitStr = event.topic.split("/");
+  // console.info(["Check input", event]);
+  let splitStr = requestBody.topic.split("/");
   var farmName = splitStr[0];
   var targetDevice = splitStr[1];
   var responseToDevice = {
     topic: farmName + '/' + targetDevice + '/' + 'control/listen/request',
     payload: JSON.stringify({
-      "value": event.controlValue
+      "value": requestBody.controlValue
     }),
     qos: 1
   };
+  console.info(responseToDevice);
   const pub = iotdata.publish(responseToDevice);
   pub.on('success', () => console.log("successfully send requested state change")).on('error', () => console.log("error. request not function correctly"));
+  return new Promise(() => pub.send(function (err, data) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(data);
+    }
+  }));
+};
+
+module.exports.getInitDataForMobile = async (event, context, callback) => {
+  var headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
+
+  let isWebPlatform = event.body != undefined;
+  let requestBody = isWebPlatform ? JSON.parse(event.body) : event;
+  console.info(["Check pass ", event]);
+  // Check if request is sent through json.
+  if (requestBody.Devices == null || requestBody.Devices == undefined || requestBody.RequestConfirm == "") {
+    console.log("Suspicious request. Type: ", typeof event.Request);
+    return Error("Unexpected request.");
+  }
+
+  if (requestBody.topic == null || requestBody.topic == undefined || typeof requestBody.topic !== 'string') {
+    console.log("Something went wrong with topic. ", event.topic);
+    return Error("Unexpected at topic");
+  }
+  console.log(JSON.stringify(event));
+  // Fetch data from topic
+
+  let noMqtt = requestBody.RequestNoMqtt == "yes";
+
+  // Separate a topic to get farm name and device
+  let splitStr = requestBody.topic.split("/");
+  var farmName = splitStr[0];
+  // var targetDevice = splitStr[1];
+  var devices = requestBody.Devices.split(',');
+  var itemToReturn = { "LatestItems": [] };
+
+  // 1. Connect to dynamoDB 
+  // 2. Select columns from given device
+  for (var targetDevice of devices) {
+    var params = {
+      TableName: farmName,
+      Key: {
+        "DeviceID": targetDevice
+      },
+      ProjectionExpression: "DeviceValue",
+    };
+    console.info(["params", params]);
+    const data = await dynamoDb.get(params).promise();
+    console.info(["get data", data]);
+    if (data.Item["DeviceValue"].length >= 10) {
+      itemToReturn.LatestItems.push({
+        [targetDevice]: data.Item["DeviceValue"].slice(data.Item["DeviceValue"].length - 10, data.Item["DeviceValue"].length),
+      });
+    } else {
+      itemToReturn.LatestItems.push(data.Item["DeviceValue"]);
+    }
+  }
+
+  console.log("[itemToReturn] :===> PASSED");
+  console.log(itemToReturn.LatestItems);
+
+  // itemToReturn.LatestItems = itemToReturn.LatestItems.map((item) => JSON.stringify(item));
+
+  if (noMqtt) {
+    const noMqttResponse = {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(itemToReturn.LatestItems),
+    };
+    callback(null, noMqttResponse);
+  }
+
+  // console.log("Test joining ===> ", itemToReturn.LatestItems.join(","));
+  var paramsResponse = {
+    topic: farmName + '/for_init/data/liveOnce',
+    payload: JSON.stringify(itemToReturn.LatestItems),
+    qos: 1
+  };
+  const pub = iotdata.publish(paramsResponse);
+  pub.on('success', () => console.log("success")).on('error', () => console.log("error"));
   return new Promise(() => pub.send(function (err, data) {
     if (err) {
       console.log(err);
