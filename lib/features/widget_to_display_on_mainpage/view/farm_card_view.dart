@@ -43,7 +43,7 @@ class _farmCardViewState extends State<farmCardView> {
   var exposedLoc = "";
   String tempLoc = "";
   // Data stream
-  List<Map> dataResponse = [];
+  // List<Map> dataResponse = [];
   bool enableGraph = false;
   bool isRefreshed = false;
   LocalHistoryDatabase lc = LocalHistoryDatabase.instance;
@@ -90,7 +90,7 @@ class _farmCardViewState extends State<farmCardView> {
   }
 
   //ignore: long-method
-  Future<Map> createNewFarmDataMapForNumCard(List s) async {
+  createNewFarmDataMapForNumCard(List s) {
     Map temp = {tempLoc: {}};
     for (var d in devices) {
       Map t = {
@@ -113,7 +113,7 @@ class _farmCardViewState extends State<farmCardView> {
                 ss["Data"] = json.decode(ss["Data"]);
               }
               value[t]["data"].add(ss);
-              print(value[t]);
+              // print(value[t]);
               break;
             }
             List temp2 = [];
@@ -128,7 +128,7 @@ class _farmCardViewState extends State<farmCardView> {
             }
             if (temp2.isNotEmpty) {
               value[t]["data"].addAll(temp2);
-              print("Another cond: ${value[t]}");
+              // print("Another cond: ${value[t]}");
             }
           }
         }
@@ -139,31 +139,31 @@ class _farmCardViewState extends State<farmCardView> {
     return temp;
   }
 
-  List localizedResponse() {
-    var newDataArray = [];
-    for (var m in dataResponse) {
-      m.forEach((key, value) {
-        if (key == "Data") {
-          var tr = json.decode(value).cast().toList();
-          for (var element in tr) {
-            var temp = {
-              "Value": element["Value"],
-              "State": element["State"],
-              "TimeStamp":
-                  DateTime.fromMillisecondsSinceEpoch(element["TimeStamp"])
-                      .toLocal()
-                      .toString(),
-              "FromDevice": m["FromDevice"],
-            };
-            newDataArray.add(temp);
-            temp = {};
-          }
-        }
-      });
-    }
+  // List localizedResponse() {
+  //   var newDataArray = [];
+  //   for (var m in dataResponse) {
+  //     m.forEach((key, value) {
+  //       if (key == "Data") {
+  //         var tr = json.decode(value).cast().toList();
+  //         for (var element in tr) {
+  //           var temp = {
+  //             "Value": element["Value"],
+  //             "State": element["State"],
+  //             "TimeStamp":
+  //                 DateTime.fromMillisecondsSinceEpoch(element["TimeStamp"])
+  //                     .toLocal()
+  //                     .toString(),
+  //             "FromDevice": m["FromDevice"],
+  //           };
+  //           newDataArray.add(temp);
+  //           temp = {};
+  //         }
+  //       }
+  //     });
+  //   }
 
-    return newDataArray;
-  }
+  //   return newDataArray;
+  // }
 
   @override
   void initState() {
@@ -280,16 +280,8 @@ class _farmCardViewState extends State<farmCardView> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /*const Padding(
-            padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-          ),*/
           BlocBuilder<FarmCardReBloc, FarmCardReState>(
             builder: (context, state) {
-              if (state.data != "") {
-                if (!dataResponse.contains(state.pt)) {
-                  dataResponse.add(state.pt);
-                }
-              }
               // print("[Response] $dataResponse");
               if (widget.overrideFarmIndex != null && state.farms.isNotEmpty) {
                 var farmTarget = state.farms[widget.overrideFarmIndex!];
@@ -371,27 +363,46 @@ class _farmCardViewState extends State<farmCardView> {
               //analysisWidget(),
               //historyWidget(),
               analysisWidget_New(),
-              historyWidget_New()
+              historyWidget_New(),
             ],
           ),
           SizedBox(
             height: 30,
           ),
-          if (dataResponse.isNotEmpty)
+          if (context.read<FarmCardReBloc>().dataResponse.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: BlocBuilder<FarmCardReBloc, FarmCardReState>(
-                bloc: context.read<FarmCardReBloc>(),
-                builder: (context, stateFarm) {
-                  // Query by farm
-                  var selectedResponse = dataResponse
+                builder: (context, state) {
+                  print(
+                      "[FetchingDPReadContext] ${context.read<FarmCardReBloc>().dataResponse.map((e) => e["FromDevice"]).toList()}");
+                  var selectedResponse = context
+                      .read<FarmCardReBloc>()
+                      .dataResponse
                       .where((element) => element["FromFarm"] == tempLoc)
                       .toList();
+
                   // Query by type
-                  // Map splDevByType =
-                  //     await createNewFarmDataMapForNumCard(selectedResponse);
-                  // print(
-                  //     "\n\n[Split] ${splDevByType["Farmtest"]["NPKSENSOR"]} \n\n");
+                  if (context
+                      .read<FarmCardReBloc>()
+                      .deviceByType
+                      .containsKey(tempLoc)) {
+                    context.read<FarmCardReBloc>().deviceByType[tempLoc] =
+                        context
+                            .read<FarmCardReBloc>()
+                            .createNewFarmDataMapForNumCard(
+                              tempLoc,
+                              selectedResponse,
+                            )[tempLoc];
+                  } else {
+                    context.read<FarmCardReBloc>().deviceByType = context
+                        .read<FarmCardReBloc>()
+                        .createNewFarmDataMapForNumCard(
+                          tempLoc,
+                          selectedResponse,
+                        );
+                  }
+                  // print("\n\n[Split] ${splDevByType["Farmtest"]} \n\n");
 
                   // Main generator
                   // Caution: dataResponse, selectedResponse
@@ -426,40 +437,34 @@ class _farmCardViewState extends State<farmCardView> {
                     );
                   }
 
-                  return FutureBuilder(
-                    future: Future.delayed(
-                      const Duration(
-                        milliseconds: 200,
+                  return Container(
+                    child: BlocProvider(
+                      create: (_) => LiveDataCubit(selectedResponse),
+                      child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+                        builder: (context, state) {
+                          if (state is SearchWidgetSuccess) {
+                            return numberCard(
+                              inputData: selectedResponse,
+                              whichFarm: tempLoc,
+                              existedCli: client,
+                              devicesData: searched,
+                              splByType:
+                                  context.read<FarmCardReBloc>().deviceByType,
+                            );
+                          }
+
+                          return numberCard(
+                            inputData: selectedResponse,
+                            whichFarm: tempLoc,
+                            existedCli: client,
+                            devicesData: devices,
+                            splByType:
+                                context.read<FarmCardReBloc>().deviceByType,
+                          );
+                        },
                       ),
-                      () {
-                        // context.read<FarmCardReBloc>().getDeviceData();
-
-                        return futureCard(
-                          selectedResponse,
-                          searched,
-                        );
-                      },
                     ),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<dynamic> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Column(
-                          children: const [
-                            CircularProgressIndicator(),
-                            Text("Refreshing ... "),
-                          ],
-                        ); // Placeholder widget while waiting for the future to complete
-                      } else if (snapshot.hasError) {
-                        return Text(
-                            'Error: ${snapshot.error}'); // Widget to display an error message if the future throws an error
-                      } else {
-                        return snapshot
-                            .data!; // Widget to display when the future completes successfully
-                      }
-                    },
                   );
-
-                  // return const CircularProgressIndicator();
                 },
               ),
             )
@@ -481,45 +486,45 @@ class _farmCardViewState extends State<farmCardView> {
     );
   }
 
-  Widget futureCard(selectedResponse, searched) {
-    return FutureBuilder(
-      future: createNewFarmDataMapForNumCard(selectedResponse),
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.hasData) {
-          var splDevByType = snapshot.data;
+  // Widget futureCard(selectedResponse, searched) {
+  //   return FutureBuilder(
+  //     future: createNewFarmDataMapForNumCard(selectedResponse),
+  //     builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+  //       if (snapshot.hasData) {
+  //         var splDevByType = createNewFarmDataMapForNumCard(selectedResponse);
 
-          return Container(
-            child: BlocProvider(
-              create: (_) => LiveDataCubit(selectedResponse),
-              child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
-                builder: (context, state) {
-                  if (state is SearchWidgetSuccess) {
-                    return numberCard(
-                      inputData: selectedResponse,
-                      whichFarm: tempLoc,
-                      existedCli: client,
-                      devicesData: searched,
-                      splByType: splDevByType,
-                    );
-                  }
+  //         return Container(
+  //           child: BlocProvider(
+  //             create: (_) => LiveDataCubit(selectedResponse),
+  //             child: BlocBuilder<SearchWidgetBloc, SearchWidgetState>(
+  //               builder: (context, state) {
+  //                 if (state is SearchWidgetSuccess) {
+  //                   return numberCard(
+  //                     inputData: selectedResponse,
+  //                     whichFarm: tempLoc,
+  //                     existedCli: client,
+  //                     devicesData: searched,
+  //                     splByType: splDevByType,
+  //                   );
+  //                 }
 
-                  return numberCard(
-                    inputData: selectedResponse,
-                    whichFarm: tempLoc,
-                    existedCli: client,
-                    devicesData: devices,
-                    splByType: splDevByType,
-                  );
-                },
-              ),
-            ),
-          );
-        }
+  //                 return numberCard(
+  //                   inputData: selectedResponse,
+  //                   whichFarm: tempLoc,
+  //                   existedCli: client,
+  //                   devicesData: devices,
+  //                   splByType: splDevByType,
+  //                 );
+  //               },
+  //             ),
+  //           ),
+  //         );
+  //       }
 
-        return Container();
-      },
-    );
-  }
+  //       return Container();
+  //     },
+  //   );
+  // }
 
   // ignore: long-method
   Widget analysisWidget() {
