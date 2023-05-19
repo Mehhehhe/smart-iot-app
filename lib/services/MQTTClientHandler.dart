@@ -40,8 +40,12 @@ class MQTTClientWrapper {
     // _publishMessage('Hello');
   }
 
-  void subscribeToOneResponse(String farmName, dynamic deviceName,
-      [bool? isOnlySubscribe]) async {
+  //ignore:long-method
+  void subscribeToOneResponse(
+    String farmName,
+    dynamic deviceName, [
+    bool? isOnlySubscribe,
+  ]) async {
     String msgToReturn = "";
     Type typeCheck = deviceName.runtimeType;
     print("$farmName, $deviceName, $isOnlySubscribe");
@@ -56,29 +60,41 @@ class MQTTClientWrapper {
 
         break;
       case List:
+        if (deviceName.length > 1) {
+          // Fetch by target
+          client.subscribe(
+            '$farmName/for_init/data/liveOnce',
+            MqttQos.atLeastOnce,
+          );
+          if (!isOnlySubscribe!) {
+            _publishMessage(
+              json.encode({
+                "Devices": (deviceName as List)
+                    .map((e) => e["DeviceName"])
+                    .toList()
+                    .join(','),
+              }),
+              '$farmName/for_init/data/requestInit',
+            );
+          }
+        }
         deviceName.forEach((device) {
           if (device.runtimeType == Map) {
-            client.subscribe("$farmName/${device["DeviceName"]}/data/live",
-                MqttQos.atLeastOnce);
-            if (!isOnlySubscribe!) {
-              _publishMessage(json.encode({"RequestConfirm": "true"}),
-                  "$farmName/${device["DeviceName"]}/data/request");
-            }
+            client.subscribe(
+              "$farmName/${device["DeviceName"]}/data/live",
+              MqttQos.atLeastOnce,
+            );
           } else if (device.runtimeType == String) {
             client.subscribe(
-                "$farmName/${device}/data/live", MqttQos.atLeastOnce);
-            if (!isOnlySubscribe!) {
-              _publishMessage(json.encode({"RequestConfirm": "true"}),
-                  "$farmName/${device}/data/request");
-            }
+              "$farmName/${device}/data/live",
+              MqttQos.atLeastOnce,
+            );
           } else {
             final map = Map<String, dynamic>.from(device);
-            client.subscribe("$farmName/${map["SerialNumber"]}/data/live",
-                MqttQos.atLeastOnce);
-            if (!isOnlySubscribe!) {
-              _publishMessage(json.encode({"RequestConfirm": "true"}),
-                  "$farmName/${map["SerialNumber"]}/data/request");
-            }
+            client.subscribe(
+              "$farmName/${map["SerialNumber"]}/data/live",
+              MqttQos.atLeastOnce,
+            );
           }
         });
         break;
