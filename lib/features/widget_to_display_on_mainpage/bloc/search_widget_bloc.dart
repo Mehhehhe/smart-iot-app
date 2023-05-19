@@ -43,6 +43,8 @@ class SearchWidgetBloc extends Bloc<SearchWidgetEvent, SearchWidgetState> {
     emit(SearchStateLoading());
     try {
       final results = searchDev.search(searchTerm);
+      print(
+          "[SearchResult] ${results.items.map((e) => e.deviceName).toList()}");
       emit(SearchWidgetSuccess(items: results.items));
     } catch (e) {
       emit(e is SearchWidgetError
