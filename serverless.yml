@@ -237,6 +237,15 @@ functions:
       - http:
           path: /farm/device/controlValue
           method: POST
+          cors: true
+  getInitDataForMobile:
+    handler: handler.getInitDataForMobile
+    description: handle a request from topic and send back to application (Initialize)
+    events:
+      - http:
+          path: /liveDataOnce
+          method: POST
+          cors: true
 
 resources:
   Resources:
