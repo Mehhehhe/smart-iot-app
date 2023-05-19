@@ -83,8 +83,8 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
           ));
           autoSaveLocal(pt, originalPos, originFarm);
         }
-        print(
-            "\n\n[dt] ${deviceByType["Farmtest"]["FAN_CONTROL"]["data"][0]["Data"]}\n\n");
+        // print(
+        //     "\n\n[dt] ${deviceByType["Farmtest"]["FAN_CONTROL"]["data"][0]["Data"]}\n\n");
       }
     });
     // Handle based on events
