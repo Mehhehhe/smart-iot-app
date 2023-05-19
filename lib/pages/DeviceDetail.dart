@@ -52,7 +52,7 @@ class DeviceDetail extends StatelessWidget {
         detail["Location"] ?? location,
       ));
     } else {
-      if (temp["Value"] == null) {
+      if (temp["Value"] == null || temp["Value"].runtimeType == bool) {
         return;
       }
       // print("${temp["Value"]["N"]} ${temp["Value"]["N"].runtimeType}");
@@ -107,21 +107,31 @@ class DeviceDetail extends StatelessWidget {
               children: [
                 BlocBuilder<UserDataStreamBloc, UserDataStreamState>(
                   builder: (context, state) {
+                    bool isFan =
+                        !detail["SerialNumber"].toString().contains("FAN") ||
+                            !serial.contains("FAN");
                     if (state.data != "" || state.data != null) {
                       if (state.data.isEmpty) {
                         liveData.add(latestDatePlaceholder[0]
                             [detail["SerialNumber"] ?? serial]);
-                        insertChartData(
-                          json.encode(
-                            latestDatePlaceholder[0]
-                                [detail["SerialNumber"] ?? serial],
-                          ),
-                        );
-                      } else {
-                        String trimmedData =
-                            state.data.substring(1, state.data.length - 1);
-                        liveData.add(json.decode(trimmedData));
-                        insertChartData(trimmedData);
+                        if (isFan) {
+                          if (latestDatePlaceholder[0]
+                                      [detail["SerialNumber"] ?? serial]
+                                  .runtimeType !=
+                              bool) {
+                            insertChartData(
+                              json.encode(
+                                latestDatePlaceholder[0]
+                                    [detail["SerialNumber"] ?? serial],
+                              ),
+                            );
+                          } else {
+                            String trimmedData =
+                                state.data.substring(1, state.data.length - 1);
+                            liveData.add(json.decode(trimmedData));
+                            insertChartData(trimmedData);
+                          }
+                        }
                       }
 
                       return Column(
@@ -136,7 +146,8 @@ class DeviceDetail extends StatelessWidget {
                           //       .toList(),
                           //   onChanged: (value) => print(value),
                           // ),
-                          if (detail["Type"] == "MOISTURE" && liveData != null)
+                          if (detail["Type"].contains("MOISTURE") &&
+                              liveData != null)
                             //Moi_Graph()
                             Padding(
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
@@ -163,8 +174,8 @@ class DeviceDetail extends StatelessWidget {
                                         borderRadius: BorderRadius.only(
                                             bottomLeft: Radius.circular(0),
                                             bottomRight: Radius.circular(30))),
-                                    title: const Text(
-                                      'Moisture Graph',
+                                    title: Text(
+                                      "Moisture Graph",
                                       style: TextStyle(
                                           fontSize: 20.0,
                                           fontWeight: FontWeight.bold),
@@ -205,7 +216,77 @@ class DeviceDetail extends StatelessWidget {
                                 ),
                               ),
                             )
-                          else if (detail["Type"] == "NPKSENSOR" &&
+                          else if (detail["Type"].contains("LIGHT") &&
+                              liveData != null)
+                            //Moi_Graph()
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(30)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.shade400,
+                                      blurRadius: 5,
+                                      offset: Offset(5, 5), // Shadow position
+                                    ),
+                                  ],
+                                ),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0),
+                                          bottomRight: Radius.circular(30))),
+                                  child: ExpansionTile(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    title: Text(
+                                      "Light Graph",
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    initiallyExpanded: false,
+                                    collapsedBackgroundColor:
+                                        Colors.orange.shade800,
+                                    collapsedTextColor: Colors.white,
+                                    textColor: Colors.orange.shade800,
+                                    //backgroundColor: Colors.red,
+                                    collapsedShape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(30))),
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(0),
+                                              bottomRight: Radius.circular(30)),
+                                        ),
+                                        height: 370,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        //color: Colors.white,
+                                        child: BlocProvider(
+                                          create: (_) => LiveDataCubit(
+                                              liveData, dataToPlot),
+                                          child: LiveChart(
+                                            type: 'line',
+                                            devices: liveData,
+                                            detail: detail,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          else if (detail["Type"].contains("NPK") &&
                               liveData != null)
                             //NPK_Graph()
                             Padding(
@@ -277,11 +358,12 @@ class DeviceDetail extends StatelessWidget {
                                 ),
                               ),
                             )
-                          else
+                          else if (isFan)
                             const CircularProgressIndicator(),
-                          DeviceEditor(
-                            deviceName: detail["SerialNumber"] ?? serial,
-                          ),
+                          if (isFan)
+                            DeviceEditor(
+                              deviceName: detail["SerialNumber"] ?? serial,
+                            ),
                         ],
                       );
                     }
