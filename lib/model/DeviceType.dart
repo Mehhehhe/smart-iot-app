@@ -11,6 +11,7 @@ enum DeviceValType {
   npk,
   unknown,
   fan,
+  light,
   // HUMIDITY_IN_SOIL
 }
 
@@ -20,6 +21,7 @@ class DeviceType {
       'min': 0.0,
       'max': 100.0,
       'unit': 'celsius',
+      'value_type': num,
     },
     'DeviceValType.humidity': {
       'min': 0.0,
@@ -35,8 +37,9 @@ class DeviceType {
     },
     'DeviceValType.light': {
       'min': 0.0,
-      'max': 100000.0,
+      'max': 1000.0,
       'unit': 'lx',
+      'value_type': num,
     },
     'DeviceValType.fan': {
       'min': 0,
@@ -50,13 +53,31 @@ class DeviceType {
   Map<String, Object>? getProps(String type) => properties[type];
 }
 
-class DeviceWidgetGenerator {
-  DeviceWidgetGenerator() {}
+class DeviceWidgetGenerator extends StatefulWidget {
+  String deviceSerial;
+  dynamic currentValue;
+  MQTTClientWrapper client;
+
+  DeviceWidgetGenerator(
+      {Key? key,
+      required this.deviceSerial,
+      required this.currentValue,
+      required this.client,
+      required BuildContext context,
+      required state})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _DeviceWidgetGeneratorState();
+}
+
+class _DeviceWidgetGeneratorState extends State<DeviceWidgetGenerator> {
+  // DeviceWidgetGenerator() {}
 
   DeviceValType _translate({required String deviceName}) {
     // convert to all lowercase
     String dev_name = deviceName.toLowerCase();
-    print(dev_name.contains("fan"));
+    // print(dev_name.contains("fan"));
     if (dev_name.contains("moist") || dev_name.contains("humid")) {
       return DeviceValType.humidity;
     } else if (dev_name.contains("npk")) {
@@ -65,6 +86,8 @@ class DeviceWidgetGenerator {
       return DeviceValType.temperature;
     } else if (dev_name.contains("fan")) {
       return DeviceValType.fan;
+    } else if (dev_name.contains("light")) {
+      return DeviceValType.light;
     }
 
     return DeviceValType.unknown;
@@ -95,22 +118,23 @@ class DeviceWidgetGenerator {
     if (state) {
       if (isMultiValuesDevice) {
         return _multiValueInCard(
-          context: context!,
+          // context: context!,
           serial: deviceSerial,
           values: currentValue,
           props: props,
         );
       } else if (props.containsKey("control") && props["control"]) {
+        print(currentValue);
         return _controlStateLike(
           cli: client,
           serial: deviceSerial,
           controlMap: currentValue,
-          context: context!,
+          // context: context!,
         );
       }
 
       return _singleValueInCard(
-        context: context!,
+        // context: context!,
         serial: deviceSerial,
         value: currentValue,
         props: props,
@@ -124,7 +148,7 @@ class DeviceWidgetGenerator {
   }
 
   _singleValueInCard({
-    required BuildContext context,
+    // required BuildContext context,
     required String serial,
     required dynamic value,
     required Map props,
@@ -173,17 +197,17 @@ class DeviceWidgetGenerator {
     required MQTTClientWrapper cli,
     required String serial,
     required dynamic controlMap,
-    context,
+    // context,
   }) {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.2,
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text(serial),
-        SizedBox(
+        const SizedBox(
           height: 10.0,
         ),
         CupertinoSwitch(
-          value: controlMap == 1.0 ? true : false,
+          value: controlMap,
           onChanged: (value) {},
         ),
       ]),
@@ -191,7 +215,7 @@ class DeviceWidgetGenerator {
   }
 
   _multiValueInCard({
-    required BuildContext context,
+    // required BuildContext context,
     required String serial,
     required Map values,
     required Map props,
@@ -238,6 +262,16 @@ class DeviceWidgetGenerator {
           ),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return buildMainpageCardDisplay(
+      deviceSerial: widget.deviceSerial,
+      currentValue: widget.currentValue,
+      client: widget.client,
     );
   }
 }
