@@ -561,45 +561,51 @@ class _AnalysisPage extends State<AnalysisPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Row(
-              children: [
-                const Text("Average: "),
-                FutureBuilder(
-                  future: getAvgDisplay(instance, name),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List avg = snapshot.data as List;
-                      Map<String, dynamic> temp = {
-                        name: avg.length == 1
-                            ? double.parse(avg[0].toString())
-                                .toStringAsPrecision(2)
-                            : avg,
-                      };
-                      if (!averageToDisplayInPdf.containsKey(name)) {
-                        averageToDisplayInPdf.addEntries(temp.entries);
-                      }
+              children: name.contains("FAN")
+                  ? [
+                      const Text("Not compatible"),
+                    ]
+                  : [
+                      const Text("Average: "),
+                      FutureBuilder(
+                        future: getAvgDisplay(instance, name),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List avg = snapshot.data as List;
+                            Map<String, dynamic> temp = {
+                              name: avg.length == 1
+                                  ? double.parse(avg[0].toString())
+                                      .toStringAsPrecision(2)
+                                  : avg,
+                            };
+                            if (!averageToDisplayInPdf.containsKey(name)) {
+                              averageToDisplayInPdf.addEntries(temp.entries);
+                            }
 
-                      return avg.length == 1
-                          ? Text(
-                              double.parse(avg[0].toString())
-                                  .toStringAsPrecision(2),
-                              softWrap: true,
-                              style: TextStyle(fontSize: 12.0),
-                            )
-                          : Text(
-                              "N: ${avg[0]}, P: ${avg[1]},K: ${avg[2]}",
-                              softWrap: true,
-                              style: TextStyle(fontSize: 12.0),
-                            );
-                    }
+                            return avg.length == 1
+                                ? Text(
+                                    double.parse(avg[0].toString())
+                                        .toStringAsPrecision(2),
+                                    softWrap: true,
+                                    style: TextStyle(fontSize: 12.0),
+                                  )
+                                : Text(
+                                    "N: ${avg[0]}, P: ${avg[1]},K: ${avg[2]}",
+                                    softWrap: true,
+                                    style: TextStyle(fontSize: 12.0),
+                                  );
+                          }
 
-                    return Container();
-                  },
-                ),
-              ],
+                          return Container();
+                        },
+                      ),
+                    ],
             ),
-            onTap: () => setState(() {
-              selectDevice = name;
-            }),
+            onTap: name.contains("FAN")
+                ? () => {}
+                : (() => setState(() {
+                      selectDevice = name;
+                    })),
           );
         },
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
