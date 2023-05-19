@@ -223,7 +223,7 @@ class _LiveChartState extends State<LiveChart> {
         // autoScrollingDelta: 3,
         // autoScrollingDeltaType: DateTimeIntervalType.hours,
         minimum: _start,
-        maximum: _end,
+        // maximum: _end,
         // visibleMaximum: endDateForDEbug!,
       ),
       primaryYAxis: NumericAxis(
@@ -342,11 +342,7 @@ class _LiveChartState extends State<LiveChart> {
     // create List<ChartData>
 
     // replace this with device type checker.
-    Type baseVal = base[0].device.contains("MOIST")
-        ? num
-        : base[0].device.contains("NPK")
-            ? Map
-            : String;
+    Type baseVal = base[0].device.contains("NPK") ? Map : num;
     List<ChartData> temp = [];
     dynamic valueToSet;
     for (var b in base) {
