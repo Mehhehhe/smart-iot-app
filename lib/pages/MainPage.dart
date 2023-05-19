@@ -116,12 +116,12 @@ class _MainPageState extends State<MainPage> {
                           context.read<FarmCardReBloc>().getDeviceData();
                         }),
                     icon: Icon(Icons.cached)),
-                IconButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => OnboardingPage()));
-                    },
-                    icon: Icon(Icons.question_mark)),
+                // IconButton(
+                //     onPressed: () {
+                //       Navigator.of(context).push(MaterialPageRoute(
+                //           builder: (context) => OnboardingPage()));
+                //     },
+                //     icon: Icon(Icons.question_mark)),
                 IconButton(
                     onPressed: () => signOutCurrentUser(),
                     icon: Icon(Icons.logout)),
