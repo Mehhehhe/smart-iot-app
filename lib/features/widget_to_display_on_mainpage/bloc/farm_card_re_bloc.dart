@@ -18,7 +18,10 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
   final MQTTClientWrapper client;
   late String data;
   LocalHistoryDatabase lc = LocalHistoryDatabase.instance;
+  List<Map<String, dynamic>> dataResponse = [];
+  Map deviceByType = {};
 
+  //ignore: long-method
   FarmCardReBloc(MQTTClientWrapper cli)
       : client = cli,
         super(const FarmCardReState.notLoaded()) {
@@ -29,25 +32,59 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
       final recMsg = event![0].payload as MqttPublishMessage;
       final splitTop = event[0].topic.split("/");
       final originFarm = splitTop.elementAt(0);
-      final originalPos = splitTop.elementAt(1);
+      final originalPos =
+          splitTop.elementAt(1) == "for_init" ? "init" : splitTop.elementAt(1);
       final pt =
           MqttPublishPayload.bytesToStringAsString(recMsg.payload.message);
       data = pt;
-      if (data.isNotEmpty &&
+      print("[FetchedData] $data");
+      if (data != "" &&
           client.connectionState != MqttConnectionState.disconnected) {
-        Map<String, dynamic> construct = {
-          "Data": pt,
-          "FromDevice": originalPos,
-          "FromFarm": originFarm,
-        };
-        add(_OnCompletedFetching(
-          currentIndex: currentIndex(),
-          farms: state.farms,
-          devices: state.devices,
-          data: data,
-          pt: construct,
-        ));
-        autoSaveLocal(pt, originalPos, originFarm);
+        if (originalPos == "init") {
+          var initResponse = json.decode(pt);
+          List<Map<String, dynamic>> tempRes = [];
+          for (Map<String, dynamic> d in initResponse) {
+            // print("[d] ${d.keys}, ${d.values}");
+            Map<String, dynamic> construct = {
+              "Data": d.values.first,
+              "FromDevice": d.keys.first,
+              "FromFarm": originFarm,
+            };
+            tempRes.add(construct);
+          }
+          dataResponse.addAll(tempRes);
+          add(_OnCompletedFetching(
+            currentIndex: currentIndex(),
+            farms: state.farms,
+            devices: state.devices,
+            data: data,
+            pt: {"initValues": tempRes},
+          ));
+          autoSaveLocal(pt, originalPos, originFarm);
+        } else {
+          Map<String, dynamic> construct = {
+            "Data": pt,
+            "FromDevice": originalPos,
+            "FromFarm": originFarm,
+          };
+
+          if (data != "") {
+            if (!dataResponse.contains(construct)) {
+              dataResponse.add(construct);
+            }
+          }
+          print("[FetchingDP] ${dataResponse}");
+          add(_OnCompletedFetching(
+            currentIndex: currentIndex(),
+            farms: state.farms,
+            devices: state.devices,
+            data: data,
+            pt: construct,
+          ));
+          autoSaveLocal(pt, originalPos, originFarm);
+        }
+        print(
+            "\n\n[dt] ${deviceByType["Farmtest"]["FAN_CONTROL"]["data"][0]["Data"]}\n\n");
       }
     });
     // Handle based on events
@@ -59,6 +96,55 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
     _getOwnedFarmsList();
   }
 
+  createNewFarmDataMapForNumCard(tempLoc, List s) {
+    Map temp = {tempLoc: {}};
+    for (var d in state.devices) {
+      Map t = {
+        d["Type"]: {
+          "prefix": d["Type"].toString().substring(0, 2),
+          "data": [],
+        },
+      };
+      temp[tempLoc].addEntries(t.entries);
+    }
+    for (var ss in s) {
+      temp.forEach((key, value) {
+        // print("check data $ss");
+        for (var t in value.keys) {
+          if (temp.containsKey(ss["FromFarm"]) &&
+              ss["FromDevice"]
+                  .contains(value[t]["prefix"].toString().toUpperCase())) {
+            if (value[t]["data"].isEmpty) {
+              if (ss["Data"].runtimeType == String) {
+                ss["Data"] = json.decode(ss["Data"]);
+              }
+              value[t]["data"].add(ss);
+              // print(value[t]);
+              break;
+            }
+            List temp2 = [];
+            for (int i = 0; i < value[t]["data"].length; i++) {
+              if (value[t]["data"][i]["FromDevice"] == ss["FromDevice"]) {
+                temp2.addAll(
+                  ss["Data"].runtimeType == String
+                      ? json.decode(ss["Data"])
+                      : ss["Data"],
+                );
+              }
+            }
+            if (temp2.isNotEmpty) {
+              value[t]["data"][0]["Data"].addAll(temp2);
+              // print("Another cond: ${value[t]}");
+            }
+          }
+        }
+      });
+    }
+    // print("[temp] $temp");
+
+    return temp;
+  }
+
   void chooseIndex(int index) {
     add(_OnChoosingIndex(index: index));
   }
@@ -66,6 +152,8 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
   int currentIndex() => state.farmIndex;
 
   List userFarmList() => state.farms;
+
+  List<Map<String, dynamic>> getDataResponse() => dataResponse;
 
   _getOwnedFarmsList() async {
     var res = await Amplify.Auth.getCurrentUser();
@@ -175,6 +263,7 @@ class FarmCardReBloc extends Bloc<FarmCardReEvent, FarmCardReState> {
   Future<void> autoSaveLocal(histVals, dev, farm) async {
     var h = json.decode(histVals).cast().toList();
     for (var v = 0; v < h.length; v++) {
+      // print(h[v]);
       LocalHist tempForSav = LocalHist(
         h[v]["TimeStamp"].toString(),
         dev,
